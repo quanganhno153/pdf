@@ -80,7 +80,7 @@ button,input,select{font:inherit}button{cursor:pointer}.hidden{display:none!impo
 <input type="file" id="fileInput" accept=".pdf,.jpg,.jpeg,.png,.webp,application/pdf,image/*" multiple hidden></section>
 
 <section class="panel"><div class="section-title"><h2>Danh sách trang</h2><span class="muted" id="pageCount">0 trang</span></div>
-<div class="toolbar"><button class="btn" id="undoButton" title="Hoàn tác (Ctrl+Z)" disabled>↶ Hoàn tác</button><button class="btn" id="redoButton" title="Làm lại (Ctrl+Y)" disabled>↷ Làm lại</button><button class="btn" id="selectAllButton">Chọn tất cả</button><button class="btn primary" id="autoCropButton" title="Tự tìm 4 góc tờ giấy rồi mở khung để bạn chỉnh lại">🪄 Tự nhận diện</button><button class="btn primary" id="manualCropButton" title="Kéo 4 góc độc lập, nắn thẳng thành chữ nhật khi xuất">✂ Cắt freeform</button><button class="btn primary" id="rectCropButton" title="Khung hình chữ nhật, kéo góc/cạnh để chỉnh">▭ Cắt chữ nhật</button><button class="btn" id="mergeButton" title="Chọn 2 trang/ảnh trở lên rồi ghép vào 1 trang">▦ Ghép vào 1 trang</button><button class="btn" id="copyCropButton" title="Sao chép vùng đã cắt vào clipboard, rồi dán (Ctrl+V) lên trang khác">📋 Sao chép vùng cắt</button><button class="btn" id="moveCropButton" title="Sau khi cắt, kéo vùng đã cắt đến vị trí khác trong trang">✥ Di chuyển vùng cắt</button><button class="btn" id="stampButton" title="Chèn ảnh (chữ ký, con dấu...) lên trang đã chọn. Cũng có thể dán bằng Ctrl+V">🖼 Chèn ảnh</button><button class="btn" id="rotateButton">↻ Xoay</button><button class="btn" id="duplicateButton">▣ Nhân đôi</button><button class="btn danger" id="deleteButton">✕ Xóa</button><span class="spacer"></span><button class="btn" id="clearButton">Xóa tất cả</button></div>
+<div class="toolbar"><button class="btn" id="undoButton" title="Hoàn tác (Ctrl+Z)" disabled>↶ Hoàn tác</button><button class="btn" id="redoButton" title="Làm lại (Ctrl+Y)" disabled>↷ Làm lại</button><button class="btn" id="selectAllButton">Chọn tất cả</button><button class="btn primary" id="saveSelectedButton" title="Lưu riêng các trang đang chọn thành 1 file PDF (giữ nguyên thứ tự hiển thị)">💾 Lưu trang đã chọn</button><button class="btn primary" id="autoCropButton" title="Tự tìm 4 góc tờ giấy rồi mở khung để bạn chỉnh lại">🪄 Tự nhận diện</button><button class="btn primary" id="manualCropButton" title="Kéo 4 góc độc lập, nắn thẳng thành chữ nhật khi xuất">✂ Cắt freeform</button><button class="btn primary" id="rectCropButton" title="Khung hình chữ nhật, kéo góc/cạnh để chỉnh">▭ Cắt chữ nhật</button><button class="btn" id="mergeButton" title="Chọn 2 trang/ảnh trở lên rồi ghép vào 1 trang">▦ Ghép vào 1 trang</button><button class="btn" id="copyCropButton" title="Sao chép vùng đã cắt vào clipboard, rồi dán (Ctrl+V) lên trang khác">📋 Sao chép vùng cắt</button><button class="btn" id="moveCropButton" title="Sau khi cắt, kéo vùng đã cắt đến vị trí khác trong trang">✥ Di chuyển vùng cắt</button><button class="btn" id="stampButton" title="Chèn ảnh (chữ ký, con dấu...) lên trang đã chọn. Cũng có thể dán bằng Ctrl+V">🖼 Chèn ảnh</button><button class="btn" id="rotateButton">↻ Xoay</button><button class="btn" id="duplicateButton">▣ Nhân đôi</button><button class="btn danger" id="deleteButton">✕ Xóa</button><span class="spacer"></span><button class="btn" id="clearButton">Xóa tất cả</button></div>
 <div id="pageGrid" class="page-grid"></div><div id="emptyState" class="empty-state"><div class="big-icon">📑</div><h3>Chưa có tài liệu nào</h3><p>Thêm PDF hoặc hình ảnh để bắt đầu.</p></div></section>
 
 <section class="panel enhance-panel"><h2>✨ Làm đẹp PDF – Khử bóng điện thoại</h2>
@@ -195,10 +195,12 @@ function login(){if($("passwordInput").value==="2001"){$("loginScreen").classLis
 $("loginButton").onclick=login;$("passwordInput").onkeydown=e=>{if(e.key==="Enter")login()};
 function showToast(m){const el=$("toast");el.textContent=m;el.classList.remove("hidden");clearTimeout(showToast.timer);showToast.timer=setTimeout(()=>el.classList.add("hidden"),3000)}
 function setProgress(p,m){$("progressArea").classList.remove("hidden");$("progressFill").style.width=p+"%";$("progressText").textContent=m}
-function setBusy(v){busy=v;["addFilesButton","exportButton","enhanceExportButton","compressExportButton","rotateButton","duplicateButton","deleteButton","clearButton","selectAllButton","manualCropButton","autoCropButton","rectCropButton","mergeButton","stampButton","moveCropButton","copyCropButton","moveCropPrev","applyManualCrop","autoDetectCrop","startManualCrop","startRectCrop"].forEach(id=>$(id).disabled=v);updateHistoryButtons()}
+function setBusy(v){busy=v;["addFilesButton","exportButton","enhanceExportButton","compressExportButton","rotateButton","duplicateButton","deleteButton","clearButton","selectAllButton","saveSelectedButton","manualCropButton","autoCropButton","rectCropButton","mergeButton","stampButton","moveCropButton","copyCropButton","moveCropPrev","applyManualCrop","autoDetectCrop","startManualCrop","startRectCrop"].forEach(id=>$(id).disabled=v);updateHistoryButtons()}
 function getDoc(id){return documents.find(d=>d.id===id)}
 function sourceFor(item){const d=getDoc(item.docId);if(!d)throw Error("Không tìm thấy tài liệu nguồn");return d}
-function updateCount(){$("pageCount").textContent=pages.length+" trang";$("emptyState").classList.toggle("hidden",pages.length>0);$("pageGrid").classList.toggle("hidden",pages.length===0)}
+function updateSaveButton(){const b=$("saveSelectedButton");if(!b)return;const n=selectedPages.size;b.textContent=n?`💾 Lưu ${n} trang đã chọn`:"💾 Lưu trang đã chọn"}
+function rangeLabel(idx){const nums=idx.map(i=>i+1),parts=[];for(let k=0;k<nums.length;){let j=k;while(j+1<nums.length&&nums[j+1]===nums[j]+1)j++;parts.push(j>k?nums[k]+"-"+nums[j]:String(nums[k]));k=j+1}return parts.join("_")}
+function updateCount(){updateSaveButton();$("pageCount").textContent=pages.length+" trang";$("emptyState").classList.toggle("hidden",pages.length>0);$("pageGrid").classList.toggle("hidden",pages.length===0)}
 function downloadBytes(bytes,name){const blob=new Blob([bytes],{type:"application/pdf"}),url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),4000)}
 
 $("addFilesButton").onclick=()=>$("fileInput").click();$("dropzone").onclick=()=>$("fileInput").click();
@@ -847,11 +849,11 @@ async function applyMove(){
 }
 $("applyMove").onclick=applyMove;
 
-async function exportNormal(){
-  if(!pages.length)throw Error("Chưa có trang");
+async function exportNormal(list=pages,fileName="PDF-Studio.pdf"){
+  if(!list.length)throw Error("Chưa có trang");
   const out=await PDFDocument.create();
-  for(let i=0;i<pages.length;i++){
-    const it=pages[i],d=sourceFor(it);
+  for(let i=0;i<list.length;i++){
+    const it=list[i],d=sourceFor(it);
     if(it.perspectiveCrop){
       const srcPage=await d.pdf.getPage(it.pageNum),rotation=((srcPage.rotate||0)+it.rotation)%360;
       const scale=220/72,viewport=srcPage.getViewport({scale,rotation});
@@ -873,10 +875,10 @@ async function exportNormal(){
       if(it.rotation)p.setRotation(degrees(((p.getRotation().angle||0)+it.rotation)%360));
       out.addPage(p);
     }
-    setProgress((i+1)/pages.length*100,`Đang xuất trang ${i+1}/${pages.length}${it.perspectiveCrop?(it.cropMode==="rect"?" · cắt chữ nhật":" · nắn freeform"):""}`);
+    setProgress((i+1)/list.length*100,`Đang xuất trang ${i+1}/${list.length}${it.perspectiveCrop?(it.cropMode==="rect"?" · cắt chữ nhật":" · nắn freeform"):""}`);
     await new Promise(r=>setTimeout(r,0));
   }
-  downloadBytes(await out.save(),"PDF-Studio.pdf");
+  downloadBytes(await out.save(),fileName);
 }
 
 /* ====== THUẬT TOÁN KHỬ BÓNG NỀN GIẤY ======
@@ -1122,6 +1124,18 @@ $("compressExportButton").onclick=async()=>{
   try{await exportCompressed();showToast("Đã nén và xuất PDF")}
   catch(e){console.error(e);$("compressStatus").textContent="Có lỗi khi nén.";showToast("Lỗi nén: "+e.message)}
   finally{setBusy(false);setTimeout(()=>$("progressArea").classList.add("hidden"),1800)}
+};
+$("saveSelectedButton").onclick=async()=>{
+  if(busy)return;
+  const idx=selectedIndexes();
+  if(!idx.length)return showToast("Hãy chọn các trang cần lưu (Shift+click để chọn dải, Ctrl+click để chọn rời)");
+  setBusy(true);
+  try{
+    await exportNormal(idx.map(i=>pages[i]),"PDF-Studio-trang-"+rangeLabel(idx)+".pdf");
+    $("enhanceStatus").textContent=`Đã lưu ${idx.length} trang đã chọn thành 1 file PDF.`;
+    showToast(`Đã lưu ${idx.length} trang thành 1 file PDF`);
+  }catch(e){console.error(e);showToast("Lỗi lưu trang đã chọn: "+e.message)}
+  finally{setBusy(false);setTimeout(()=>$("progressArea").classList.add("hidden"),1200)}
 };
 $("undoButton").onclick=undo;$("redoButton").onclick=redo;
 renderGrid();updateHistoryButtons();
