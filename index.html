@@ -63,6 +63,25 @@ button,input,select{font:inherit}button{cursor:pointer}.hidden{display:none!impo
 .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:#25263a;color:white;padding:12px 18px;border-radius:10px;z-index:2000;box-shadow:var(--shadow);font-size:13px;max-width:90%;text-align:center}
 .footer{text-align:center;color:var(--muted);font-size:12px;padding:15px}
 @media(max-width:600px){.app{padding:13px}.panel{padding:14px}.page-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.thumb-wrap{height:165px}.header{align-items:flex-start}}
+
+/* ====== Giao diện nhiều tệp: chồng giấy → bung trang ====== */
+.stack-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:26px 22px}
+.stack-card{position:relative;cursor:pointer;text-align:center;padding:10px 8px 6px;border-radius:14px;transition:.15s;min-width:0}
+.stack-card:hover{background:#f6f5ff}
+.stack-card.selected{background:#efedff;outline:2px solid var(--primary)}
+.stack-pages{position:relative;height:250px;width:78%;margin:8px auto 14px}
+.stack-layer{position:absolute;inset:0;background:#fff;border:1px solid #d9dbe6;border-radius:6px;box-shadow:0 2px 8px #2222221a}
+.stack-layer.l2{transform:translate(12px,-10px) rotate(2.5deg)}.stack-layer.l1{transform:translate(6px,-5px) rotate(1.2deg)}
+.stack-front{position:absolute;inset:0;background:#fff;border:1px solid #d9dbe6;border-radius:6px;box-shadow:0 6px 18px #22222233;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.stack-front canvas{max-width:100%;max-height:100%;object-fit:contain}
+.stack-check{position:absolute;left:-10px;top:-10px;width:24px;height:24px;border-radius:7px;background:#fff;border:1.5px solid #bbb;z-index:3;cursor:pointer;box-shadow:0 2px 6px #0002}
+.stack-card.selected .stack-check{background:var(--primary);border-color:var(--primary)}
+.stack-card.selected .stack-check:after{content:"✓";color:#fff;display:block;text-align:center;font-size:15px;line-height:22px}
+.stack-pill{display:inline-block;max-width:100%;padding:5px 14px;border-radius:7px;font-size:13px;font-weight:600;color:#3a3a4a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.stack-count{color:var(--muted);font-size:13px;margin-top:5px}
+.stack-badge{position:absolute;right:4px;top:-6px;z-index:3;background:var(--primary);color:#fff;border-radius:20px;font-size:11px;padding:2px 8px;font-weight:700}
+.group-bar{display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap}
+.page-grid .stack-pages{height:190px;width:80%}.page-grid .stack-card{padding:8px 6px 4px}.file-pill{padding:2px 9px;border-radius:6px;font-weight:600;color:#3a3a4a;cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
 </style>
 </head>
 <body>
@@ -81,7 +100,7 @@ button,input,select{font:inherit}button{cursor:pointer}.hidden{display:none!impo
 
 <section class="panel"><div class="section-title"><h2>Danh sách trang</h2><span class="muted" id="pageCount">0 trang</span></div>
 <div class="toolbar"><button class="btn" id="undoButton" title="Hoàn tác (Ctrl+Z)" disabled>↶ Hoàn tác</button><button class="btn" id="redoButton" title="Làm lại (Ctrl+Y)" disabled>↷ Làm lại</button><button class="btn" id="selectAllButton">Chọn tất cả</button><button class="btn primary" id="saveSelectedButton" title="Lưu riêng các trang đang chọn thành 1 file PDF (giữ nguyên thứ tự hiển thị)">💾 Lưu trang đã chọn</button><button class="btn primary" id="autoCropButton" title="Tự tìm 4 góc tờ giấy rồi mở khung để bạn chỉnh lại">🪄 Tự nhận diện</button><button class="btn primary" id="manualCropButton" title="Kéo 4 góc độc lập, nắn thẳng thành chữ nhật khi xuất">✂ Cắt freeform</button><button class="btn primary" id="rectCropButton" title="Khung hình chữ nhật, kéo góc/cạnh để chỉnh">▭ Cắt chữ nhật</button><button class="btn" id="mergeButton" title="Chọn 2 trang/ảnh trở lên rồi ghép vào 1 trang">▦ Ghép vào 1 trang</button><button class="btn" id="copyCropButton" title="Sao chép vùng đã cắt vào clipboard, rồi dán (Ctrl+V) lên trang khác">📋 Sao chép vùng cắt</button><button class="btn" id="moveCropButton" title="Sau khi cắt, kéo vùng đã cắt đến vị trí khác trong trang">✥ Di chuyển vùng cắt</button><button class="btn" id="stampButton" title="Chèn ảnh (chữ ký, con dấu...) lên trang đã chọn. Cũng có thể dán bằng Ctrl+V">🖼 Chèn ảnh</button><button class="btn" id="rotateButton">↻ Xoay</button><button class="btn" id="duplicateButton">▣ Nhân đôi</button><button class="btn danger" id="deleteButton">✕ Xóa</button><span class="spacer"></span><button class="btn" id="clearButton">Xóa tất cả</button></div>
-<div id="pageGrid" class="page-grid"></div><div id="emptyState" class="empty-state"><div class="big-icon">📑</div><h3>Chưa có tài liệu nào</h3><p>Thêm PDF hoặc hình ảnh để bắt đầu.</p></div></section>
+<div id="groupBar" class="group-bar hidden"></div><div id="pageGrid" class="page-grid"></div><div id="emptyState" class="empty-state"><div class="big-icon">📑</div><h3>Chưa có tài liệu nào</h3><p>Thêm PDF hoặc hình ảnh để bắt đầu.</p></div></section>
 
 <section class="panel enhance-panel"><h2>✨ Làm đẹp PDF – Khử bóng điện thoại</h2>
 <div class="muted">Phân tích ánh sáng từng vùng trên mỗi trang để làm sáng vùng bị bóng, cân bằng nền giấy và giữ nguyên nội dung, bảng biểu, hình ảnh, chữ ký cùng dấu màu.</div>
@@ -181,7 +200,7 @@ button,input,select{font:inherit}button{cursor:pointer}.hidden{display:none!impo
 pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
 const {PDFDocument,degrees}=PDFLib;
 const $=id=>document.getElementById(id);
-let documents=[],pages=[],selectedPages=new Set(),nextDocumentId=1,previewIndex=-1,busy=false,manualCropState=null;
+let documents=[],pages=[],selectedPages=new Set(),nextDocumentId=1,previewIndex=-1,busy=false,manualCropState=null,openGroups=new Set();
 
 /* ====== HOÀN TÁC / LÀM LẠI ====== */
 const undoStack=[],redoStack=[];
@@ -200,7 +219,11 @@ function getDoc(id){return documents.find(d=>d.id===id)}
 function sourceFor(item){const d=getDoc(item.docId);if(!d)throw Error("Không tìm thấy tài liệu nguồn");return d}
 function updateSaveButton(){const b=$("saveSelectedButton");if(!b)return;const n=selectedPages.size;b.textContent=n?`💾 Lưu ${n} trang đã chọn`:"💾 Lưu trang đã chọn"}
 function rangeLabel(idx){const nums=idx.map(i=>i+1),parts=[];for(let k=0;k<nums.length;){let j=k;while(j+1<nums.length&&nums[j+1]===nums[j]+1)j++;parts.push(j>k?nums[k]+"-"+nums[j]:String(nums[k]));k=j+1}return parts.join("_")}
-function updateCount(){updateSaveButton();$("pageCount").textContent=pages.length+" trang";$("emptyState").classList.toggle("hidden",pages.length>0);$("pageGrid").classList.toggle("hidden",pages.length===0)}
+const PILL_COLORS=["#fde7b0","#b9eef2","#e0d4ff","#ffd3dc","#cdeec9","#ffe0c2"];
+function groupKey(it){return it.group??it.docId}
+function getGroups(){const m=new Map();pages.forEach(p=>{const k=groupKey(p);if(!m.has(k))m.set(k,{key:k,items:[],name:(getDoc(k)||{}).name||p.name});m.get(k).items.push(p)});return[...m.values()]}
+function visibleItems(){const g=getGroups();return g.length<2?pages:pages.filter(p=>openGroups.has(groupKey(p)))}
+function updateCount(){updateSaveButton();{const g=getGroups();$("pageCount").textContent=(g.length>=2?g.length+" tệp · ":"")+pages.length+" trang"}$("emptyState").classList.toggle("hidden",pages.length>0);$("pageGrid").classList.toggle("hidden",pages.length===0)}
 function downloadBytes(bytes,name){const blob=new Blob([bytes],{type:"application/pdf"}),url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),4000)}
 
 $("addFilesButton").onclick=()=>$("fileInput").click();$("dropzone").onclick=()=>$("fileInput").click();
@@ -228,14 +251,65 @@ function cropLabel(it){
   if(it.perspectiveCrop)return it.cropMode==="rect"?" · chữ nhật":" · freeform";
   return Object.values(cropValues(it)).some(v=>v>0)?" · đã cắt":"";
 }
-function renderGrid(){const grid=$("pageGrid");grid.innerHTML="";updateCount();pages.forEach((it,i)=>{const card=document.createElement("div");card.className="page-card"+(selectedPages.has(it.id)?" selected":"");card.draggable=true;const wrap=document.createElement("div");wrap.className="thumb-wrap";const cv=document.createElement("canvas"),num=document.createElement("div"),check=document.createElement("div");num.className="page-number";num.textContent=i+1;check.className="page-check";wrap.append(cv,num,check);const info=document.createElement("div");info.className="page-info";const name=document.createElement("span");name.textContent=it.name;name.title=it.name;name.style.cssText="overflow:hidden;text-overflow:ellipsis;white-space:nowrap";const n=document.createElement("span");n.textContent="Trang "+it.pageNum+cropLabel(it);info.append(name,n);card.append(wrap,info);card.onclick=e=>selectPage(it.id,i,e);card.ondblclick=()=>openPreview(i);card.ondragstart=e=>{card.classList.add("dragging");e.dataTransfer.setData("text/plain",String(i))};card.ondragend=()=>card.classList.remove("dragging");card.ondragover=e=>e.preventDefault();card.ondrop=e=>{e.preventDefault();const from=Number(e.dataTransfer.getData("text/plain"));if(!Number.isInteger(from)||from===i)return;pushHistory();const moved=pages.splice(from,1)[0];pages.splice(i,0,moved);selectedPages.clear();renderGrid()};grid.append(card);thumbnail(it,cv).catch(err=>console.warn(err))})}
-function selectPage(id,i,e){if(e.ctrlKey||e.metaKey){selectedPages.has(id)?selectedPages.delete(id):selectedPages.add(id)}else if(e.shiftKey&&selectedPages.size){const chosen=pages.map((p,j)=>selectedPages.has(p.id)?j:-1).filter(j=>j>=0),anchor=chosen.at(-1)??i;selectedPages.clear();for(let j=Math.min(i,anchor);j<=Math.max(i,anchor);j++)selectedPages.add(pages[j].id)}else{selectedPages.clear();selectedPages.add(id)}renderGrid()}
+function makeStack(g,gi){
+  const card=document.createElement("div"),allSel=g.items.every(p=>selectedPages.has(p.id)),someSel=g.items.some(p=>selectedPages.has(p.id));
+  card.className="stack-card"+(allSel?" selected":"");card.title="Bấm để bung các trang của tệp này";
+  const st=document.createElement("div");st.className="stack-pages";
+  if(g.items.length>2){const l=document.createElement("div");l.className="stack-layer l2";st.append(l)}
+  if(g.items.length>1){const l=document.createElement("div");l.className="stack-layer l1";st.append(l)}
+  const front=document.createElement("div");front.className="stack-front";const cv=document.createElement("canvas");front.append(cv);st.append(front);
+  const chk=document.createElement("div");chk.className="stack-check";chk.title="Chọn / bỏ chọn cả tệp";
+  chk.onclick=e=>{e.stopPropagation();if(allSel)g.items.forEach(p=>selectedPages.delete(p.id));else g.items.forEach(p=>selectedPages.add(p.id));renderGrid()};
+  card.append(chk);
+  if(someSel&&!allSel){const b=document.createElement("div");b.className="stack-badge";b.textContent=g.items.filter(p=>selectedPages.has(p.id)).length+" đã chọn";card.append(b)}
+  const pill=document.createElement("span");pill.className="stack-pill";pill.textContent=g.name;pill.title=g.name;pill.style.background=PILL_COLORS[gi%PILL_COLORS.length];
+  const cnt=document.createElement("div");cnt.className="stack-count";cnt.textContent=g.items.length+" trang";
+  card.append(st,pill,cnt);
+  card.onclick=()=>{openGroups.add(g.key);renderGrid()};
+  thumbnail(g.items[0],cv).catch(err=>console.warn(err));
+  return card;
+}
+function renderGrid(){
+  const grid=$("pageGrid"),bar=$("groupBar"),groups=getGroups(),multi=groups.length>=2;
+  if(!multi)openGroups.clear();else[...openGroups].forEach(k=>{if(!groups.some(g=>g.key===k))openGroups.delete(k)});
+  grid.innerHTML="";bar.innerHTML="";grid.className="page-grid";updateCount();bar.classList.add("hidden");
+  const gIndex=new Map(groups.map((g,i)=>[g.key,i])),seen=new Set();
+  if(multi){
+    const b1=document.createElement("button");b1.className="btn";b1.textContent="⤢ Bung tất cả";b1.onclick=()=>{groups.forEach(g=>openGroups.add(g.key));renderGrid()};
+    const b2=document.createElement("button");b2.className="btn";b2.textContent="⤡ Thu gọn tất cả";b2.onclick=()=>{openGroups.clear();renderGrid()};
+    const hint=document.createElement("span");hint.className="muted";hint.textContent="Bấm vào chồng giấy để bung trang (có thể bung nhiều tệp cùng lúc) · bấm nhãn màu tên tệp để thu gọn lại";
+    bar.append(b1,b2,hint);bar.classList.remove("hidden");
+  }
+  pages.forEach((it,i)=>{
+    const k=groupKey(it),gi=gIndex.get(k),g=groups[gi];
+    if(multi&&!openGroups.has(k)){if(!seen.has(k)){seen.add(k);grid.append(makeStack(g,gi))}return}
+    const card=document.createElement("div");card.className="page-card"+(selectedPages.has(it.id)?" selected":"");card.draggable=true;
+    const wrap=document.createElement("div");wrap.className="thumb-wrap";
+    const cv=document.createElement("canvas"),num=document.createElement("div"),check=document.createElement("div");
+    num.className="page-number";num.textContent=multi?g.items.indexOf(it)+1:i+1;check.className="page-check";wrap.append(cv,num,check);
+    const info=document.createElement("div");info.className="page-info";
+    const name=document.createElement("span");name.textContent=it.name;name.title=it.name;name.style.cssText="overflow:hidden;text-overflow:ellipsis;white-space:nowrap";
+    if(multi){name.className="file-pill";name.style.background=PILL_COLORS[gi%PILL_COLORS.length];name.title=it.name+" — bấm để thu gọn tệp";name.onclick=e=>{e.stopPropagation();openGroups.delete(k);renderGrid()}}
+    const n=document.createElement("span");n.textContent="Trang "+it.pageNum+cropLabel(it);info.append(name,n);card.append(wrap,info);
+    card.onclick=e=>selectPage(it.id,i,e);card.ondblclick=()=>openPreview(i);
+    card.ondragstart=e=>{card.classList.add("dragging");e.dataTransfer.setData("text/plain",String(i))};card.ondragend=()=>card.classList.remove("dragging");
+    card.ondragover=e=>e.preventDefault();
+    card.ondrop=e=>{e.preventDefault();const from=Number(e.dataTransfer.getData("text/plain"));if(!Number.isInteger(from)||from===i)return;pushHistory();const moved=pages.splice(from,1)[0];pages.splice(i,0,moved);selectedPages.clear();renderGrid()};
+    grid.append(card);thumbnail(it,cv).catch(err=>console.warn(err));
+  });
+}
+function selectPage(id,i,e){
+  const vis=visibleItems(),vi=vis.findIndex(p=>p.id===id);
+  if(e.ctrlKey||e.metaKey){selectedPages.has(id)?selectedPages.delete(id):selectedPages.add(id)}
+  else if(e.shiftKey&&selectedPages.size){const chosen=vis.map((p,j)=>selectedPages.has(p.id)?j:-1).filter(j=>j>=0),anchor=chosen.length?chosen.at(-1):vi;selectedPages.clear();for(let j=Math.min(vi,anchor);j<=Math.max(vi,anchor);j++)selectedPages.add(vis[j].id)}
+  else{selectedPages.clear();selectedPages.add(id)}
+  renderGrid()}
 function selectedIndexes(){return pages.map((p,i)=>selectedPages.has(p.id)?i:-1).filter(i=>i>=0)}
 $("selectAllButton").onclick=()=>{if(selectedPages.size===pages.length)selectedPages.clear();else pages.forEach(p=>selectedPages.add(p.id));renderGrid()};
 $("rotateButton").onclick=()=>{if(!selectedPages.size)return showToast("Chọn trang cần xoay");pushHistory();pages.forEach(p=>{if(selectedPages.has(p.id)){p.rotation=(p.rotation+90)%360;clearShapeCrop(p)}});renderGrid()};
 $("duplicateButton").onclick=()=>{const ids=selectedIndexes();if(!ids.length)return showToast("Chọn trang cần nhân đôi");pushHistory();let inserted=0;ids.forEach(i=>{const original=pages[i+inserted];pages.splice(i+inserted+1,0,{...original,id:crypto.randomUUID()});inserted++});renderGrid()};
 $("deleteButton").onclick=()=>{if(!selectedPages.size)return showToast("Chọn trang cần xóa");pushHistory();pages=pages.filter(p=>!selectedPages.has(p.id));selectedPages.clear();renderGrid()};
-$("clearButton").onclick=()=>{if(pages.length&&confirm("Xóa toàn bộ trang?")){pages=[];documents=[];undoStack.length=0;redoStack.length=0;selectedPages.clear();renderGrid();updateHistoryButtons()}};
+$("clearButton").onclick=()=>{if(pages.length&&confirm("Xóa toàn bộ trang?")){pages=[];documents=[];openGroups.clear();undoStack.length=0;redoStack.length=0;selectedPages.clear();renderGrid();updateHistoryButtons()}};
 
 async function openPreview(i){previewIndex=i;$("previewModal").classList.remove("hidden");await renderPreview()}
 async function renderPreview(){
@@ -555,7 +629,7 @@ async function applyMerge(){
     const sheet=composeSheet(mergeState.sources,mergeOpts(),220),newItem=await canvasToDocument(sheet,"Trang ghép",220);
     pushHistory();
     const ids=new Set(mergeState.items.map(i=>i.id)),last=Math.max(...mergeState.items.map(it=>pages.findIndex(p=>p.id===it.id)));
-    pages.splice(last+1,0,newItem);
+    newItem.group=groupKey(pages[last]);pages.splice(last+1,0,newItem);
     if($("mergeDelete").checked)pages=pages.filter(p=>!ids.has(p.id));
     selectedPages.clear();selectedPages.add(newItem.id);
     closeMerge();renderGrid();showToast("Đã tạo trang ghép");
@@ -696,7 +770,7 @@ async function applyStamp(){
     const item=pages[index],base=await renderItemCanvas(item,{dpi:220});
     drawTransformed(base.getContext("2d"),$("stampImg"),s,base.width,base.height,$("stampMultiply").checked);
     const newItem=await canvasToDocument(base,item.name,base.dpiUsed||220);
-    pushHistory();pages[index]=newItem;
+    pushHistory();newItem.group=groupKey(item);pages[index]=newItem;
     selectedPages.clear();selectedPages.add(newItem.id);
     closeStamp();renderGrid();showToast("Đã dán ảnh vào trang");
   }catch(e){console.error(e);showToast("Lỗi dán ảnh: "+e.message)}
@@ -841,7 +915,7 @@ async function applyMove(){
     const ctx=out.getContext("2d");ctx.fillStyle="#fff";ctx.fillRect(0,0,out.width,out.height);
     s.copies.forEach(k=>paintPiece(ctx,part,k,out.width,out.height));paintPiece(ctx,part,currentPiece(s),out.width,out.height);
     const newItem=await canvasToDocument(out,item.name,full.dpiUsed||220);
-    pushHistory();pages[index]=newItem;
+    pushHistory();newItem.group=groupKey(item);pages[index]=newItem;
     selectedPages.clear();selectedPages.add(newItem.id);
     closeMove();renderGrid();showToast("Đã di chuyển vùng cắt");
   }catch(e){console.error(e);showToast("Lỗi di chuyển vùng cắt: "+e.message)}
