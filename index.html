@@ -92,6 +92,16 @@ button,input,select{font:inherit}button{cursor:pointer}.hidden{display:none!impo
 <div class="enhance-note"><b>Cách xử lý:</b> Ước lượng vùng nền giấy sáng bằng các vùng lân cận, sau đó bù ánh sáng không đồng đều theo từng vùng. Không dùng ngưỡng trắng/đen để tô lại chữ. Màu sắc như dấu đỏ được giữ. Trang xuất được raster hóa nên chữ có thể không còn chọn/tìm kiếm được. Bóng che khuất hoàn toàn nội dung thì không thể khôi phục chi tiết đã mất. Kiểu “Thang xám” và “Đen trắng” sẽ bỏ màu (dấu đỏ, chữ ký màu), bù lại tệp sạch và nhẹ hơn.</div>
 <div class="progress-area hidden" id="progressArea"><div class="progress-track"><div class="progress-fill" id="progressFill"></div></div><div class="status-text" id="progressText">Đang chuẩn bị...</div></div>
 <div class="enhance-status" id="enhanceStatus"></div></section>
+<section class="panel enhance-panel" id="compressPanel"><h2>🗜 Giảm dung lượng PDF</h2>
+<div class="muted">Nén từng trang thành ảnh JPEG với độ phân giải và chất lượng bạn chọn để tệp nhỏ hơn nhiều. Giữ nguyên thứ tự, xoay, vùng cắt và các chỉnh sửa đã làm. Chữ sẽ không còn chọn/tìm kiếm được.</div>
+<div class="enhance-options"><label for="compressPreset">Mức nén:</label><select id="compressPreset"><option value="light">Nhẹ – Chất lượng cao (150 DPI)</option><option value="medium" selected>Vừa – Khuyên dùng (120 DPI)</option><option value="strong">Mạnh – Nhỏ nhất (90 DPI)</option><option value="custom">Tùy chỉnh</option></select>
+<label for="compressDpi">DPI:</label><input type="number" id="compressDpi" min="50" max="300" step="10" value="120" style="width:80px;padding:10px;border:1px solid var(--border);border-radius:9px">
+<label for="compressQuality">Chất lượng JPEG (%):</label><input type="number" id="compressQuality" min="20" max="95" step="5" value="65" style="width:80px;padding:10px;border:1px solid var(--border);border-radius:9px">
+<label class="opt-check" style="margin:0"><input type="checkbox" id="compressGray"> Chuyển thang xám</label>
+<label class="opt-check" style="margin:0"><input type="checkbox" id="compressTarget"> Nén tự động đến tối đa</label><input type="number" id="compressTargetMb" min="0.1" max="100" step="0.1" value="2" style="width:80px;padding:10px;border:1px solid var(--border);border-radius:9px"><span class="muted">MB</span>
+<button class="btn primary" id="compressExportButton">🗜 Nén và xuất PDF</button></div>
+<div class="enhance-note" style="background:#eefaf1;color:#25623a">Mẹo: chọn “Nén tự động đến tối đa … MB” để chương trình tự hạ chất lượng/DPI từng bước cho đến khi tệp đạt dung lượng mong muốn (ví dụ nộp hồ sơ giới hạn 2MB).</div>
+<div class="enhance-status" id="compressStatus"></div></section>
 <div class="footer">PDF Studio · Xử lý tài liệu ngay trên trình duyệt của bạn</div></div>
 
 <div class="modal hidden" id="previewModal"><div class="modal-box">
@@ -185,7 +195,7 @@ function login(){if($("passwordInput").value==="2001"){$("loginScreen").classLis
 $("loginButton").onclick=login;$("passwordInput").onkeydown=e=>{if(e.key==="Enter")login()};
 function showToast(m){const el=$("toast");el.textContent=m;el.classList.remove("hidden");clearTimeout(showToast.timer);showToast.timer=setTimeout(()=>el.classList.add("hidden"),3000)}
 function setProgress(p,m){$("progressArea").classList.remove("hidden");$("progressFill").style.width=p+"%";$("progressText").textContent=m}
-function setBusy(v){busy=v;["addFilesButton","exportButton","enhanceExportButton","rotateButton","duplicateButton","deleteButton","clearButton","selectAllButton","manualCropButton","autoCropButton","rectCropButton","mergeButton","stampButton","moveCropButton","copyCropButton","moveCropPrev","applyManualCrop","autoDetectCrop","startManualCrop","startRectCrop"].forEach(id=>$(id).disabled=v);updateHistoryButtons()}
+function setBusy(v){busy=v;["addFilesButton","exportButton","enhanceExportButton","compressExportButton","rotateButton","duplicateButton","deleteButton","clearButton","selectAllButton","manualCropButton","autoCropButton","rectCropButton","mergeButton","stampButton","moveCropButton","copyCropButton","moveCropPrev","applyManualCrop","autoDetectCrop","startManualCrop","startRectCrop"].forEach(id=>$(id).disabled=v);updateHistoryButtons()}
 function getDoc(id){return documents.find(d=>d.id===id)}
 function sourceFor(item){const d=getDoc(item.docId);if(!d)throw Error("Không tìm thấy tài liệu nguồn");return d}
 function updateCount(){$("pageCount").textContent=pages.length+" trang";$("emptyState").classList.toggle("hidden",pages.length>0);$("pageGrid").classList.toggle("hidden",pages.length===0)}
@@ -1062,6 +1072,57 @@ $("enhancePreviewModal").onclick=e=>{if(e.target===$("enhancePreviewModal"))$("e
 
 $("exportButton").onclick=async()=>{if(busy)return;setBusy(true);try{await exportNormal();$("enhanceStatus").textContent="Đã xuất PDF gốc.";showToast("Xuất PDF thành công")}catch(e){console.error(e);showToast("Lỗi xuất PDF: "+e.message)}finally{setBusy(false);setTimeout(()=>$("progressArea").classList.add("hidden"),1200)}};
 $("enhanceExportButton").onclick=async()=>{if(busy)return;if(!pages.length)return showToast("Hãy thêm PDF hoặc ảnh trước");if(!confirm("Làm đẹp toàn bộ trang và xuất PDF mới? Trang sẽ được chuyển thành ảnh; chữ có thể không còn chọn/tìm kiếm được."))return;setBusy(true);$("enhanceStatus").textContent="Đang phân tích và khử bóng từng trang...";try{await exportEnhanced();$("enhanceStatus").textContent="Hoàn tất: đã khử bóng và xuất PDF.";showToast("Đã làm đẹp toàn bộ PDF")}catch(e){console.error(e);$("enhanceStatus").textContent="Có lỗi trong quá trình xử lý.";showToast("Lỗi xử lý: "+e.message)}finally{setBusy(false);setTimeout(()=>$("progressArea").classList.add("hidden"),1800)}};
+
+/* ====== GIẢM DUNG LƯỢNG PDF ====== */
+const COMPRESS_PRESETS={light:{dpi:150,q:80},medium:{dpi:120,q:65},strong:{dpi:90,q:50}};
+$("compressPreset").onchange=()=>{const p=COMPRESS_PRESETS[$("compressPreset").value];if(p){$("compressDpi").value=p.dpi;$("compressQuality").value=p.q}};
+["compressDpi","compressQuality"].forEach(id=>$(id).addEventListener("input",()=>{$("compressPreset").value="custom"}));
+function fmtSize(b){return b>=1048576?(b/1048576).toFixed(2)+" MB":Math.round(b/1024)+" KB"}
+async function buildCompressed(dpi,quality,gray,label){
+  const out=await PDFDocument.create(),scale=dpi/72;
+  for(let i=0;i<pages.length;i++){
+    const it=pages[i],d=sourceFor(it),p=await d.pdf.getPage(it.pageNum),rotation=((p.rotate||0)+it.rotation)%360;
+    const vb=it.perspectiveCrop?undefined:cropViewBox(it,p),v=p.getViewport({scale,rotation,viewBox:vb});
+    const reduce=Math.min(1,Math.sqrt(20_000_000/(v.width*v.height))),canvas=document.createElement("canvas");
+    canvas.width=Math.max(1,Math.floor(v.width*reduce));canvas.height=Math.max(1,Math.floor(v.height*reduce));
+    const ctx=canvas.getContext("2d",{willReadFrequently:true});ctx.fillStyle="#fff";ctx.fillRect(0,0,canvas.width,canvas.height);
+    await p.render({canvasContext:ctx,viewport:p.getViewport({scale:scale*reduce,rotation,viewBox:vb}),background:"rgb(255,255,255)"}).promise;
+    const shaped=applyShapeCrop(canvas,it);
+    if(gray){const sc=shaped.getContext("2d",{willReadFrequently:true}),im=sc.getImageData(0,0,shaped.width,shaped.height),a=im.data;for(let k=0;k<a.length;k+=4){const l=.299*a[k]+.587*a[k+1]+.114*a[k+2];a[k]=a[k+1]=a[k+2]=l}sc.putImageData(im,0,0)}
+    const blob=await new Promise(r=>shaped.toBlob(r,"image/jpeg",quality));if(!blob)throw Error("Không tạo được ảnh trang "+(i+1));
+    const image=await out.embedJpg(new Uint8Array(await blob.arrayBuffer())),pw=shaped.width/(scale*reduce),ph=shaped.height/(scale*reduce),np=out.addPage([pw,ph]);
+    np.drawImage(image,{x:0,y:0,width:pw,height:ph});
+    canvas.width=canvas.height=1;if(shaped!==canvas)shaped.width=shaped.height=1;
+    setProgress((i+1)/pages.length*100,`${label} · trang ${i+1}/${pages.length} (${dpi} DPI, ${Math.round(quality*100)}%)`);
+    await new Promise(r=>setTimeout(r,0));
+  }
+  return new Uint8Array(await out.save({useObjectStreams:true}));
+}
+async function exportCompressed(){
+  if(!pages.length)throw Error("Chưa có trang để nén");
+  let dpi=clamp(Number($("compressDpi").value)||120,50,300),q=clamp(Number($("compressQuality").value)||65,20,95)/100,gray=$("compressGray").checked;
+  const origSize=documents.reduce((a,d)=>a+d.bytes.length,0);
+  let bytes;
+  if($("compressTarget").checked){
+    const limit=(Number($("compressTargetMb").value)||2)*1048576;
+    const steps=[[dpi,q],[dpi,q*.85],[dpi*.85,q*.75],[dpi*.7,q*.65],[dpi*.6,q*.55],[dpi*.5,q*.45],[50,.3]];
+    for(let n=0;n<steps.length;n++){
+      const [d2,q2]=steps[n];dpi=Math.max(50,Math.round(d2));q=clamp(q2,.2,.95);
+      bytes=await buildCompressed(dpi,q,gray,`Lần thử ${n+1}/${steps.length}`);
+      if(bytes.length<=limit)break;
+    }
+    if(bytes.length>limit)showToast("Chưa đạt "+fmtSize(limit)+" ở mức nén thấp nhất; thử bật thang xám hoặc bỏ bớt trang");
+  }else bytes=await buildCompressed(dpi,q,gray,"Đang nén");
+  downloadBytes(bytes,"PDF-Studio-Nen.pdf");
+  $("compressStatus").textContent=`Hoàn tất: ${fmtSize(bytes.length)} (${dpi} DPI, JPEG ${Math.round(q*100)}%)`+(origSize?` · tệp gốc tổng ${fmtSize(origSize)}`:"");
+}
+$("compressExportButton").onclick=async()=>{
+  if(busy)return;if(!pages.length)return showToast("Hãy thêm PDF hoặc ảnh trước");
+  setBusy(true);$("compressStatus").textContent="Đang nén...";
+  try{await exportCompressed();showToast("Đã nén và xuất PDF")}
+  catch(e){console.error(e);$("compressStatus").textContent="Có lỗi khi nén.";showToast("Lỗi nén: "+e.message)}
+  finally{setBusy(false);setTimeout(()=>$("progressArea").classList.add("hidden"),1800)}
+};
 $("undoButton").onclick=undo;$("redoButton").onclick=redo;
 renderGrid();updateHistoryButtons();
 </script>
