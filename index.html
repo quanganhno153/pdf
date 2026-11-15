@@ -340,6 +340,12 @@ async function renderPreview(){
    mode "free": 4 góc độc lập, khi xuất được nắn thẳng thành chữ nhật.
    mode "rect": khung luôn là hình chữ nhật; kéo góc/cạnh để đổi cỡ, kéo giữa khung để di chuyển. */
 function clamp(x,a,b){return Math.max(a,Math.min(b,x))}
+function clipTriangle(ctx,t,grow=1.6){
+  const cx=(t[0].x+t[1].x+t[2].x)/3,cy=(t[0].y+t[1].y+t[2].y)/3;
+  ctx.beginPath();
+  t.forEach((p,i)=>{const dx=p.x-cx,dy=p.y-cy,l=Math.hypot(dx,dy)||1,x=p.x+dx/l*grow,y=p.y+dy/l*grow;if(i)ctx.lineTo(x,y);else ctx.moveTo(x,y)});
+  ctx.closePath();ctx.clip();
+}
 const RECT_MIN=20;
 function quadOfRect(r){return [{x:r.x0,y:r.y0},{x:r.x1,y:r.y0},{x:r.x1,y:r.y1},{x:r.x0,y:r.y1}]}
 function currentQuad(){return manualCropState.mode==="rect"?quadOfRect(manualCropState.rect):manualCropState.quad}
@@ -456,8 +462,39 @@ function affineFromTriangles(src,dst){
     c:(v0*(s2.x-s1.x)+v1*(s0.x-s2.x)+v2*(s1.x-s0.x))/det,
     e:(v0*(s1.x*s2.y-s2.x*s1.y)+v1*(s2.x*s0.y-s0.x*s2.y)+v2*(s0.x*s1.y-s1.x*s0.y))/det
   });
-  const X=solve(d0.x),Y=solve(d0.y);
+  const X=solve(d0.x,d1.x,d2.x),Y=solve(d0.y,d1.y,d2.y);
   return [X.a,Y.a,X.c,Y.c,X.e,Y.e];
+}
+
+function homographyUnit(q){
+  const [p0,p1,p2,p3]=q,bil=(u,v)=>({x:(1-u)*(1-v)*p0.x+u*(1-v)*p1.x+u*v*p2.x+(1-u)*v*p3.x,y:(1-u)*(1-v)*p0.y+u*(1-v)*p1.y+u*v*p2.y+(1-u)*v*p3.y});
+  const dx1=p1.x-p2.x,dx2=p3.x-p2.x,dx3=p0.x-p1.x+p2.x-p3.x,dy1=p1.y-p2.y,dy2=p3.y-p2.y,dy3=p0.y-p1.y+p2.y-p3.y;
+  const den=dx1*dy2-dy1*dx2;
+  if(Math.abs(den)<1e-9)return bil;
+  const g=(dx3*dy2-dy3*dx2)/den,h=(dx1*dy3-dy1*dx3)/den;
+  if(!isFinite(g)||!isFinite(h))return bil;
+  const a=p1.x-p0.x+g*p1.x,b=p3.x-p0.x+h*p3.x,c=p0.x,d=p1.y-p0.y+g*p1.y,e=p3.y-p0.y+h*p3.y,f=p0.y;
+  return (u,v)=>{const w=g*u+h*v+1;if(!(w>1e-6))return bil(u,v);return {x:(a*u+b*v+c)/w,y:(d*u+e*v+f)/w}};
+}
+// Nắn ảnh từ tứ giác srcQ (trên source) sang tứ giác dstQ (trên ctx) theo phép chiếu thật,
+// xấp xỉ bằng lưới n×n ô nhỏ, mỗi ô 2 tam giác affine -> đường thẳng vẫn thẳng.
+function warpMesh(ctx,source,srcQ,dstQ,n=8){
+  const fs=homographyUnit(srcQ),fd=homographyUnit(dstQ);
+  for(let i=0;i<n;i++)for(let j=0;j<n;j++){
+    const u0=i/n,u1=(i+1)/n,v0=j/n,v1=(j+1)/n;
+    const S=[fs(u0,v0),fs(u1,v0),fs(u1,v1),fs(u0,v1)],D=[fd(u0,v0),fd(u1,v0),fd(u1,v1),fd(u0,v1)];
+    for(const t of [[0,1,2],[0,2,3]]){
+      const s=t.map(k=>S[k]),d=t.map(k=>D[k]);
+      let m;try{m=affineFromTriangles(s,d)}catch(e){continue}
+      if(!m.every(isFinite))continue;
+      const xs=s.map(q=>q.x),ys=s.map(q=>q.y);
+      const x0=Math.max(0,Math.floor(Math.min(...xs))-2),y0=Math.max(0,Math.floor(Math.min(...ys))-2);
+      const x1=Math.min(source.width,Math.ceil(Math.max(...xs))+2),y1=Math.min(source.height,Math.ceil(Math.max(...ys))+2);
+      if(x1<=x0||y1<=y0)continue;
+      ctx.save();clipTriangle(ctx,d);ctx.setTransform(...m);
+      ctx.drawImage(source,x0,y0,x1-x0,y1-y0,x0,y0,x1-x0,y1-y0);ctx.restore();
+    }
+  }
 }
 function warpPerspective(source,quad){
   const [tl,tr,br,bl]=quad;
@@ -467,12 +504,7 @@ function warpPerspective(source,quad){
   const out=document.createElement("canvas");out.width=outW;out.height=outH;
   const ctx=out.getContext("2d");ctx.fillStyle="#fff";ctx.fillRect(0,0,outW,outH);
   const src=[tl,tr,br,bl],dst=[{x:0,y:0},{x:outW,y:0},{x:outW,y:outH},{x:0,y:outH}];
-  const draw=(si,di)=>{
-    const s=si.map(i=>src[i]),d=di.map(i=>dst[i]),m=affineFromTriangles(s,d);
-    ctx.save();ctx.beginPath();ctx.moveTo(d[0].x,d[0].y);ctx.lineTo(d[1].x,d[1].y);ctx.lineTo(d[2].x,d[2].y);ctx.closePath();ctx.clip();
-    ctx.setTransform(...m);ctx.drawImage(source,0,0);ctx.restore();
-  };
-  draw([0,1,2],[0,1,2]);draw([0,2,3],[0,2,3]);
+  warpMesh(ctx,source,src,dst);
   return out;
 }
 // Cắt thẳng theo hình chữ nhật (không nắn phối cảnh).
@@ -806,8 +838,9 @@ async function openMove(index){
     const cx=c.getContext("2d");cx.fillStyle="#fff";cx.fillRect(0,0,c.width,c.height);
     const xs=item.perspectiveCrop.map(p=>p.x),ys=item.perspectiveCrop.map(p=>p.y);
     const orig={cx:(Math.min(...xs)+Math.max(...xs))/2,cy:(Math.min(...ys)+Math.max(...ys))/2,w:part.width/full.width,h:part.height/full.height,rot:0};
-    moveState={itemId:item.id,...orig,orig,drag:null,part,quad:null,free:false,qdrag:null,copies:[]};
-    setMoveFree(false);
+    const origQuad=item.cropMode==="rect"?null:item.perspectiveCrop.map(p=>({x:p.x,y:p.y}));
+    moveState={itemId:item.id,...orig,orig,origQuad,drag:null,part,quad:null,free:false,qdrag:null,copies:[]};
+    if(origQuad){moveState.quad=origQuad.map(p=>({...p}));setMoveFree(true)}else setMoveFree(false);
     $("moveImg").src=part.toDataURL("image/png");
     $("moveModal").classList.remove("hidden");
     moveBox.position();
@@ -829,7 +862,7 @@ function currentPiece(s){return s.free&&s.quad?{quad:s.quad.map(p=>({...p}))}:{c
 $("moveDup").onclick=()=>{
   const s=moveState;if(!s)return;
   s.copies.push(currentPiece(s));redrawMoveBase();
-  if(s.free&&s.quad)s.quad=s.quad.map(p=>({x:clamp(p.x+.03,0,1),y:clamp(p.y+.03,0,1)}));
+  if(s.free&&s.quad)s.quad=shiftQuad(s.quad,.03,.03);
   else{s.cx=clamp(s.cx+.03,0,1);s.cy=clamp(s.cy+.03,0,1)}
   if(s.free)drawMoveFree();else moveBox.position();
   showToast("Đã nhân bản ("+s.copies.length+" bản giữ lại) · kéo bản mới đến vị trí khác");
@@ -853,11 +886,14 @@ $("closeMove").onclick=$("cancelMove").onclick=closeMove;
 /* --- Chế độ freeform 4 góc: kéo độc lập từng góc, vùng cắt bị nắn theo khung tứ giác --- */
 function drawQuad(ctx,src,q){
   const sp=[{x:0,y:0},{x:src.width,y:0},{x:src.width,y:src.height},{x:0,y:src.height}];
-  [[0,1,2],[0,2,3]].forEach(t=>{
-    const S=t.map(i=>sp[i]),D=t.map(i=>q[i]),m=affineFromTriangles(S,D);
-    ctx.save();ctx.beginPath();ctx.moveTo(D[0].x,D[0].y);ctx.lineTo(D[1].x,D[1].y);ctx.lineTo(D[2].x,D[2].y);ctx.closePath();ctx.clip();
-    ctx.setTransform(...m);ctx.drawImage(src,0,0);ctx.restore();
-  });
+  warpMesh(ctx,src,sp,q);
+}
+function shiftQuad(q,dx,dy){
+  // Tịnh tiến cứng cả tứ giác (giữ nguyên hình dạng); chỉ giữ tâm vùng nằm trong trang,
+  // cho phép một phần vùng trượt ra ngoài mép như chế độ khung thường.
+  const cx=q.reduce((a,p)=>a+p.x,0)/q.length,cy=q.reduce((a,p)=>a+p.y,0)/q.length;
+  const ddx=clamp(dx,-cx,1-cx),ddy=clamp(dy,-cy,1-cy);
+  return q.map(p=>({x:p.x+ddx,y:p.y+ddy}));
 }
 function boxToQuad(s){
   const W=$("moveCanvas").width,H=$("moveCanvas").height,th=s.rot*Math.PI/180,c=Math.cos(th),n=Math.sin(th),hw=s.w*W/2,hh=s.h*H/2;
@@ -899,17 +935,21 @@ $("moveFree").onchange=e=>setMoveFree(e.target.checked);
   svg.addEventListener("pointermove",e=>{
     const s=moveState,d=s?.qdrag;if(!d)return;
     const pt=toN(e),dx=pt.x-d.start.x,dy=pt.y-d.start.y;
-    if(d.h==="m")s.quad=d.q.map(p=>({x:clamp(p.x+dx,0,1),y:clamp(p.y+dy,0,1)}));
+    if(d.h==="m")s.quad=shiftQuad(d.q,dx,dy);
     else{const i=Number(d.h);s.quad=d.q.map((p,j)=>j===i?{x:clamp(p.x+dx,0,1),y:clamp(p.y+dy,0,1)}:p)}
     drawMoveFree();
   });
   const up=()=>{if(moveState)moveState.qdrag=null};
   svg.addEventListener("pointerup",up);svg.addEventListener("pointercancel",up);
 })();
-$("moveReset").onclick=()=>{const s=moveState;if(!s)return;Object.assign(s,s.orig);if(s.free){s.quad=boxToQuad(s);drawMoveFree()}else moveBox.position()};
+$("moveReset").onclick=()=>{
+  const s=moveState;if(!s)return;Object.assign(s,s.orig);
+  if(s.origQuad){s.quad=s.origQuad.map(p=>({...p}));if(s.free)drawMoveFree();else setMoveFree(true)}
+  else if(s.free){s.quad=boxToQuad(s);drawMoveFree()}else moveBox.position();
+};
 $("moveCenter").onclick=()=>{
   const s=moveState;if(!s)return;
-  if(s.free&&s.quad){const mx=s.quad.reduce((a,p)=>a+p.x,0)/4,my=s.quad.map(p=>p.y).reduce((a,v)=>a+v,0)/4;s.quad=s.quad.map(p=>({x:clamp(p.x+.5-mx,0,1),y:clamp(p.y+.5-my,0,1)}));drawMoveFree()}
+  if(s.free&&s.quad){const mx=s.quad.reduce((a,p)=>a+p.x,0)/4,my=s.quad.reduce((a,p)=>a+p.y,0)/4;s.quad=shiftQuad(s.quad,.5-mx,.5-my);drawMoveFree()}
   else{s.cx=.5;s.cy=.5;moveBox.position()}
 };
 $("moveCropButton").onclick=()=>{const i=selectedIndexes();if(!i.length)return showToast("Hãy chọn một trang đã cắt trước");openMove(i[0])};
@@ -1070,8 +1110,16 @@ function sharpenLuma(data,w,h,amount){
       const blur=(L[ym+xm]+2*L[ym+x]+L[ym+xp]+2*L[y0+xm]+4*L[y0+x]+2*L[y0+xp]+L[yp+xm]+2*L[yp+x]+L[yp+xp])/16;
       const d=(L[y0+x]-blur)*amount;
       if(d>-1&&d<1)continue;
-      const k=(y0+x)*4;
-      data[k]=clamp(data[k]+d,0,255);data[k+1]=clamp(data[k+1]+d,0,255);data[k+2]=clamp(data[k+2]+d,0,255);
+      const k=(y0+x)*4,r=data[k],g=data[k+1],b=data[k+2];
+      // Điểm có màu (xanh, đỏ…): nhân theo hệ số để giữ nguyên tông, không trừ đều 3 kênh (sẽ đẩy màu tối về đen).
+      // Điểm xám/đen: cộng đều như cũ để nét chữ đen vẫn sắc.
+      const mx=Math.max(r,g,b),mn=Math.min(r,g,b),cwt=mx>1?clamp(((mx-mn)/mx-.18)/.22,0,1):0;
+      let nr=r+d,ng=g+d,nb=b+d;
+      if(cwt>0){
+        const l0=L[y0+x],gain=clamp((l0+d)/Math.max(l0,1),.88,1.15);
+        nr=nr*(1-cwt)+r*gain*cwt;ng=ng*(1-cwt)+g*gain*cwt;nb=nb*(1-cwt)+b*gain*cwt;
+      }
+      data[k]=clamp(nr,0,255);data[k+1]=clamp(ng,0,255);data[k+2]=clamp(nb,0,255);
     }
   }
 }
