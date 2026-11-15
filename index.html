@@ -1146,16 +1146,17 @@ function magicCanvas(canvas,opts){
       const k=(y*w+x)*4;
       let r=data[k]*Math.min(maxGain,T/bil(P0,sm,rw,x)),g=data[k+1]*Math.min(maxGain,T/bil(P1,sm,rw,x)),b=data[k+2]*Math.min(maxGain,T/bil(P2,sm,rw,x));
       r=r>255?255:r;g=g>255?255:g;b=b>255?255:b;
-      const mx=Math.max(r,g,b),mn=Math.min(r,g,b),chroma=mx-mn,lum=.299*r+.587*g+.114*b;
-      // đường cong tương phản trên độ sáng: đen về đen, nền sáng về trắng
+      const mx=Math.max(r,g,b),mn=Math.min(r,g,b),lum=.299*r+.587*g+.114*b;
+      const sat=mx>1?(mx-mn)/mx:0;                    // độ bão hòa (0 = xám/đen, 1 = màu thuần)
+      const cw=clamp((sat-.10)/.25,0,1);              // 0 = mực đen/xám, 1 = mực màu (xanh, đỏ…)
+      // mực đen/xám: tăng tương phản, đen về đen, nền sáng về trắng. Mực màu: KHÔNG làm tối, giữ nguyên độ sáng.
       const t=clamp((lum/255-.20)/(.88-.20),0,1),yv=(t*t*(3-2*t))*255;
       let f=lum>1?yv/lum:1;
-      const cw=clamp((chroma-30)/50,0,1);          // pixel càng nhiều màu càng ít bị làm tối
-      if(f<1)f=f*(1-cw)+cw*(.5+.5*f);
+      f=f*(1-cw)+cw;
       r*=f;g*=f;b*=f;
-      if(chroma>20){                                // tăng nhẹ độ đậm màu cho dấu/chữ ký
-        const sat=1+.35*clamp((chroma-20)/40,0,1),l2=.299*r+.587*g+.114*b;
-        r=l2+(r-l2)*sat;g=l2+(g-l2)*sat;b=l2+(b-l2)*sat;
+      if(cw>0){                                       // làm màu rực hơn một chút, không làm đen
+        const boost=1+.30*cw,l2=.299*r+.587*g+.114*b;
+        r=l2+(r-l2)*boost;g=l2+(g-l2)*boost;b=l2+(b-l2)*boost;
       }
       data[k]=clamp(r,0,255);data[k+1]=clamp(g,0,255);data[k+2]=clamp(b,0,255);
     }
