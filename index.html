@@ -108,6 +108,26 @@ button,input,select{font:inherit}button{cursor:pointer}.hidden{display:none!impo
 .mv-slot.only{flex:1 1 200px;min-height:120px;color:var(--muted);font-size:13px}
 .mv-slot.only.active{color:#fff}
 .mv-info{font-size:13px;color:#3d3a8a;background:#eeedff;border-radius:9px;padding:9px 12px}
+
+/* ====== Trình soạn thảo văn bản (kiểu Word) ====== */
+.ed-box{width:min(1150px,100%);height:95vh}
+.ed-toolbar{display:flex;flex-wrap:wrap;gap:6px;padding:8px 12px;border-bottom:1px solid var(--border);background:#fafaff;align-items:center}
+.ed-btn{min-width:32px;height:32px;border:1px solid var(--border);background:#fff;border-radius:7px;padding:0 9px;font-weight:600;color:var(--text);font-size:13px}
+.ed-btn:hover{background:#eeedff}
+.ed-btn.on{background:var(--primary);color:#fff;border-color:var(--primary)}
+.ed-toolbar select,.ed-toolbar input[type=number]{height:32px;border:1px solid var(--border);border-radius:7px;background:#fff;padding:0 6px;font-size:13px;color:var(--text)}
+.ed-toolbar input[type=number]{width:54px}
+.ed-toolbar input[type=color]{width:32px;height:32px;padding:2px;border:1px solid var(--border);border-radius:7px;background:#fff;cursor:pointer}
+.ed-toolbar label.ed-lbl{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:4px}
+.ed-sep{width:1px;height:24px;background:var(--border);margin:0 2px}
+.ed-scroll{background:#343642;overflow:auto;flex:1;padding:20px;display:block}
+.ed-page{background:#fff;width:210mm;min-height:297mm;padding:20mm;margin:0 auto;box-shadow:0 5px 25px #0006;outline:none;color:#000;font-family:"Times New Roman",Times,serif;font-size:13pt;line-height:1.3}
+.ed-page p{margin:0 0 6pt}
+.ed-page ul,.ed-page ol{margin:0 0 6pt}
+.ed-page table{border-collapse:collapse}
+.ed-page img{max-width:100%}
+.ed-page td,.ed-page th{vertical-align:top}
+.ed-hint{padding:7px 14px;font-size:12px;color:var(--muted);border-top:1px solid var(--border)}
 </style>
 </head>
 <body>
@@ -119,13 +139,13 @@ button,input,select{font:inherit}button{cursor:pointer}.hidden{display:none!impo
 
 <div class="app hidden" id="app">
 <header class="header"><div class="brand"><div class="brand-icon">📄</div><div><h1>PDF Studio</h1><small>Quản lý, chỉnh sửa và làm đẹp PDF</small></div></div>
-<div class="header-actions"><button class="btn" id="addFilesButton">＋ Thêm tệp</button><button class="btn primary" id="exportButton">Xuất PDF ↓</button></div></header>
+<div class="header-actions"><button class="btn" id="editorButton" title="Mở trình soạn thảo văn bản kiểu Word">📝 Soạn văn bản</button><button class="btn" id="addFilesButton">＋ Thêm tệp</button><button class="btn primary" id="exportButton">Xuất PDF ↓</button></div></header>
 
 <section class="panel"><div class="dropzone" id="dropzone"><div class="big-icon">📂</div><h3>Kéo thả PDF hoặc hình ảnh vào đây</h3><p>Hỗ trợ PDF, JPG, JPEG, PNG và WEBP</p><p>Hoặc nhấn vào đây để chọn tệp từ máy tính</p></div>
 <input type="file" id="fileInput" accept=".pdf,.jpg,.jpeg,.png,.webp,application/pdf,image/*" multiple hidden></section>
 
 <section class="panel"><div class="section-title"><h2>Danh sách trang</h2><span class="muted" id="pageCount">0 trang</span></div>
-<div class="toolbar"><button class="btn" id="undoButton" title="Hoàn tác (Ctrl+Z)" disabled>↶ Hoàn tác</button><button class="btn" id="redoButton" title="Làm lại (Ctrl+Y)" disabled>↷ Làm lại</button><button class="btn" id="selectAllButton">Chọn tất cả</button><button class="btn primary" id="saveSelectedButton" title="Lưu riêng các trang đang chọn thành 1 file PDF (giữ nguyên thứ tự hiển thị)">💾 Lưu trang đã chọn</button>
+<div class="toolbar"><button class="btn" id="undoButton" title="Hoàn tác (Ctrl+Z)" disabled>↶ Hoàn tác</button><button class="btn" id="redoButton" title="Làm lại (Ctrl+Y)" disabled>↷ Làm lại</button><button class="btn" id="selectAllButton">Chọn tất cả</button><button class="btn primary" id="saveSelectedButton" title="Lưu riêng các trang đang chọn thành 1 file PDF (giữ nguyên thứ tự hiển thị)">💾 Lưu trang đã chọn</button><button class="btn primary" id="printSelectedButton" title="In trực tiếp các trang đang chọn (giữ nguyên xoay, cắt, chỉnh sửa)">🖨 In trang đã chọn</button>
 <span class="sep"></span>
 <button class="btn primary" id="moveToButton" title="Chọn trang rồi chuyển sang tệp/vị trí bất kỳ (kể cả sang tệp khác)">⇄ Chuyển trang đến…</button><button class="btn" id="moveLeftButton" title="Dời các trang đã chọn lên trước 1 vị trí (trong cùng tệp)">◀ Lùi</button><button class="btn" id="moveRightButton" title="Dời các trang đã chọn ra sau 1 vị trí (trong cùng tệp)">Tiến ▶</button>
 <span class="sep"></span>
@@ -251,6 +271,55 @@ button,input,select{font:inherit}button{cursor:pointer}.hidden{display:none!impo
 <span class="muted">Kéo ảnh để di chuyển · kéo góc/cạnh để kéo giãn tự do · chấm tím phía trên để xoay (giữ Shift: xoay theo 15°, khóa tỉ lệ) · trang sẽ thành ảnh sau khi dán</span>
 <span style="display:flex;gap:8px"><button class="btn" id="stampReset">↺ Đặt lại</button><button class="btn" id="stampChooseOther">Chọn ảnh khác</button><button class="btn primary" id="applyStamp">Dán vào trang</button></span>
 </div></div></div>
+
+<!-- Trình soạn thảo văn bản -->
+<div class="modal hidden" id="editorModal"><div class="modal-box ed-box">
+<div class="modal-header"><div class="modal-title">📝 Soạn văn bản</div>
+<span style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><button class="btn" id="edClear" type="button">🗑 Xóa nội dung</button><button class="btn" id="edSaveDoc" type="button" title="Tải về tệp .doc mở được bằng Word">⬇ Lưu .doc</button><button class="btn primary" id="edPrint" type="button" title="In trực tiếp (Ctrl+P). Chọn “Lưu dưới dạng PDF” trong hộp thoại in để xuất PDF">🖨 In</button><button class="close-btn" id="closeEditor" type="button">×</button></span></div>
+<div class="ed-toolbar" id="edToolbar">
+<select id="edFont" title="Kiểu chữ">
+<option value="Times New Roman" selected>Times New Roman</option><option value="Arial">Arial</option><option value="Calibri">Calibri</option><option value="Tahoma">Tahoma</option><option value="Verdana">Verdana</option><option value="Georgia">Georgia</option><option value="Courier New">Courier New</option></select>
+<select id="edSize" title="Cỡ chữ (pt)"><option>8</option><option>9</option><option>10</option><option>11</option><option>12</option><option selected>13</option><option>14</option><option>16</option><option>18</option><option>20</option><option>24</option><option>28</option><option>32</option><option>36</option><option>48</option><option>72</option></select>
+<span class="ed-sep"></span>
+<button class="ed-btn" data-cmd="bold" title="In đậm (Ctrl+B)"><b>B</b></button>
+<button class="ed-btn" data-cmd="italic" title="In nghiêng (Ctrl+I)"><i>I</i></button>
+<button class="ed-btn" data-cmd="underline" title="Gạch chân (Ctrl+U)"><u>U</u></button>
+<button class="ed-btn" data-cmd="strikeThrough" title="Gạch ngang"><s>S</s></button>
+<label class="ed-lbl" title="Màu chữ">A<input type="color" id="edColor" value="#000000"></label>
+<label class="ed-lbl" title="Tô nền chữ">🖍<input type="color" id="edHilite" value="#ffff00"></label>
+<span class="ed-sep"></span>
+<button class="ed-btn" data-cmd="justifyLeft" title="Căn trái">⇤</button>
+<button class="ed-btn" data-cmd="justifyCenter" title="Căn giữa">↔</button>
+<button class="ed-btn" data-cmd="justifyRight" title="Căn phải">⇥</button>
+<button class="ed-btn" data-cmd="justifyFull" title="Căn đều hai bên">☰</button>
+<span class="ed-sep"></span>
+<button class="ed-btn" data-cmd="insertUnorderedList" title="Danh sách chấm">• Danh sách</button>
+<button class="ed-btn" data-cmd="insertOrderedList" title="Danh sách số">1. Danh sách</button>
+<button class="ed-btn" data-cmd="outdent" title="Giảm thụt lề">⇠</button>
+<button class="ed-btn" data-cmd="indent" title="Tăng thụt lề">⇢</button>
+<select id="edLine" title="Giãn dòng"><option value="">Giãn dòng</option><option value="1">1.0</option><option value="1.15">1.15</option><option value="1.3">1.3</option><option value="1.5">1.5</option><option value="2">2.0</option></select>
+<span class="ed-sep"></span>
+<button class="ed-btn" data-cmd="undo" title="Hoàn tác (Ctrl+Z)">↶</button>
+<button class="ed-btn" data-cmd="redo" title="Làm lại (Ctrl+Y)">↷</button>
+<button class="ed-btn" id="edImgBtn" type="button" title="Chèn ảnh vào văn bản">🖼 Ảnh</button>
+<span class="ed-sep"></span>
+<label class="ed-lbl">Bảng: <input type="number" id="edRows" min="1" max="30" value="3" title="Số hàng"> hàng ×<input type="number" id="edCols" min="1" max="12" value="3" title="Số cột"> cột</label>
+<button class="ed-btn" id="edTable" type="button" title="Chèn bảng tại vị trí con trỏ">▦ Chèn bảng</button>
+<span id="edTableTools" style="display:contents">
+<button class="ed-btn" data-tbl="rowAbove" title="Thêm hàng phía trên">＋Hàng ↑</button>
+<button class="ed-btn" data-tbl="rowBelow" title="Thêm hàng phía dưới">＋Hàng ↓</button>
+<button class="ed-btn" data-tbl="colLeft" title="Thêm cột bên trái">＋Cột ←</button>
+<button class="ed-btn" data-tbl="colRight" title="Thêm cột bên phải">＋Cột →</button>
+<button class="ed-btn" data-tbl="delRow" title="Xóa hàng đang chọn">－Hàng</button>
+<button class="ed-btn" data-tbl="delCol" title="Xóa cột đang chọn">－Cột</button>
+<button class="ed-btn" data-tbl="delTable" title="Xóa cả bảng">✕ Bảng</button>
+<label class="ed-lbl" title="Tô màu ô đang chọn">Ô<input type="color" id="edCellColor" value="#e8eaf6"></label>
+</span>
+</div>
+<div class="ed-scroll" id="edScroll"><div id="edPage" class="ed-page" contenteditable="true" spellcheck="false"><p><br></p></div></div>
+<div class="ed-hint">Tab trong bảng: sang ô kế tiếp (ô cuối sẽ tự thêm hàng). Nội dung được tự lưu nháp trong trình duyệt. In: bấm “🖨 In” hoặc Ctrl+P — chọn “Lưu dưới dạng PDF” nếu muốn xuất PDF.</div>
+</div></div>
+<input type="file" id="edImgInput" accept="image/*" hidden>
 <div class="toast hidden" id="toast"></div>
 
 <script>
@@ -271,10 +340,10 @@ function login(){if($("passwordInput").value==="2001"){$("loginScreen").classLis
 $("loginButton").onclick=login;$("passwordInput").onkeydown=e=>{if(e.key==="Enter")login()};
 function showToast(m){const el=$("toast");el.textContent=m;el.classList.remove("hidden");clearTimeout(showToast.timer);showToast.timer=setTimeout(()=>el.classList.add("hidden"),3000)}
 function setProgress(p,m){$("progressArea").classList.remove("hidden");$("progressFill").style.width=p+"%";$("progressText").textContent=m}
-function setBusy(v){busy=v;["addFilesButton","exportButton","enhanceExportButton","compressExportButton","rotateButton","duplicateButton","deleteButton","clearButton","selectAllButton","saveSelectedButton","manualCropButton","autoCropButton","rectCropButton","mergeButton","stampButton","moveCropButton","copyCropButton","moveCropPrev","applyManualCrop","autoDetectCrop","startManualCrop","startRectCrop","moveToButton","moveLeftButton","moveRightButton"].forEach(id=>$(id).disabled=v);updateHistoryButtons()}
+function setBusy(v){busy=v;["addFilesButton","exportButton","enhanceExportButton","compressExportButton","rotateButton","duplicateButton","deleteButton","clearButton","selectAllButton","saveSelectedButton","printSelectedButton","editorButton","manualCropButton","autoCropButton","rectCropButton","mergeButton","stampButton","moveCropButton","copyCropButton","moveCropPrev","applyManualCrop","autoDetectCrop","startManualCrop","startRectCrop","moveToButton","moveLeftButton","moveRightButton"].forEach(id=>$(id).disabled=v);updateHistoryButtons()}
 function getDoc(id){return documents.find(d=>d.id===id)}
 function sourceFor(item){const d=getDoc(item.docId);if(!d)throw Error("Không tìm thấy tài liệu nguồn");return d}
-function updateSaveButton(){updateEnhanceInfo();const b=$("saveSelectedButton");if(!b)return;const n=selectedPages.size;b.textContent=n?`💾 Lưu ${n} trang đã chọn`:"💾 Lưu trang đã chọn"}
+function updateSaveButton(){updateEnhanceInfo();const b=$("saveSelectedButton"),pb=$("printSelectedButton");if(!b)return;const n=selectedPages.size;b.textContent=n?`💾 Lưu ${n} trang đã chọn`:"💾 Lưu trang đã chọn";if(pb)pb.textContent=n?`🖨 In ${n} trang đã chọn`:"🖨 In trang đã chọn"}
 function rangeLabel(idx){const nums=idx.map(i=>i+1),parts=[];for(let k=0;k<nums.length;){let j=k;while(j+1<nums.length&&nums[j+1]===nums[j]+1)j++;parts.push(j>k?nums[k]+"-"+nums[j]:String(nums[k]));k=j+1}return parts.join("_")}
 const PILL_COLORS=["#fde7b0","#b9eef2","#e0d4ff","#ffd3dc","#cdeec9","#ffe0c2"];
 function groupKey(it){return it.group??it.docId}
@@ -784,7 +853,7 @@ $("nextPageButton").onclick=async()=>{if(previewIndex<pages.length-1){previewInd
 document.addEventListener("keydown",async e=>{if((e.ctrlKey||e.metaKey)&&!manualCropState&&!anyModalOpen()&&!$("app").classList.contains("hidden")&&!/INPUT|SELECT|TEXTAREA/.test(document.activeElement?.tagName||"")){const k=e.key.toLowerCase();if(k==="z"&&!e.shiftKey){e.preventDefault();undo();return}if(k==="y"||(k==="z"&&e.shiftKey)){e.preventDefault();redo();return}}if(e.key==="Escape"){closeStamp();closeMerge();closeMove();closeMoveTo();$("previewModal").classList.add("hidden");manualCropState=null;exitManualCropMode()}if(!$("previewModal").classList.contains("hidden")&&!manualCropState){if(e.key==="ArrowLeft"&&previewIndex>0){previewIndex--;await renderPreview()}if(e.key==="ArrowRight"&&previewIndex<pages.length-1){previewIndex++;await renderPreview()}}if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="a"&&!$("app").classList.contains("hidden")&&!anyModalOpen()&&!/INPUT|SELECT|TEXTAREA/.test(document.activeElement?.tagName||"")){e.preventDefault();pages.forEach(p=>selectedPages.add(p.id));renderGrid()}});
 
 /* ====== DÙNG CHUNG: render trang thành canvas, lưu canvas thành trang PDF mới ====== */
-function anyModalOpen(){return ["previewModal","enhancePreviewModal","mergeModal","stampModal","moveModal","moveToModal"].some(id=>!$(id).classList.contains("hidden"))}
+function anyModalOpen(){return ["previewModal","enhancePreviewModal","mergeModal","stampModal","moveModal","moveToModal","editorModal"].some(id=>!$(id).classList.contains("hidden"))}
 async function renderItemCanvas(item,{dpi,maxSide}={}){
   const d=sourceFor(item),p=await d.pdf.getPage(item.pageNum),rotation=((p.rotate||0)+item.rotation)%360;
   const vb=item.perspectiveCrop?undefined:cropViewBox(item,p);
@@ -988,6 +1057,7 @@ $("stampFileInput").onchange=async e=>{
 };
 document.addEventListener("paste",async e=>{
   if($("app").classList.contains("hidden"))return;
+  if(!$("editorModal").classList.contains("hidden"))return; // đang soạn văn bản: để trình soạn thảo tự xử lý
   if(/INPUT|SELECT|TEXTAREA/.test(document.activeElement?.tagName||""))return;
   const it=[...(e.clipboardData?.items||[])].find(x=>x.type.startsWith("image/"));if(!it)return;
   const file=it.getAsFile();if(!file)return;e.preventDefault();
@@ -1552,6 +1622,223 @@ $("saveSelectedButton").onclick=async()=>{
   }catch(e){console.error(e);showToast("Lỗi lưu trang đã chọn: "+e.message)}
   finally{setBusy(false);setTimeout(()=>$("progressArea").classList.add("hidden"),1200)}
 };
+
+/* ====== IN TRỰC TIẾP ====== */
+// In một đoạn HTML bằng iframe ẩn (không cần mở tab mới)
+function printHTML(html){
+  return new Promise(resolve=>{
+    const f=document.createElement("iframe");
+    f.style.cssText="position:fixed;left:-9999px;top:0;width:900px;height:700px;border:0";
+    document.body.append(f);
+    const w=f.contentWindow,d=w.document;
+    d.open();d.write(html);d.close();
+    let cleaned=false;
+    const cleanup=()=>{if(cleaned)return;cleaned=true;setTimeout(()=>f.remove(),500)};
+    w.onafterprint=cleanup;
+    setTimeout(cleanup,180000);
+    const imgs=[...d.images];
+    Promise.all(imgs.map(i=>i.complete?1:new Promise(r=>{i.onload=i.onerror=r}))).then(()=>{
+      setTimeout(()=>{try{w.focus();w.print()}catch(e){console.error(e);showToast("Không mở được hộp thoại in: "+e.message)}resolve()},250);
+    });
+  });
+}
+$("printSelectedButton").onclick=async()=>{
+  if(busy)return;
+  const idx=selectedIndexes();
+  if(!idx.length)return showToast("Hãy chọn các trang cần in (Shift+click để chọn dải, Ctrl+click để chọn rời)");
+  if(idx.length>80&&!confirm(`Bạn đang in ${idx.length} trang, có thể mất nhiều thời gian và bộ nhớ. Tiếp tục?`))return;
+  setBusy(true);
+  try{
+    const sheets=[];
+    for(let n=0;n<idx.length;n++){
+      const cv=await renderItemCanvas(pages[idx[n]],{dpi:150});
+      sheets.push({src:cv.toDataURL("image/jpeg",.92),land:cv.width>cv.height});
+      cv.width=cv.height=1;
+      setProgress((n+1)/idx.length*100,`Đang chuẩn bị in trang ${n+1}/${idx.length}...`);
+      await new Promise(r=>setTimeout(r,0));
+    }
+    const html=`<!DOCTYPE html><html><head><meta charset="utf-8"><title>PDF Studio - In trang</title><style>
+@page{size:A4 portrait;margin:0}@page land{size:A4 landscape;margin:0}
+html,body{margin:0;padding:0;background:#fff}
+.pg{width:209mm;height:296mm;display:flex;align-items:center;justify-content:center;overflow:hidden;break-after:page;page-break-after:always}
+.pg.land{page:land;width:296mm;height:209mm}
+.pg:last-child{break-after:auto;page-break-after:auto}
+.pg img{max-width:100%;max-height:100%;object-fit:contain;display:block}
+</style></head><body>${sheets.map(s=>`<div class="pg${s.land?" land":""}"><img src="${s.src}"></div>`).join("")}</body></html>`;
+    showToast(`Đang mở hộp thoại in ${idx.length} trang...`);
+    await printHTML(html);
+  }catch(e){console.error(e);showToast("Lỗi in trang đã chọn: "+e.message)}
+  finally{setBusy(false);setTimeout(()=>$("progressArea").classList.add("hidden"),800)}
+};
+
+/* ====== TRÌNH SOẠN THẢO VĂN BẢN (kiểu Word) ====== */
+const ED_KEY="pdfstudio_editor_draft_v1";
+const ed=$("edPage");
+let edRange=null,edPendingSize=null;
+const ED_BASE_CSS=`body{margin:0;font-family:"Times New Roman",Times,serif;font-size:13pt;line-height:1.3;color:#000}p{margin:0 0 6pt}ul,ol{margin:0 0 6pt}table{border-collapse:collapse}td,th{vertical-align:top}img{max-width:100%}`;
+function edSaveDraft(){try{localStorage.setItem(ED_KEY,ed.innerHTML)}catch(e){}}
+function edLoadDraft(){try{const v=localStorage.getItem(ED_KEY);if(v&&v.trim())ed.innerHTML=v}catch(e){}}
+function edResetEmpty(){ed.innerHTML="<p><br></p>"}
+function edInRange(n){return n&&ed.contains(n.nodeType===3?n.parentNode:n)}
+document.addEventListener("selectionchange",()=>{
+  const s=getSelection();
+  if(s.rangeCount&&edInRange(s.anchorNode)){edRange=s.getRangeAt(0).cloneRange();if(!$("editorModal").classList.contains("hidden"))edUpdateState()}
+});
+function edFocus(){
+  ed.focus({preventScroll:true});
+  if(edRange){const s=getSelection();s.removeAllRanges();s.addRange(edRange)}
+}
+// Đổi các thẻ <font size="7"> (do execCommand tạo) thành span có cỡ chữ pt chính xác
+function edNormalizeSizes(){
+  const pt=edPendingSize;if(!pt)return;
+  ed.querySelectorAll('font[size="7"]').forEach(f=>{
+    const sp=document.createElement("span");sp.style.fontSize=pt+"pt";
+    while(f.firstChild)sp.appendChild(f.firstChild);
+    f.replaceWith(sp);
+    // bỏ cỡ chữ cũ trong các span con để cỡ mới có hiệu lực
+    sp.querySelectorAll("span").forEach(c=>{if(c.style&&c.style.fontSize)c.style.fontSize=""});
+  });
+}
+function edExec(cmd,val){
+  edFocus();
+  document.execCommand(cmd,false,val);
+  edNormalizeSizes();
+  edUpdateState();edSaveDraft();
+}
+function edUpdateState(){
+  document.querySelectorAll("#edToolbar [data-cmd]").forEach(b=>{
+    const c=b.dataset.cmd;if(c==="undo"||c==="redo")return;
+    let on=false;try{on=document.queryCommandState(c)}catch(e){}
+    b.classList.toggle("on",!!on);
+  });
+  const s=getSelection();
+  if(s.rangeCount&&edInRange(s.anchorNode)){
+    const el=s.anchorNode.nodeType===3?s.anchorNode.parentElement:s.anchorNode;
+    if(el){
+      const cs=getComputedStyle(el),pt=Math.round(parseFloat(cs.fontSize)*.75),fam=(cs.fontFamily||"").split(",")[0].replace(/["']/g,"").trim();
+      const so=[...$("edSize").options].find(o=>Number(o.value)===pt);if(so&&document.activeElement!==$("edSize"))$("edSize").value=so.value;
+      const fo=[...$("edFont").options].find(o=>o.value.toLowerCase()===fam.toLowerCase());if(fo&&document.activeElement!==$("edFont"))$("edFont").value=fo.value;
+    }
+  }
+}
+// nút lệnh: giữ nguyên vùng chọn khi bấm
+document.querySelectorAll("#edToolbar .ed-btn").forEach(b=>b.addEventListener("mousedown",e=>e.preventDefault()));
+document.querySelectorAll("#edToolbar [data-cmd]").forEach(b=>b.addEventListener("click",()=>edExec(b.dataset.cmd)));
+$("edFont").onchange=()=>edExec("fontName",$("edFont").value);
+$("edSize").onchange=()=>{edPendingSize=Number($("edSize").value);edExec("fontSize","7");edNormalizeSizes();edSaveDraft()};
+$("edColor").addEventListener("input",e=>edExec("foreColor",e.target.value));
+$("edHilite").addEventListener("input",e=>edExec("hiliteColor",e.target.value));
+$("edLine").onchange=()=>{
+  const v=$("edLine").value;if(!v)return;
+  edFocus();
+  const s=getSelection();if(!s.rangeCount)return;
+  const r=s.getRangeAt(0);
+  let blocks=[...ed.querySelectorAll("p,div,li,h1,h2,h3,h4,td,th")].filter(b=>r.intersectsNode(b)&&!b.querySelector("p,div,li,td,th"));
+  if(!blocks.length){document.execCommand("formatBlock",false,"p");blocks=[...ed.querySelectorAll("p")].filter(b=>r.intersectsNode(b))}
+  blocks.forEach(b=>b.style.lineHeight=v);
+  $("edLine").value="";edSaveDraft();
+};
+// Bảng
+function edCurrentCell(){
+  const s=getSelection(),n=(s.rangeCount&&edInRange(s.anchorNode))?s.anchorNode:(edRange?edRange.startContainer:null);
+  if(!n)return null;
+  const el=n.nodeType===3?n.parentElement:n;
+  const c=el&&el.closest("td,th");
+  return c&&ed.contains(c)?c:null;
+}
+const CELL_STYLE="border:1px solid #000;padding:4px 6px;min-width:24px";
+function edMakeCell(tag="td"){const c=document.createElement(tag);c.setAttribute("style",CELL_STYLE);c.innerHTML="<br>";return c}
+$("edTable").onclick=()=>{
+  const r=clamp(parseInt($("edRows").value)||3,1,30),c=clamp(parseInt($("edCols").value)||3,1,12);
+  let h='<table style="border-collapse:collapse;width:100%;table-layout:fixed"><tbody>';
+  for(let i=0;i<r;i++){h+="<tr>";for(let j=0;j<c;j++)h+=`<td style="${CELL_STYLE}"><br></td>`;h+="</tr>"}
+  h+="</tbody></table><p><br></p>";
+  edFocus();document.execCommand("insertHTML",false,h);edSaveDraft();showToast(`Đã chèn bảng ${r}×${c}`);
+};
+function edTableAction(act){
+  const cell=edCurrentCell();
+  if(!cell)return showToast("Hãy bấm con trỏ vào một ô của bảng trước");
+  const tr=cell.parentElement,table=cell.closest("table"),ci=cell.cellIndex;
+  if(act==="rowAbove"||act==="rowBelow"){
+    const n=document.createElement("tr");
+    for(let i=0;i<tr.cells.length;i++)n.appendChild(edMakeCell(tr.cells[i].tagName.toLowerCase()));
+    tr.parentNode.insertBefore(n,act==="rowAbove"?tr:tr.nextSibling);
+  }else if(act==="colLeft"||act==="colRight"){
+    [...table.rows].forEach(r=>{const ref=r.cells[Math.min(ci,r.cells.length-1)],nc=edMakeCell(ref?ref.tagName.toLowerCase():"td");if(!ref)r.appendChild(nc);else r.insertBefore(nc,act==="colLeft"?ref:ref.nextSibling)});
+  }else if(act==="delRow"){
+    tr.remove();if(!table.rows.length)table.remove();
+  }else if(act==="delCol"){
+    [...table.rows].forEach(r=>{if(r.cells[ci])r.cells[ci].remove()});
+    if(![...table.rows].some(r=>r.cells.length))table.remove();
+  }else if(act==="delTable"){table.remove()}
+  if(!ed.innerHTML.trim())edResetEmpty();
+  edSaveDraft();
+}
+document.querySelectorAll("#edToolbar [data-tbl]").forEach(b=>b.addEventListener("click",()=>edTableAction(b.dataset.tbl)));
+$("edCellColor").addEventListener("input",e=>{
+  const cell=edCurrentCell();if(!cell)return showToast("Hãy bấm con trỏ vào một ô của bảng trước");
+  cell.style.backgroundColor=e.target.value;edSaveDraft();
+});
+// Phím Tab & phím tắt
+ed.addEventListener("keydown",e=>{
+  if(e.key==="Tab"){
+    e.preventDefault();
+    const cell=edCurrentCell();
+    if(cell){
+      const table=cell.closest("table"),all=[...table.querySelectorAll("td,th")];
+      let i=all.indexOf(cell)+(e.shiftKey?-1:1);
+      if(i>=all.length){edTableAction("rowBelow");const t2=cell.closest("table");i=[...t2.querySelectorAll("td,th")].indexOf(cell)+1}
+      const target=[...cell.closest("table").querySelectorAll("td,th")][clamp(i,0,Infinity)];
+      if(target){const r=document.createRange();r.selectNodeContents(target);r.collapse(true);const s=getSelection();s.removeAllRanges();s.addRange(r)}
+    }else document.execCommand("insertText",false,"\u00a0\u00a0\u00a0\u00a0");
+    return;
+  }
+  if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="p"){e.preventDefault();edPrint()}
+});
+ed.addEventListener("input",()=>{edNormalizeSizes();edSaveDraft()});
+ed.addEventListener("paste",e=>{
+  // dán văn bản thuần để tránh mang theo định dạng lạ từ web/Word, trừ khi có ảnh
+  const cd=e.clipboardData;if(!cd)return;
+  if([...cd.items].some(i=>i.type.startsWith("image/")))return;
+  const html=cd.getData("text/html"),txt=cd.getData("text/plain");
+  if(html&&/<table/i.test(html))return; // giữ bảng
+  if(txt){e.preventDefault();document.execCommand("insertText",false,txt)}
+});
+// Chèn ảnh
+$("edImgBtn").onclick=()=>$("edImgInput").click();
+$("edImgInput").onchange=e=>{
+  const f=e.target.files[0];e.target.value="";if(!f)return;
+  const fr=new FileReader();
+  fr.onload=()=>{edFocus();document.execCommand("insertImage",false,fr.result);edSaveDraft()};
+  fr.readAsDataURL(f);
+};
+// In / lưu .doc / xóa
+function edDocHTML(forWord){
+  const head=forWord
+    ?`<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>Văn bản</title><style>@page{size:21cm 29.7cm;margin:2cm}${ED_BASE_CSS}</style></head>`
+    :`<!DOCTYPE html><html><head><meta charset="utf-8"><title>Văn bản</title><style>@page{size:A4;margin:20mm}${ED_BASE_CSS}</style></head>`;
+  return head+"<body>"+ed.innerHTML+"</body></html>";
+}
+function edPrint(){
+  const txt=ed.innerText.replace(/\s/g,"");
+  if(!txt&&!ed.querySelector("img,table"))return showToast("Văn bản đang trống");
+  printHTML(edDocHTML(false));
+}
+$("edPrint").onclick=edPrint;
+$("edSaveDoc").onclick=()=>{
+  const blob=new Blob(["\ufeff"+edDocHTML(true)],{type:"application/msword"}),url=URL.createObjectURL(blob),a=document.createElement("a");
+  a.href=url;a.download="Van-ban.doc";a.click();setTimeout(()=>URL.revokeObjectURL(url),4000);showToast("Đã tải Van-ban.doc");
+};
+$("edClear").onclick=()=>{if(confirm("Xóa toàn bộ nội dung văn bản?")){edResetEmpty();edRange=null;edSaveDraft();ed.focus()}};
+function openEditor(){
+  $("editorModal").classList.remove("hidden");
+  setTimeout(()=>{ed.focus();try{document.execCommand("defaultParagraphSeparator",false,"p")}catch(e){}},50);
+}
+function closeEditor(){edSaveDraft();$("editorModal").classList.add("hidden")}
+$("editorButton").onclick=openEditor;
+$("closeEditor").onclick=closeEditor;
+edLoadDraft();
+
 $("undoButton").onclick=undo;$("redoButton").onclick=redo;
 renderGrid();updateHistoryButtons();
 </script>
