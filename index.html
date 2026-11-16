@@ -180,17 +180,27 @@ button,input,select{font:inherit}button{cursor:pointer}.hidden{display:none!impo
 .low-end .page-card:hover,.low-end .btn:hover{transform:none;box-shadow:none}
 .low-end .page-card{box-shadow:none;border:2px solid #eceef4}
 .low-end .page-card.selected{border-color:var(--primary)}
+
+/* ====== Ghép thẻ ====== */
+.card-list{display:flex;gap:10px;flex-wrap:wrap}
+.card-item{border:1.5px solid var(--border);border-radius:10px;padding:8px;background:#fff;width:178px;font-size:12px}
+.card-item canvas{width:100%;height:auto;display:block;border:1px solid #d9dbe6;border-radius:5px;background:#fff}
+.card-item .ct{margin-top:6px;font-weight:600;line-height:1.3}.card-item .cs{color:var(--muted);font-size:11px}
+.card-item .cb{display:flex;gap:4px;margin-top:6px;flex-wrap:wrap}
+.card-item .cb button{border:1px solid var(--border);background:#fff;border-radius:6px;padding:3px 8px;font-size:12px}
+.card-item .cb button:hover{background:#eeedff}
+.card-grp{flex-basis:100%;font-size:12px;color:#3d3a8a;background:#eeedff;border-radius:8px;padding:4px 10px}
 </style>
 </head>
 <body>
 <div class="login-screen" id="loginScreen"><div class="login-card">
-<div style="font-size:38px;margin-bottom:10px">📄</div><h1>Xin Chào Quang Anh! 😫</h1>
+<div style="font-size:38px;margin-bottom:10px">📄</div><h1>Xin Chào Quang Anh! 🐱</h1>
 <p>PDF Studio</p><input id="passwordInput" type="password" placeholder="Nhập mật khẩu">
 <div class="login-error" id="loginError"></div><button id="loginButton">Đăng nhập</button>
 </div></div>
 
 <div class="app hidden" id="app">
-<header class="header"><div class="brand"><div class="brand-icon">📄</div><div><h1>PDF Studio Ver 5.0</h1><small>Quản lý, chỉnh sửa và làm đẹp PDF</small></div></div>
+<header class="header"><div class="brand"><div class="brand-icon">📄</div><div><h1>PDF Studio Ver 5.3</h1><small>Quản lý, chỉnh sửa và làm đẹp PDF</small></div></div>
 <div class="header-actions"><button class="btn" id="editorButton" title="Mở trình soạn thảo văn bản kiểu Word">📝 Soạn văn bản</button><button class="btn" id="addFilesButton">＋ Thêm tệp</button><button class="btn primary" id="exportButton">Xuất PDF ↓</button></div></header>
 
 <section class="panel"><div class="dropzone" id="dropzone"><div class="big-icon">📂</div><h3>Kéo thả PDF hoặc hình ảnh vào đây</h3><p>Hỗ trợ PDF, JPG, JPEG, PNG và WEBP</p><p>Hoặc nhấn vào đây để chọn tệp từ máy tính</p></div>
@@ -201,7 +211,7 @@ button,input,select{font:inherit}button{cursor:pointer}.hidden{display:none!impo
 <span class="sep"></span>
 <button class="btn primary" id="moveToButton" title="Chọn trang rồi chuyển sang tệp/vị trí bất kỳ (kể cả sang tệp khác)">⇄ Chuyển trang đến…</button><button class="btn" id="moveLeftButton" title="Dời các trang đã chọn lên trước 1 vị trí (trong cùng tệp)">◀ Lùi</button><button class="btn" id="moveRightButton" title="Dời các trang đã chọn ra sau 1 vị trí (trong cùng tệp)">Tiến ▶</button>
 <span class="sep"></span>
-<button class="btn primary" id="autoCropButton" title="Tự tìm 4 góc tờ giấy rồi mở khung để bạn chỉnh lại">🪄 Tự nhận diện</button><button class="btn primary" id="manualCropButton" title="Kéo 4 góc độc lập, nắn thẳng thành chữ nhật khi xuất">✂ Cắt freeform</button><button class="btn primary" id="rectCropButton" title="Khung hình chữ nhật, kéo góc/cạnh để chỉnh">▭ Cắt chữ nhật</button><button class="btn" id="mergeButton" title="Chọn 2 trang/ảnh trở lên rồi ghép vào 1 trang">▦ Ghép vào 1 trang</button><button class="btn" id="copyCropButton" title="Sao chép vùng đã cắt vào clipboard, rồi dán (Ctrl+V) lên trang khác">📋 Sao chép vùng cắt</button><button class="btn" id="moveCropButton" title="Sau khi cắt, kéo vùng đã cắt đến vị trí khác trong trang">✥ Di chuyển vùng cắt</button><button class="btn" id="stampButton" title="Chèn ảnh (chữ ký, con dấu...) lên trang đã chọn. Cũng có thể dán bằng Ctrl+V">🖼 Chèn ảnh</button><button class="btn" id="rotateButton">↻ Xoay</button><button class="btn" id="duplicateButton">▣ Nhân đôi</button><button class="btn danger" id="deleteButton">✕ Xóa</button><span class="spacer"></span><button class="btn" id="clearButton">Xóa tất cả</button></div>
+<button class="btn primary" id="autoCropButton" title="Tự tìm 4 góc tờ giấy rồi mở khung để bạn chỉnh lại">🪄 Tự nhận diện</button><button class="btn primary" id="manualCropButton" title="Kéo 4 góc độc lập, nắn thẳng thành chữ nhật khi xuất">✂ Cắt freeform</button><button class="btn primary" id="rectCropButton" title="Khung hình chữ nhật, kéo góc/cạnh để chỉnh">▭ Cắt chữ nhật</button><button class="btn" id="mergeButton" title="Chọn 2 trang/ảnh trở lên rồi ghép vào 1 trang">▦ Ghép vào 1 trang</button><button class="btn primary" id="cardButton" title="Tự nhận diện thẻ (CCCD, thẻ cư trú, bằng lái…) trên trang quét rồi ghép mặt trước ở trên, mặt sau ở dưới vào 1 trang">🪪 Ghép thẻ</button><button class="btn" id="copyCropButton" title="Sao chép vùng đã cắt vào clipboard, rồi dán (Ctrl+V) lên trang khác">📋 Sao chép vùng cắt</button><button class="btn" id="moveCropButton" title="Sau khi cắt, kéo vùng đã cắt đến vị trí khác trong trang">✥ Di chuyển vùng cắt</button><button class="btn" id="stampButton" title="Chèn ảnh (chữ ký, con dấu...) lên trang đã chọn. Cũng có thể dán bằng Ctrl+V">🖼 Chèn ảnh</button><button class="btn" id="rotateButton">↻ Xoay</button><button class="btn" id="duplicateButton">▣ Nhân đôi</button><button class="btn danger" id="deleteButton">✕ Xóa</button><span class="spacer"></span><button class="btn" id="clearButton">Xóa tất cả</button></div>
 <div class="muted" style="margin:-4px 0 12px">💡 Chuyển trang: <b>kéo thả</b> trang (hoặc nhiều trang đã chọn) vào vị trí bất kỳ — thả lên <b>chồng giấy</b> của tệp khác để đưa vào cuối tệp đó. Hoặc chọn trang rồi bấm <b>⇄ Chuyển trang đến…</b> để chọn tệp và vị trí chính xác.</div>
 <div id="groupBar" class="group-bar hidden"></div><div id="pageGrid" class="page-grid hidden"></div><div id="emptyState" class="empty-state"><div class="big-icon">📑</div><h3>Chưa có tài liệu nào</h3><p>Thêm PDF hoặc hình ảnh để bắt đầu.</p></div></section>
 
@@ -304,6 +314,34 @@ button,input,select{font:inherit}button{cursor:pointer}.hidden{display:none!impo
 <span class="muted">Kéo vùng cắt để di chuyển · kéo góc/cạnh để đổi cỡ · chấm tím để xoay · bật Freeform để kéo méo từng góc · trang sẽ thành ảnh sau khi áp dụng</span>
 <span style="display:flex;gap:8px"><button class="btn" id="moveDup" title="Giữ lại bản hiện tại tại chỗ và tạo thêm một bản mới để kéo đi">⧉ Nhân bản</button><button class="btn" id="moveUndoDup">↶ Bỏ bản sao</button><button class="btn" id="moveCopyClip" title="Sao chép vùng cắt vào clipboard">📋 Sao chép</button><button class="btn" id="moveCenter">⊕ Giữa trang</button><button class="btn" id="moveReset">↺ Vị trí cũ</button><button class="btn" id="cancelMove">Hủy</button><button class="btn primary" id="applyMove">Áp dụng</button></span>
 </div></div></div>
+<div class="modal hidden" id="cardModal"><div class="modal-box" style="width:min(1100px,100%)">
+<div class="modal-header"><div class="modal-title">🪪 Ghép thẻ: mặt trước ở trên – mặt sau ở dưới</div><button class="close-btn" id="closeCard">×</button></div>
+<div class="merge-body" style="grid-template-columns:minmax(0,1fr) 270px">
+<div style="min-width:0;display:flex;flex-direction:column;gap:12px">
+<div style="background:#343642;padding:14px;display:flex;flex-direction:column;align-items:center;gap:10px;border-radius:10px">
+<canvas id="cardPreview" style="max-width:100%;max-height:420px;width:auto;height:auto;box-shadow:0 5px 25px #0006;background:#fff"></canvas>
+<div class="mv-row" id="cardSheetNav" style="justify-content:center"><button class="btn" id="cardPrevSheet" type="button">◀</button><span style="color:#fff;font-size:13px" id="cardSheetLabel"></span><button class="btn" id="cardNextSheet" type="button">▶</button></div></div>
+<div class="muted">Thứ tự trong danh sách = thứ tự ghép (thẻ đầu tiên ở trên cùng). Dùng ◀ ▶ để đổi chỗ, ↺ ↻ để xoay cho thẻ đứng đúng chiều, ✕ để bỏ thẻ nhận nhầm.</div>
+<div class="card-list" id="cardList"></div></div>
+<div class="merge-opts">
+<label class="opt-field">Chọn thẻ<select id="cardMode"><option value="auto">Tự động – quét tất cả các trang</option><option value="manual">Thủ công – chỉ quét các trang đã chọn</option></select></label>
+<button class="btn" id="cardRescan" type="button" style="margin-bottom:12px">🔍 Quét lại</button>
+<label class="opt-field">Số thẻ trên mỗi trang ghép<select id="cardPer"><option value="2" selected>2 (mặt trước + mặt sau)</option><option value="1">1</option><option value="3">3</option><option value="4">4</option></select></label>
+<label class="opt-field">Cách xếp<select id="cardLayout"><option value="vertical" selected>Xếp dọc (trước ở trên, sau ở dưới)</option><option value="horizontal">Xếp ngang (trước bên trái)</option></select></label>
+<label class="opt-field">Khổ giấy<select id="cardPage"><option value="port" selected>A4 dọc</option><option value="land">A4 ngang</option></select></label>
+<label class="opt-field">Kích thước thẻ<select id="cardSize"><option value="std" selected>Chuẩn 85,6 mm (thẻ ID‑1)</option><option value="scan">Theo kích thước trên bản quét</option><option value="custom">Tùy chọn (cạnh dài, mm)</option></select></label>
+<label class="opt-field hidden" id="cardCustomWrap">Cạnh dài của thẻ (mm)<input type="number" id="cardCustom" min="20" max="280" step="0.5" value="85.6"></label>
+<label class="opt-field">Cắt sát viền thẻ<select id="cardTrim"><option value="0">Không</option><option value="0.01">Nhẹ</option><option value="0.02" selected>Vừa – bỏ vệt đen/trắng quanh thẻ</option><option value="0.03">Nhiều</option></select></label>
+<label class="opt-check"><input type="checkbox" id="cardRound" checked> Bo tròn góc thẻ (bỏ giấy trắng ở góc)</label>
+<label class="opt-field">Căn vị trí<select id="cardAlign"><option value="top" selected>Sát đầu trang</option><option value="center">Giữa trang</option></select></label>
+<label class="opt-field">Lề trang (mm)<input type="number" id="cardMargin" min="0" max="60" step="1" value="15"></label>
+<label class="opt-field">Khoảng cách giữa các thẻ (mm)<input type="number" id="cardGap" min="0" max="60" step="1" value="10"></label>
+<label class="opt-check"><input type="checkbox" id="cardAutoOrder" checked> Tự đưa mặt trước (có ảnh chân dung) lên trên</label>
+<label class="opt-check"><input type="checkbox" id="cardBorder"> Vẽ viền mảnh quanh mỗi thẻ</label>
+<label class="opt-check"><input type="checkbox" id="cardDelete"> Xóa các trang gốc sau khi ghép</label>
+</div></div>
+<div class="modal-footer"><span class="muted" id="cardInfo"></span><span style="display:flex;gap:8px"><button class="btn" id="cancelCard">Hủy</button><button class="btn primary" id="applyCard">Tạo trang ghép thẻ</button></span></div>
+</div></div>
 <div class="modal hidden" id="mergeModal"><div class="modal-box" style="width:min(900px,100%)">
 <div class="modal-header"><div class="modal-title">Ghép ảnh đã chọn vào 1 trang</div><button class="close-btn" id="closeMerge">×</button></div>
 <div class="merge-body">
@@ -470,7 +508,7 @@ function login(){if($("passwordInput").value==="2001"){$("loginScreen").classLis
 $("loginButton").onclick=login;$("passwordInput").onkeydown=e=>{if(e.key==="Enter")login()};
 function showToast(m){const el=$("toast");el.textContent=m;el.classList.remove("hidden");clearTimeout(showToast.timer);showToast.timer=setTimeout(()=>el.classList.add("hidden"),3000)}
 function setProgress(p,m){$("progressArea").classList.remove("hidden");$("progressFill").style.width=p+"%";$("progressText").textContent=m}
-function setBusy(v){busy=v;["addFilesButton","exportButton","enhanceExportButton","hlExportButton","hlPreviewButton","compressExportButton","rotateButton","duplicateButton","deleteButton","clearButton","selectAllButton","saveSelectedButton","printSelectedButton","editorButton","manualCropButton","autoCropButton","rectCropButton","mergeButton","stampButton","moveCropButton","copyCropButton","moveCropPrev","applyManualCrop","autoDetectCrop","startManualCrop","startRectCrop","moveToButton","moveLeftButton","moveRightButton"].forEach(id=>$(id).disabled=v);updateHistoryButtons()}
+function setBusy(v){busy=v;["addFilesButton","exportButton","enhanceExportButton","hlExportButton","hlPreviewButton","compressExportButton","rotateButton","duplicateButton","deleteButton","clearButton","selectAllButton","saveSelectedButton","printSelectedButton","editorButton","manualCropButton","autoCropButton","rectCropButton","mergeButton","cardButton","stampButton","moveCropButton","copyCropButton","moveCropPrev","applyManualCrop","autoDetectCrop","startManualCrop","startRectCrop","moveToButton","moveLeftButton","moveRightButton"].forEach(id=>$(id).disabled=v);updateHistoryButtons()}
 function getDoc(id){return documents.find(d=>d.id===id)}
 function sourceFor(item){const d=getDoc(item.docId);if(!d)throw Error("Không tìm thấy tài liệu nguồn");return d}
 function updateSaveButton(){updateEnhanceInfo();const b=$("saveSelectedButton"),pb=$("printSelectedButton");if(!b)return;const n=selectedPages.size;b.textContent=n?`💾 Lưu ${n} trang đã chọn`:"💾 Lưu trang đã chọn";if(pb)pb.textContent=n?`🖨 In ${n} trang đã chọn`:"🖨 In trang đã chọn"}
@@ -1132,7 +1170,7 @@ $("nextPageButton").onclick=async()=>{if(previewIndex<pages.length-1){previewInd
 document.addEventListener("keydown",async e=>{if((e.ctrlKey||e.metaKey)&&!manualCropState&&!anyModalOpen()&&!$("app").classList.contains("hidden")&&!/INPUT|SELECT|TEXTAREA/.test(document.activeElement?.tagName||"")){const k=e.key.toLowerCase();if(k==="z"&&!e.shiftKey){e.preventDefault();undo();return}if(k==="y"||(k==="z"&&e.shiftKey)){e.preventDefault();redo();return}}if(e.key==="Escape"){if(saveCtx){finishSave(false);return}closeStamp();closeMerge();closeMove();closeMoveTo();$("previewModal").classList.add("hidden");manualCropState=null;exitManualCropMode()}if(!$("previewModal").classList.contains("hidden")&&!manualCropState){if(e.key==="ArrowLeft"&&previewIndex>0){previewIndex--;await renderPreview()}if(e.key==="ArrowRight"&&previewIndex<pages.length-1){previewIndex++;await renderPreview()}}if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="a"&&!$("app").classList.contains("hidden")&&!anyModalOpen()&&!/INPUT|SELECT|TEXTAREA/.test(document.activeElement?.tagName||"")){e.preventDefault();pages.forEach(p=>selectedPages.add(p.id));renderGrid()}});
 
 /* ====== DÙNG CHUNG: render trang thành canvas, lưu canvas thành trang PDF mới ====== */
-function anyModalOpen(){return ["previewModal","enhancePreviewModal","mergeModal","stampModal","moveModal","moveToModal","editorModal","saveModal"].some(id=>!$(id).classList.contains("hidden"))}
+function anyModalOpen(){return ["previewModal","enhancePreviewModal","mergeModal","cardModal","stampModal","moveModal","moveToModal","editorModal","saveModal"].some(id=>!$(id).classList.contains("hidden"))}
 async function renderItemCanvas(item,{dpi,maxSide,maxPx}={}){
   const d=sourceFor(item),p=await d.pdf.getPage(item.pageNum),rotation=((p.rotate||0)+item.rotation)%360;
   const vb=item.perspectiveCrop?undefined:cropViewBox(item,p);
@@ -1226,6 +1264,243 @@ $("applyMerge").onclick=applyMerge;
 $("mergeReverse").onclick=()=>{if(!mergeState)return;mergeState.items.reverse();mergeState.raws.reverse();refreshMergeSources();renderMergePreview()};
 ["mergeLayout","mergePage","mergeMargin","mergeGap","mergeBorder"].forEach(id=>$(id).addEventListener("input",renderMergePreview));
 $("mergeTrim").addEventListener("input",()=>{refreshMergeSources();renderMergePreview()});
+
+/* ====== GHÉP THẺ (mặt trước + mặt sau vào 1 trang) ====== */
+function hullOf(pts){
+  pts.sort((a,b)=>a[0]-b[0]||a[1]-b[1]);
+  const cross=(o,a,b)=>(a[0]-o[0])*(b[1]-o[1])-(a[1]-o[1])*(b[0]-o[0]);
+  const lo=[];for(const p of pts){while(lo.length>=2&&cross(lo[lo.length-2],lo[lo.length-1],p)<=0)lo.pop();lo.push(p)}
+  const up=[];for(let i=pts.length-1;i>=0;i--){const p=pts[i];while(up.length>=2&&cross(up[up.length-2],up[up.length-1],p)<=0)up.pop();up.push(p)}
+  lo.pop();up.pop();return lo.concat(up);
+}
+/* Tìm các vật thể hình chữ nhật (thẻ) trên ảnh RGBA cỡ nhỏ. Trả về [{cx,cy,wR,hR,th}] theo toạ độ ảnh nhỏ. */
+function cardQuadsFromRGBA(d,w,h){
+  const N=w*h,big=Math.max(w,h);
+  let m=new Float32Array(N);
+  for(let i=0,k=0;i<N;i++,k+=4){const r=d[k],g=d[k+1],b=d[k+2],mx=Math.max(r,g,b),mn=Math.min(r,g,b);m[i]=(mx-mn>=26||mx<205)?1:0}
+  const ro=Math.max(2,Math.round(big*.007)),rc=Math.max(2,Math.round(big*.004));
+  m=morph2D(morph2D(m,w,h,ro,false),w,h,ro,true);           /* mở: bỏ bụi, đốm nhỏ */
+  m=morph2D(morph2D(m,w,h,rc,true),w,h,rc,false);           /* đóng: nối nét đứt */
+  const mask=new Uint8Array(N);for(let i=0;i<N;i++)mask[i]=m[i]>.5?1:0;
+  /* lấp lỗ (vùng sáng/hologram nằm trong thẻ) */
+  const inv=new Uint8Array(N);for(let i=0;i<N;i++)inv[i]=mask[i]?0:1;
+  const L2=hlLabel(inv,w,h),touch=new Uint8Array(L2.n+1);
+  for(let x=0;x<w;x++){touch[L2.lab[x]]=1;touch[L2.lab[(h-1)*w+x]]=1}
+  for(let y=0;y<h;y++){touch[L2.lab[y*w]]=1;touch[L2.lab[y*w+w-1]]=1}
+  for(let i=0;i<N;i++)if(!mask[i]&&L2.lab[i]&&!touch[L2.lab[i]])mask[i]=1;
+  const {lab,n,info}=hlLabel(mask,w,h),res=[];
+  for(let l=1;l<=n;l++){
+    const I=info[l],bw=I.maxx-I.minx+1,bh=I.maxy-I.miny+1;
+    if(I.area<.02*N||I.area>.8*N||Math.min(bw,bh)<.1*Math.min(w,h))continue;
+    const pts=[];
+    for(let y=I.miny;y<=I.maxy;y++)for(let x=I.minx;x<=I.maxx;x++){
+      const i=y*w+x;if(lab[i]!==l)continue;
+      if(x===0||y===0||x===w-1||y===h-1||lab[i-1]!==l||lab[i+1]!==l||lab[i-w]!==l||lab[i+w]!==l)pts.push([x,y]);
+    }
+    if(pts.length<8)continue;
+    const hull=hullOf(pts);let best=null;
+    for(let a=0;a<180;a++){
+      const th=a*Math.PI/360,c=Math.cos(th),s=Math.sin(th);let u0=1e9,u1=-1e9,v0=1e9,v1=-1e9;
+      for(const p of hull){const u=p[0]*c+p[1]*s,v=-p[0]*s+p[1]*c;if(u<u0)u0=u;if(u>u1)u1=u;if(v<v0)v0=v;if(v>v1)v1=v}
+      const ar=(u1-u0)*(v1-v0);if(!best||ar<best.ar)best={ar,th,u0,u1,v0,v1,c,s};
+    }
+    const wR=best.u1-best.u0+1,hR=best.v1-best.v0+1,cu=(best.u0+best.u1)/2,cv=(best.v0+best.v1)/2;
+    const rect=I.area/(wR*hR),asp=Math.max(wR,hR)/Math.min(wR,hR);
+    if(rect<.8||asp<1.15||asp>2.4)continue;
+    res.push({cx:cu*best.c-cv*best.s,cy:cu*best.s+cv*best.c,wR,hR,th:best.th});
+  }
+  res.sort((p,q)=>Math.abs(p.cy-q.cy)<.35*Math.min(p.hR,q.hR,p.wR,q.wR)?p.cx-q.cx:p.cy-q.cy);
+  return res;
+}
+
+function rotCanvas(c,deg){
+  deg=((deg%360)+360)%360;if(!deg)return c;
+  const o=document.createElement("canvas"),sw=deg===90||deg===270;
+  o.width=sw?c.height:c.width;o.height=sw?c.width:c.height;
+  const x=o.getContext("2d");x.translate(o.width/2,o.height/2);x.rotate(deg*Math.PI/180);x.drawImage(c,-c.width/2,-c.height/2);return o;
+}
+/* Tìm thẻ trên canvas trang, cắt thẳng (khử nghiêng) và đưa về nằm ngang */
+function detectCards(canvas){
+  const W=canvas.width,H=canvas.height,s=Math.min(1,720/Math.max(W,H)),w=Math.max(8,Math.round(W*s)),h=Math.max(8,Math.round(H*s));
+  const sm=document.createElement("canvas");sm.width=w;sm.height=h;
+  const sctx=sm.getContext("2d",{willReadFrequently:true});sctx.drawImage(canvas,0,0,w,h);
+  const quads=cardQuadsFromRGBA(sctx.getImageData(0,0,w,h).data,w,h),fx=W/w,fy=H/h,out=[];
+  for(const q of quads){
+    const ow=Math.max(8,Math.round(q.wR*fx)),oh=Math.max(8,Math.round(q.hR*fy)),c=document.createElement("canvas");c.width=ow;c.height=oh;
+    const x=c.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,ow,oh);x.imageSmoothingQuality="high";
+    x.translate(ow/2,oh/2);x.rotate(-q.th);x.translate(-q.cx*fx,-q.cy*fy);x.drawImage(canvas,0,0);
+    out.push({canvas:oh>ow?rotCanvas(c,90):c});
+  }
+  return out;
+}
+/* Ước đoán mặt trước: có vùng màu da (ảnh chân dung) */
+function skinFraction(c){
+  const s=Math.min(1,200/Math.max(c.width,c.height)),w=Math.max(4,Math.round(c.width*s)),h=Math.max(4,Math.round(c.height*s));
+  const t=document.createElement("canvas");t.width=w;t.height=h;const x=t.getContext("2d",{willReadFrequently:true});x.drawImage(c,0,0,w,h);
+  const d=x.getImageData(0,0,w,h).data;let n=0;
+  for(let i=0;i<d.length;i+=4){
+    const r=d[i],g=d[i+1],b=d[i+2],Y=.299*r+.587*g+.114*b,cb=128-.168736*r-.331264*g+.5*b,cr=128+.5*r-.418688*g-.081312*b;
+    if(Y>60&&cb>=77&&cb<=127&&cr>=135&&cr<=173)n++;
+  }
+  return n/(w*h);
+}
+const isFrontCard=c=>c.face>.004&&c.face<.35;
+function rrPath(ctx,x,y,w,h,r){
+  r=Math.max(0,Math.min(r,w/2,h/2));ctx.beginPath();ctx.moveTo(x+r,y);
+  ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();
+}
+/* Ảnh thẻ để ghép: xoay theo người dùng, cắt sát mép (bỏ vệt đen/giấy trắng) và bo tròn góc */
+function makeView(cd){
+  const c=rotCanvas(cd.base,cd.rot);cd.vr=0;
+  if(cd.fallback)return c;
+  const trim=Number($("cardTrim").value)||0,round=$("cardRound").checked;
+  const ins=Math.round(trim*Math.min(c.width,c.height));
+  const w=c.width-2*ins,h=c.height-2*ins;
+  if(w<16||h<16||(!ins&&!round))return c;
+  const o=document.createElement("canvas");o.width=w;o.height=h;
+  const x=o.getContext("2d");x.imageSmoothingQuality="high";
+  if(round){cd.vr=.037*Math.max(w,h);rrPath(x,0,0,w,h,cd.vr);x.clip()}
+  x.drawImage(c,ins,ins,w,h,0,0,w,h);return o;
+}
+function refreshViews(){if(cardState)cardState.cards.forEach(cd=>{cd.view=makeView(cd)})}
+let cardState=null;
+function cardOpts(){
+  const n=(id,d)=>{const v=Number($(id).value);return isFinite(v)&&v>=0?v:d};
+  return{landscape:$("cardPage").value==="land",layout:$("cardLayout").value,size:$("cardSize").value,custom:n("cardCustom",85.6),margin:n("cardMargin",15),gap:n("cardGap",10),align:$("cardAlign").value,border:$("cardBorder").checked};
+}
+function composeCardSheet(cards,o,dpi){
+  const mm=72/25.4,pageW=o.landscape?841.89:595.28,pageH=o.landscape?595.28:841.89,k=dpi/72;
+  const W=Math.round(pageW*k),H=Math.round(pageH*k),c=document.createElement("canvas");c.width=W;c.height=H;
+  const ctx=c.getContext("2d");ctx.fillStyle="#fff";ctx.fillRect(0,0,W,H);ctx.imageSmoothingQuality="high";
+  if(!cards.length)return c;
+  const m=o.margin*mm,gap=o.gap*mm;
+  const dims=cards.map(cd=>{
+    const v=cd.view,sc=o.size==="scan"?72/cd.dpi:(o.size==="custom"?o.custom:85.6)*mm/Math.max(v.width,v.height);
+    return{v,w:v.width*sc,h:v.height*sc,r:(cd.vr||0)*sc,sc};
+  });
+  const vert=o.layout!=="horizontal",n=dims.length;
+  const totW=vert?Math.max(...dims.map(d=>d.w)):dims.reduce((a,d)=>a+d.w,0)+gap*(n-1);
+  const totH=vert?dims.reduce((a,d)=>a+d.h,0)+gap*(n-1):Math.max(...dims.map(d=>d.h));
+  const fit=Math.min(1,(pageW-2*m)/totW,(pageH-2*m)/totH),bw=totW*fit,bh=totH*fit,x0=(pageW-bw)/2,y0=o.align==="center"?(pageH-bh)/2:m;
+  let px=x0,py=y0;
+  dims.forEach(d=>{
+    const w=d.w*fit,h=d.h*fit,x=vert?(pageW-w)/2:px,y=vert?py:y0+(bh-h)/2;
+    ctx.drawImage(d.v,x*k,y*k,w*k,h*k);
+    if(o.border){ctx.strokeStyle="#9aa0b4";ctx.lineWidth=Math.max(1,k*.5);rrPath(ctx,x*k,y*k,w*k,h*k,d.r*fit*k);ctx.stroke()}
+    if(vert)py+=h+gap*fit;else px+=w+gap*fit;
+  });
+  return c;
+}
+function cardGroups(){const per=Number($("cardPer").value)||2,g=[];if(cardState)for(let i=0;i<cardState.cards.length;i+=per)g.push(cardState.cards.slice(i,i+per));return g}
+function autoOrderCards(){
+  if(!cardState||Number($("cardPer").value)!==2)return;
+  const c=cardState.cards;
+  for(let i=0;i+1<c.length;i+=2)if(!isFrontCard(c[i])&&isFrontCard(c[i+1])){const t=c[i];c[i]=c[i+1];c[i+1]=t}
+}
+function renderCardUI(){
+  const list=$("cardList");list.innerHTML="";
+  if(!cardState||!cardState.cards.length){
+    list.innerHTML='<div class="muted">Chưa tìm thấy thẻ nào. Hãy chuyển sang “Thủ công” và chọn đúng trang chứa thẻ, hoặc bấm “Quét lại”.</div>';
+    $("cardPreview").width=10;$("cardPreview").height=10;$("cardSheetNav").classList.add("hidden");$("cardInfo").textContent="Không có thẻ";return;
+  }
+  const per=Number($("cardPer").value)||2;
+  cardState.cards.forEach((cd,i)=>{
+    if(i%per===0){const g=document.createElement("div");g.className="card-grp";g.textContent=`Trang ghép ${i/per+1}`;list.appendChild(g)}
+    const el=document.createElement("div");el.className="card-item";
+    const cv=document.createElement("canvas"),sc=Math.min(1,360/cd.view.width);cv.width=Math.round(cd.view.width*sc);cv.height=Math.round(cd.view.height*sc);
+    cv.getContext("2d").drawImage(cd.view,0,0,cv.width,cv.height);el.appendChild(cv);
+    const front=isFrontCard(cd);
+    el.insertAdjacentHTML("beforeend",`<div class="ct">${i+1}. ${front?"Mặt trước":"Mặt sau / khác"}</div><div class="cs">Trang ${cd.pos}${cd.fallback?" · không thấy thẻ, lấy cả trang":""}${front?" · có ảnh chân dung":""}</div><div class="cb"><button data-act="left" data-i="${i}" title="Đưa lên trước">◀</button><button data-act="right" data-i="${i}" title="Đưa xuống sau">▶</button><button data-act="ccw" data-i="${i}" title="Xoay trái 90°">↺</button><button data-act="cw" data-i="${i}" title="Xoay phải 90°">↻</button><button data-act="del" data-i="${i}" title="Bỏ thẻ này">✕</button></div>`);
+    list.appendChild(el);
+  });
+  renderCardPreview();
+}
+function renderCardPreview(){
+  if(!cardState)return;
+  const groups=cardGroups();if(!groups.length)return;
+  cardState.sheet=clamp(cardState.sheet||0,0,groups.length-1);
+  const prev=composeCardSheet(groups[cardState.sheet],cardOpts(),70),c=$("cardPreview");
+  c.width=prev.width;c.height=prev.height;c.getContext("2d").drawImage(prev,0,0);
+  $("cardSheetNav").classList.toggle("hidden",groups.length<2);
+  $("cardSheetLabel").textContent=`Trang ghép ${cardState.sheet+1}/${groups.length}`;
+  $("cardInfo").textContent=`${cardState.cards.length} thẻ → ${groups.length} trang ghép`;
+}
+async function scanCards(){
+  if(busy)return false;
+  const auto=$("cardMode").value==="auto",idx=auto?pages.map((_,i)=>i):selectedIndexes();
+  if(!idx.length){showToast("Hãy chọn trang chứa thẻ trong danh sách (hoặc chuyển sang chế độ Tự động)");return false}
+  setBusy(true);
+  try{
+    const cards=[],pageCounts=new Map();
+    for(let n=0;n<idx.length;n++){
+      const it=pages[idx[n]];showToast(`Đang quét thẻ ${n+1}/${idx.length}...`);
+      const cv=await renderItemCanvas(it,{dpi:220,maxPx:14_000_000});
+      let found=detectCards(cv),fb=false;
+      if(!found.length&&!auto){found=[{canvas:trimWhite(cv)}];fb=true}
+      found.forEach(f=>{const cd={id:crypto.randomUUID(),pageId:it.id,pos:idx[n]+1,base:f.canvas,view:f.canvas,dpi:cv.dpiUsed||220,rot:0,fallback:fb,vr:0,face:skinFraction(f.canvas)};cd.view=makeView(cd);cards.push(cd)});
+      pageCounts.set(it.id,found.length);
+      await new Promise(r=>setTimeout(r,0));
+    }
+    cardState={cards,pageCounts,sheet:0};
+    if($("cardAutoOrder").checked)autoOrderCards();
+    renderCardUI();
+    showToast(cards.length?`Tìm thấy ${cards.length} thẻ`:"Không tìm thấy thẻ nào");
+    return true;
+  }catch(e){console.error(e);showToast("Lỗi quét thẻ: "+e.message);return false}
+  finally{setBusy(false)}
+}
+async function openCards(){
+  if(busy)return;if(!pages.length)return showToast("Hãy thêm PDF hoặc ảnh trước");
+  $("cardMode").value=selectedPages.size?"manual":"auto";
+  cardState=null;$("cardModal").classList.remove("hidden");renderCardUI();
+  await scanCards();
+}
+function closeCards(){$("cardModal").classList.add("hidden");cardState=null}
+async function applyCards(){
+  if(busy||!cardState||!cardState.cards.length)return showToast("Chưa có thẻ để ghép");
+  const groups=cardGroups(),o=cardOpts(),counts=cardState.pageCounts,consumed=new Map(),newIds=[];
+  setBusy(true);
+  try{
+    pushHistory();
+    for(let gi=0;gi<groups.length;gi++){
+      const g=groups[gi];showToast(`Đang tạo trang ghép ${gi+1}/${groups.length}...`);
+      const sheet=composeCardSheet(g,o,220),item=await canvasToDocument(sheet,groups.length>1?`Thẻ ghép ${gi+1}`:"Thẻ ghép",220);
+      let last=-1;
+      g.forEach(cd=>{last=Math.max(last,pages.findIndex(p=>p.id===cd.pageId));consumed.set(cd.pageId,(consumed.get(cd.pageId)||0)+1)});
+      if(last<0)last=pages.length-1;
+      item.group=groupKey(pages[last]);pages.splice(last+1,0,item);newIds.push(item.id);
+      await new Promise(r=>setTimeout(r,0));
+    }
+    if($("cardDelete").checked){
+      const del=new Set();consumed.forEach((n,id)=>{if(n>=(counts.get(id)||0))del.add(id)});
+      pages=pages.filter(p=>!del.has(p.id));
+    }
+    selectedPages.clear();newIds.forEach(id=>selectedPages.add(id));
+    closeCards();renderGrid();showToast(`Đã tạo ${newIds.length} trang ghép thẻ`);
+  }catch(e){console.error(e);showToast("Lỗi ghép thẻ: "+e.message)}
+  finally{setBusy(false)}
+}
+$("cardButton").onclick=openCards;
+$("closeCard").onclick=$("cancelCard").onclick=closeCards;
+$("applyCard").onclick=applyCards;
+$("cardRescan").onclick=scanCards;
+$("cardMode").onchange=scanCards;
+$("cardPrevSheet").onclick=()=>{if(cardState){cardState.sheet--;renderCardPreview()}};
+$("cardNextSheet").onclick=()=>{if(cardState){cardState.sheet++;renderCardPreview()}};
+$("cardList").addEventListener("click",e=>{
+  const b=e.target.closest("button[data-act]");if(!b||!cardState)return;
+  const i=Number(b.dataset.i),c=cardState.cards,act=b.dataset.act;
+  if(act==="left"&&i>0){const t=c[i];c[i]=c[i-1];c[i-1]=t}
+  else if(act==="right"&&i<c.length-1){const t=c[i];c[i]=c[i+1];c[i+1]=t}
+  else if(act==="cw"||act==="ccw"){const cd=c[i];cd.rot=(cd.rot+(act==="cw"?90:270))%360;cd.view=makeView(cd)}
+  else if(act==="del")c.splice(i,1);
+  renderCardUI();
+});
+["cardLayout","cardPage","cardAlign","cardMargin","cardGap","cardCustom","cardBorder"].forEach(id=>$(id).addEventListener("input",renderCardPreview));
+["cardTrim","cardRound"].forEach(id=>$(id).addEventListener("input",()=>{refreshViews();renderCardUI()}));
+$("cardSize").addEventListener("input",()=>{$("cardCustomWrap").classList.toggle("hidden",$("cardSize").value!=="custom");renderCardPreview()});
+$("cardPer").addEventListener("input",()=>{if($("cardAutoOrder").checked)autoOrderCards();renderCardUI()});
+$("cardAutoOrder").addEventListener("input",()=>{if($("cardAutoOrder").checked)autoOrderCards();renderCardUI()});
 
 /* ====== KHUNG BIẾN ĐỔI TỰ DO (dùng chung cho chèn ảnh & di chuyển vùng cắt) ====== */
 const BOX_HANDLES=[[-1,-1],[0,-1],[1,-1],[1,0],[1,1],[0,1],[-1,1],[-1,0]];
