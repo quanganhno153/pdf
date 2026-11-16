@@ -179,7 +179,7 @@ button,input,select{font:inherit}button{cursor:pointer}.hidden{display:none!impo
 </div></div>
 
 <div class="app hidden" id="app">
-<header class="header"><div class="brand"><div class="brand-icon">📄</div><div><h1>PDF Studio Ver 5.0</h1><small>Quản lý, chỉnh sửa và làm đẹp PDF</small></div></div>
+<header class="header"><div class="brand"><div class="brand-icon">📄</div><div><h1>PDF Studio Ver 2.0</h1><small>Quản lý, chỉnh sửa và làm đẹp PDF</small></div></div>
 <div class="header-actions"><button class="btn" id="editorButton" title="Mở trình soạn thảo văn bản kiểu Word">📝 Soạn văn bản</button><button class="btn" id="addFilesButton">＋ Thêm tệp</button><button class="btn primary" id="exportButton">Xuất PDF ↓</button></div></header>
 
 <section class="panel"><div class="dropzone" id="dropzone"><div class="big-icon">📂</div><h3>Kéo thả PDF hoặc hình ảnh vào đây</h3><p>Hỗ trợ PDF, JPG, JPEG, PNG và WEBP</p><p>Hoặc nhấn vào đây để chọn tệp từ máy tính</p></div>
@@ -391,6 +391,16 @@ button,input,select{font:inherit}button{cursor:pointer}.hidden{display:none!impo
 <div class="ed-hint"><b id="edMarginInfo">Lề (mm): trái 20 · phải 20 · trên 20 · dưới 20</b> · Kéo mũi tên tím trên thước để chỉnh lề. Textbox: bấm vào viền để chọn, kéo hoặc dùng phím ← ↑ ↓ → để dời (Shift: ×5), Enter / nhấp đúp để gõ chữ, Esc để thoát chế độ gõ, Delete để xóa; chọn textbox rồi dùng “Màu viền” / “⬚ Trong suốt” / độ dày viền trên thanh công cụ; khi đang gõ trong textbox, Alt + mũi tên vẫn dời được. Ảnh: kéo 8 ô vuông quanh ảnh để đổi cỡ (kéo cạnh/góc trên hoặc trái thì ảnh chuyển sang chế độ tự do); kéo ảnh để đặt tự do ở bất kỳ vị trí nào trên trang (nút “⚓ Vào dòng” để đưa về trong dòng chữ); bấm vào ảnh để chọn, kéo ô vuông ở cạnh phải / cạnh dưới / góc dưới-phải để kéo giãn tự do (giữ Shift: khóa tỉ lệ), hoặc nhập số mm trên thanh công cụ. Tab trong bảng: sang ô kế tiếp. Nội dung tự lưu nháp. In: “🖨 In” hoặc Ctrl+P — chọn “Lưu dưới dạng PDF” để xuất PDF.</div>
 </div></div>
 <input type="file" id="edImgInput" accept="image/*" hidden="">
+<!-- Hộp thoại hỏi tên / nơi lưu trước khi tải xuống -->
+<div class="modal hidden" id="saveModal" style="z-index:1500"><div class="modal-box" style="width:min(520px,100%)">
+<div class="modal-header"><div class="modal-title">💾 Lưu tệp</div><button class="close-btn" id="saveClose" type="button">×</button></div>
+<div style="padding:18px;display:flex;flex-direction:column;gap:12px">
+<label class="opt-field">Tên tệp<span style="display:flex;gap:6px;align-items:center"><input type="text" id="saveName" autocomplete="off" style="flex:1;min-width:0;padding:10px;border:1px solid var(--border);border-radius:8px;font:inherit;color:var(--text)"><b id="saveExt"></b></span></label>
+<div class="muted" id="saveInfo"></div>
+<div class="mv-info" id="saveHint"></div>
+</div>
+<div class="modal-footer"><span class="muted">Có thể đổi tên tệp trước khi lưu</span><span style="display:flex;gap:8px"><button class="btn" id="saveCancel" type="button">Hủy</button><button class="btn primary" id="saveGo" type="button">📁 Chọn nơi lưu…</button></span></div>
+</div></div>
 <div class="toast hidden" id="toast"></div>
 
 <script>
@@ -421,7 +431,48 @@ function groupKey(it){return it.group??it.docId}
 function getGroups(){const m=new Map();pages.forEach(p=>{const k=groupKey(p);if(!m.has(k))m.set(k,{key:k,items:[],name:(getDoc(k)||{}).name||p.name});m.get(k).items.push(p)});return[...m.values()]}
 function visibleItems(){const g=getGroups();return g.length<2?pages:pages.filter(p=>openGroups.has(groupKey(p)))}
 function updateCount(){updateSaveButton();{const g=getGroups();$("pageCount").textContent=(g.length>=2?g.length+" tệp · ":"")+pages.length+" trang"}$("emptyState").classList.toggle("hidden",pages.length>0);$("pageGrid").classList.toggle("hidden",pages.length===0)}
-function downloadBytes(bytes,name){const blob=new Blob([bytes],{type:"application/pdf"}),url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),4000)}
+/* ====== LƯU TỆP: hỏi tên và nơi lưu ====== */
+let saveCtx=null;
+function downloadBytes(bytes,name,mime="application/pdf"){
+  return new Promise(resolve=>{
+    if(saveCtx)finishSave(false);
+    const dot=name.lastIndexOf("."),ext=dot>0?name.slice(dot):".pdf",base=dot>0?name.slice(0,dot):name;
+    saveCtx={bytes,mime,ext,resolve,desc:ext.toUpperCase().replace(".","")+" file"};
+    $("saveName").value=base;$("saveExt").textContent=ext;
+    const size=bytes.byteLength!==undefined?bytes.byteLength:bytes.size;
+    $("saveInfo").textContent="Dung lượng: "+fmtSize(size);
+    const hasPicker=typeof window.showSaveFilePicker==="function";
+    $("saveGo").textContent=hasPicker?"📁 Chọn nơi lưu…":"⬇ Tải xuống";
+    $("saveHint").textContent=hasPicker?"Bấm “Chọn nơi lưu…” để chọn thư mục và xác nhận tên tệp.":"Trình duyệt này không cho chọn thư mục từ trang web: tệp sẽ được tải về với tên bạn nhập (muốn được hỏi nơi lưu, hãy bật “Hỏi nơi lưu từng tệp” trong cài đặt tải xuống của trình duyệt).";
+    $("saveModal").classList.remove("hidden");
+    setTimeout(()=>{$("saveName").focus();$("saveName").select()},30);
+  });
+}
+function finishSave(ok){
+  const c=saveCtx;saveCtx=null;$("saveModal").classList.add("hidden");
+  if(c)c.resolve(ok);
+}
+async function doSave(){
+  const c=saveCtx;if(!c)return;
+  const base=$("saveName").value.trim().replace(/[\\/:*?"<>|]+/g,"_").replace(/\.+$/,"")||"PDF-Studio",fname=base+c.ext;
+  const blob=c.bytes instanceof Blob?c.bytes:new Blob([c.bytes],{type:c.mime});
+  if(typeof window.showSaveFilePicker==="function"){
+    try{
+      const h=await window.showSaveFilePicker({suggestedName:fname,types:[{description:c.desc,accept:{[c.mime]:[c.ext]}}]});
+      const w=await h.createWritable();await w.write(blob);await w.close();
+      finishSave(true);return;
+    }catch(e){
+      if(e&&e.name==="AbortError")return;
+      console.warn("Không dùng được hộp chọn thư mục, chuyển sang tải thường:",e);
+    }
+  }
+  const url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download=fname;document.body.append(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),4000);
+  finishSave(true);
+}
+$("saveGo").onclick=doSave;
+$("saveCancel").onclick=$("saveClose").onclick=()=>finishSave(false);
+$("saveName").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();doSave()}else if(e.key==="Escape"){e.preventDefault();e.stopPropagation();finishSave(false)}});
 
 $("addFilesButton").onclick=()=>$("fileInput").click();$("dropzone").onclick=()=>$("fileInput").click();
 $("fileInput").onchange=async e=>{await addFiles([...e.target.files]);e.target.value=""};
@@ -466,7 +517,7 @@ async function pumpThumbs(){
       else{
         await renderThumb(job.item,job.canvas);
         const c=document.createElement("canvas");paintFrom(c,job.canvas);thumbCache.set(job.key,c);
-        if(thumbCache.size>400)thumbCache.delete(thumbCache.keys().next().value);
+        if(thumbCache.size>(LOW_END?150:300))thumbCache.delete(thumbCache.keys().next().value);
       }
     }catch(e){console.warn(e)}
     job.res();
@@ -628,7 +679,9 @@ function makeStack(g,gi){
   thumbnail(g.items[0],cv).catch(err=>console.warn(err));
   return card;
 }
+const thumbIO="IntersectionObserver"in window?new IntersectionObserver(es=>{es.forEach(e=>{if(!e.isIntersecting)return;thumbIO.unobserve(e.target);const j=e.target._tj;if(j){e.target._tj=null;thumbnail(j.it,j.cv).catch(()=>{})}})},{rootMargin:LOW_END?"300px":"700px"}):null;
 function renderGrid(){
+  if(thumbIO)thumbIO.disconnect();
   const grid=$("pageGrid"),bar=$("groupBar"),groups=getGroups(),multi=groups.length>=2;
   if(!multi)openGroups.clear();else[...openGroups].forEach(k=>{if(!groups.some(g=>g.key===k))openGroups.delete(k)});
   grid.innerHTML="";bar.innerHTML="";grid.className="page-grid";updateCount();bar.classList.add("hidden");
@@ -661,7 +714,7 @@ function renderGrid(){
       liveLast=it.id;liveMovePages(card,it.id);
     };
     card.ondrop=e=>{e.preventDefault();e.stopPropagation();commitLive()};
-    grid.append(card);thumbnail(it,cv).catch(err=>console.warn(err));
+    grid.append(card);if(thumbIO){card._tj={it,cv};thumbIO.observe(card)}else thumbnail(it,cv).catch(err=>console.warn(err));
   });
 }
 function selectPage(id,i,e){
@@ -669,11 +722,42 @@ function selectPage(id,i,e){
   if(e.ctrlKey||e.metaKey){selectedPages.has(id)?selectedPages.delete(id):selectedPages.add(id)}
   else if(e.shiftKey&&selectedPages.size){const chosen=vis.map((p,j)=>selectedPages.has(p.id)?j:-1).filter(j=>j>=0),anchor=chosen.length?chosen.at(-1):vi;selectedPages.clear();for(let j=Math.min(vi,anchor);j<=Math.max(vi,anchor);j++)selectedPages.add(vis[j].id)}
   else{selectedPages.clear();selectedPages.add(id)}
-  renderGrid()}
+  refreshSelection()}
+function refreshSelection(){
+  if($("enhanceScope").value!=="all"){renderGrid();return}
+  document.querySelectorAll("#pageGrid .page-card").forEach(c=>c.classList.toggle("selected",selectedPages.has(c.dataset.id)));
+  updateSaveButton();
+}
 function selectedIndexes(){return pages.map((p,i)=>selectedPages.has(p.id)?i:-1).filter(i=>i>=0)}
-$("selectAllButton").onclick=()=>{if(selectedPages.size===pages.length)selectedPages.clear();else pages.forEach(p=>selectedPages.add(p.id));renderGrid()};
+$("selectAllButton").onclick=()=>{if(selectedPages.size===pages.length)selectedPages.clear();else pages.forEach(p=>selectedPages.add(p.id));if(getGroups().length>=2)renderGrid();else refreshSelection()};
 $("rotateButton").onclick=()=>{if(!selectedPages.size)return showToast("Chọn trang cần xoay");pushHistory();pages.forEach(p=>{if(selectedPages.has(p.id)){p.rotation=(p.rotation+90)%360;clearShapeCrop(p)}});renderGrid()};
-$("duplicateButton").onclick=()=>{const ids=selectedIndexes();if(!ids.length)return showToast("Chọn trang cần nhân đôi");pushHistory();let inserted=0;ids.forEach(i=>{const original=pages[i+inserted];pages.splice(i+inserted+1,0,{...original,id:crypto.randomUUID()});inserted++});renderGrid()};
+function cloneItem(x,extra){return {...x,id:crypto.randomUUID(),cropMm:x.cropMm?{...x.cropMm}:undefined,perspectiveCrop:x.perspectiveCrop?x.perspectiveCrop.map(q=>({...q})):undefined,...extra}}
+function copyName(n){return String(n).replace(/ \(bản sao\)$/,"")+" (bản sao)"}
+$("duplicateButton").onclick=()=>{
+  if(!selectedPages.size)return showToast("Chọn trang hoặc tệp cần nhân đôi");
+  const groups=getGroups(),multi=groups.length>=2;
+  // Nhiều tệp: tệp nào được chọn đủ mọi trang thì nhân đôi thành 1 TỆP MỚI (2 tệp → 4 tệp)
+  const whole=new Set(multi?groups.filter(g=>g.items.length&&g.items.every(p=>selectedPages.has(p.id))).map(g=>g.key):[]);
+  pushHistory();
+  const lastIdx=new Map();pages.forEach((p,i)=>lastIdx.set(groupKey(p),i));
+  const newKey=new Map();whole.forEach(k=>newKey.set(k,"dup-"+crypto.randomUUID()));
+  const out=[],newSel=new Set();let fileCopies=0,pageCopies=0;
+  pages.forEach((p,i)=>{
+    out.push(p);const k=groupKey(p);
+    if(whole.has(k)){
+      if(lastIdx.get(k)===i){
+        const nk=newKey.get(k);
+        pages.filter(x=>groupKey(x)===k).forEach(x=>{const c=cloneItem(x,{group:nk,name:copyName(x.name)});out.push(c);newSel.add(c.id)});
+        fileCopies++;
+      }
+    }else if(selectedPages.has(p.id)){
+      const c=cloneItem(p);out.push(c);newSel.add(c.id);pageCopies++;
+    }
+  });
+  whole.forEach(k=>{if(openGroups.has(k))openGroups.add(newKey.get(k))});
+  pages=out;selectedPages=newSel;renderGrid();
+  showToast(fileCopies?`Đã nhân đôi ${fileCopies} tệp thành ${fileCopies} tệp mới`+(pageCopies?` và ${pageCopies} trang lẻ`:""):`Đã nhân đôi ${pageCopies} trang`);
+};
 $("deleteButton").onclick=()=>{if(!selectedPages.size)return showToast("Chọn trang cần xóa");pushHistory();pages=pages.filter(p=>!selectedPages.has(p.id));selectedPages.clear();renderGrid()};
 $("clearButton").onclick=()=>{if(pages.length&&confirm("Xóa toàn bộ trang?")){pages=[];documents=[];thumbCache.clear();thumbQueue.length=0;openGroups.clear();undoStack.length=0;redoStack.length=0;selectedPages.clear();renderGrid();updateHistoryButtons()}};
 
@@ -996,16 +1080,16 @@ $("rectCropButton").onclick=()=>{const indexes=selectedIndexes();if(!indexes.len
 $("closePreview").onclick=()=>{$("previewModal").classList.add("hidden");manualCropState=null;exitManualCropMode()};$("previewModal").onclick=e=>{if(e.target===$("previewModal")){$("previewModal").classList.add("hidden");manualCropState=null;exitManualCropMode()}};
 $("previousPageButton").onclick=async()=>{if(previewIndex>0){previewIndex--;await renderPreview()}};
 $("nextPageButton").onclick=async()=>{if(previewIndex<pages.length-1){previewIndex++;await renderPreview()}};
-document.addEventListener("keydown",async e=>{if((e.ctrlKey||e.metaKey)&&!manualCropState&&!anyModalOpen()&&!$("app").classList.contains("hidden")&&!/INPUT|SELECT|TEXTAREA/.test(document.activeElement?.tagName||"")){const k=e.key.toLowerCase();if(k==="z"&&!e.shiftKey){e.preventDefault();undo();return}if(k==="y"||(k==="z"&&e.shiftKey)){e.preventDefault();redo();return}}if(e.key==="Escape"){closeStamp();closeMerge();closeMove();closeMoveTo();$("previewModal").classList.add("hidden");manualCropState=null;exitManualCropMode()}if(!$("previewModal").classList.contains("hidden")&&!manualCropState){if(e.key==="ArrowLeft"&&previewIndex>0){previewIndex--;await renderPreview()}if(e.key==="ArrowRight"&&previewIndex<pages.length-1){previewIndex++;await renderPreview()}}if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="a"&&!$("app").classList.contains("hidden")&&!anyModalOpen()&&!/INPUT|SELECT|TEXTAREA/.test(document.activeElement?.tagName||"")){e.preventDefault();pages.forEach(p=>selectedPages.add(p.id));renderGrid()}});
+document.addEventListener("keydown",async e=>{if((e.ctrlKey||e.metaKey)&&!manualCropState&&!anyModalOpen()&&!$("app").classList.contains("hidden")&&!/INPUT|SELECT|TEXTAREA/.test(document.activeElement?.tagName||"")){const k=e.key.toLowerCase();if(k==="z"&&!e.shiftKey){e.preventDefault();undo();return}if(k==="y"||(k==="z"&&e.shiftKey)){e.preventDefault();redo();return}}if(e.key==="Escape"){if(saveCtx){finishSave(false);return}closeStamp();closeMerge();closeMove();closeMoveTo();$("previewModal").classList.add("hidden");manualCropState=null;exitManualCropMode()}if(!$("previewModal").classList.contains("hidden")&&!manualCropState){if(e.key==="ArrowLeft"&&previewIndex>0){previewIndex--;await renderPreview()}if(e.key==="ArrowRight"&&previewIndex<pages.length-1){previewIndex++;await renderPreview()}}if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="a"&&!$("app").classList.contains("hidden")&&!anyModalOpen()&&!/INPUT|SELECT|TEXTAREA/.test(document.activeElement?.tagName||"")){e.preventDefault();pages.forEach(p=>selectedPages.add(p.id));renderGrid()}});
 
 /* ====== DÙNG CHUNG: render trang thành canvas, lưu canvas thành trang PDF mới ====== */
-function anyModalOpen(){return ["previewModal","enhancePreviewModal","mergeModal","stampModal","moveModal","moveToModal","editorModal"].some(id=>!$(id).classList.contains("hidden"))}
-async function renderItemCanvas(item,{dpi,maxSide}={}){
+function anyModalOpen(){return ["previewModal","enhancePreviewModal","mergeModal","stampModal","moveModal","moveToModal","editorModal","saveModal"].some(id=>!$(id).classList.contains("hidden"))}
+async function renderItemCanvas(item,{dpi,maxSide,maxPx}={}){
   const d=sourceFor(item),p=await d.pdf.getPage(item.pageNum),rotation=((p.rotate||0)+item.rotation)%360;
   const vb=item.perspectiveCrop?undefined:cropViewBox(item,p);
   const base=p.getViewport({scale:1,rotation});
   let scale=dpi?dpi/72:maxSide/Math.max(base.width,base.height);
-  scale*=Math.min(1,Math.sqrt(26_000_000/(base.width*scale*base.height*scale)));
+  scale*=Math.min(1,Math.sqrt((maxPx||26_000_000)/(base.width*scale*base.height*scale)));
   const v=p.getViewport({scale,rotation,viewBox:vb});
   const c=document.createElement("canvas");c.width=Math.max(1,Math.ceil(v.width));c.height=Math.max(1,Math.ceil(v.height));
   const ctx=c.getContext("2d",{willReadFrequently:true});ctx.fillStyle="#fff";ctx.fillRect(0,0,c.width,c.height);
@@ -1410,7 +1494,7 @@ async function exportNormal(list=pages,fileName="PDF-Studio.pdf"){
     setProgress((i+1)/list.length*100,`Đang xuất trang ${i+1}/${list.length}${it.perspectiveCrop?(it.cropMode==="rect"?" · cắt chữ nhật":" · nắn freeform"):""}`);
     await new Promise(r=>setTimeout(r,0));
   }
-  downloadBytes(await out.save(),fileName);
+  return downloadBytes(await out.save(),fileName);
 }
 
 /* ====== KHỬ BÓNG v2: chia cho "bản đồ nền giấy" ====== */
@@ -1647,7 +1731,7 @@ async function exportEnhanced(cfg){
     setProgress((i+1)/pages.length*100,`Đang ${verb} trang ${i+1}/${pages.length} (${done}/${todo} trang áp dụng, ${dpi} DPI)...`);
     await new Promise(r=>setTimeout(r,0));
   }
-  const bytes=await out.save({useObjectStreams:true});downloadBytes(bytes,cfg.fileName||(mode==="bw"?"PDF-Studio-Scan-DenTrang.pdf":mode==="gray"?"PDF-Studio-Scan-Xam.pdf":"PDF-Studio-Da-Khu-Bong.pdf"));
+  const bytes=await out.save({useObjectStreams:true});return downloadBytes(bytes,cfg.fileName||(mode==="bw"?"PDF-Studio-Scan-DenTrang.pdf":mode==="gray"?"PDF-Studio-Scan-Xam.pdf":"PDF-Studio-Da-Khu-Bong.pdf"));
 }
 async function renderEnhancementComparison(magic){
   if(!pages.length)throw Error("Chưa có trang để xem thử");
@@ -1678,7 +1762,7 @@ $("previewEnhanceButton").onclick=async()=>{
 $("closeEnhancePreview").onclick=$("closeEnhancePreview2").onclick=()=>$("enhancePreviewModal").classList.add("hidden");
 $("enhancePreviewModal").onclick=e=>{if(e.target===$("enhancePreviewModal"))$("enhancePreviewModal").classList.add("hidden")};
 
-$("exportButton").onclick=async()=>{if(busy)return;setBusy(true);try{await exportNormal();$("enhanceStatus").textContent="Đã xuất PDF gốc.";showToast("Xuất PDF thành công")}catch(e){console.error(e);showToast("Lỗi xuất PDF: "+e.message)}finally{setBusy(false);setTimeout(()=>$("progressArea").classList.add("hidden"),1200)}};
+$("exportButton").onclick=async()=>{if(busy)return;setBusy(true);try{if(await exportNormal()){$("enhanceStatus").textContent="Đã xuất PDF gốc.";showToast("Xuất PDF thành công")}else showToast("Đã hủy lưu tệp")}catch(e){console.error(e);showToast("Lỗi xuất PDF: "+e.message)}finally{setBusy(false);setTimeout(()=>$("progressArea").classList.add("hidden"),1200)}};
 $("enhanceExportButton").onclick=async()=>{
   if(busy)return;if(!pages.length)return showToast("Hãy thêm PDF hoặc ảnh trước");
   const scope=$("enhanceScope").value,n=enhanceFlags().filter(Boolean).length;
@@ -1686,7 +1770,7 @@ $("enhanceExportButton").onclick=async()=>{
   if(n===0)return showToast("Không còn trang nào để khử bóng");
   if(!confirm(`Khử bóng ${n}/${pages.length} trang`+(n<pages.length?` (giữ nguyên ${pages.length-n} trang còn lại)`:"")+" và xuất PDF mới? Trang được khử bóng sẽ chuyển thành ảnh; chữ trên các trang đó có thể không còn chọn/tìm kiếm được."))return;
   setBusy(true);$("enhanceStatus").textContent="Đang phân tích và khử bóng từng trang...";
-  try{await exportEnhanced();$("enhanceStatus").textContent=`Hoàn tất: đã khử bóng ${n} trang và xuất PDF.`;showToast("Đã khử bóng và xuất PDF")}
+  try{if(await exportEnhanced()){$("enhanceStatus").textContent=`Hoàn tất: đã khử bóng ${n} trang và xuất PDF.`;showToast("Đã khử bóng và xuất PDF")}else{$("enhanceStatus").textContent="Đã hủy lưu tệp.";showToast("Đã hủy lưu tệp")}}
   catch(e){console.error(e);$("enhanceStatus").textContent="Có lỗi trong quá trình xử lý.";showToast("Lỗi xử lý: "+e.message)}
   finally{setBusy(false);setTimeout(()=>$("progressArea").classList.add("hidden"),1800)}
 };
@@ -1701,7 +1785,7 @@ $("magicExportButton").onclick=async()=>{
   if(n===0)return showToast("Hãy chọn các trang cần áp dụng Magic Color (hoặc chọn “Tất cả trang”)");
   if(!confirm(`Áp dụng Magic Color cho ${n}/${pages.length} trang`+(n<pages.length?` (giữ nguyên ${pages.length-n} trang còn lại)`:"")+" và xuất PDF mới? Trang được xử lý sẽ chuyển thành ảnh; chữ trên các trang đó có thể không còn chọn/tìm kiếm được."))return;
   setBusy(true);$("magicStatus").textContent="Đang xử lý Magic Color từng trang...";
-  try{await exportEnhanced({flags,dpi:Number($("magicDpi").value)||220,process:c=>magicCanvas(c,{sharpen:true}),verb:"xử lý Magic Color",fileName:"PDF-Studio-Magic-Color.pdf"});$("magicStatus").textContent=`Hoàn tất: đã áp dụng Magic Color cho ${n} trang.`;showToast("Đã áp dụng Magic Color và xuất PDF")}
+  try{const ok=await exportEnhanced({flags,dpi:Number($("magicDpi").value)||220,process:c=>magicCanvas(c,{sharpen:true}),verb:"xử lý Magic Color",fileName:"PDF-Studio-Magic-Color.pdf"});if(ok){$("magicStatus").textContent=`Hoàn tất: đã áp dụng Magic Color cho ${n} trang.`;showToast("Đã áp dụng Magic Color và xuất PDF")}else{$("magicStatus").textContent="Đã hủy lưu tệp.";showToast("Đã hủy lưu tệp")}}
   catch(e){console.error(e);$("magicStatus").textContent="Có lỗi trong quá trình xử lý.";showToast("Lỗi xử lý: "+e.message)}
   finally{setBusy(false);setTimeout(()=>$("progressArea").classList.add("hidden"),1800)}
 };
@@ -1746,13 +1830,13 @@ async function exportCompressed(){
     }
     if(bytes.length>limit)showToast("Chưa đạt "+fmtSize(limit)+" ở mức nén thấp nhất; thử bật thang xám hoặc bỏ bớt trang");
   }else bytes=await buildCompressed(dpi,q,gray,"Đang nén");
-  downloadBytes(bytes,"PDF-Studio-Nen.pdf");
+  if(!await downloadBytes(bytes,"PDF-Studio-Nen.pdf")){$("compressStatus").textContent="Đã hủy lưu tệp.";return false}
   $("compressStatus").textContent=`Hoàn tất: ${fmtSize(bytes.length)} (${dpi} DPI, JPEG ${Math.round(q*100)}%)`+(origSize?` · tệp gốc tổng ${fmtSize(origSize)}`:"");
 }
 $("compressExportButton").onclick=async()=>{
   if(busy)return;if(!pages.length)return showToast("Hãy thêm PDF hoặc ảnh trước");
   setBusy(true);$("compressStatus").textContent="Đang nén...";
-  try{await exportCompressed();showToast("Đã nén và xuất PDF")}
+  try{if(await exportCompressed()===false)showToast("Đã hủy lưu tệp");else showToast("Đã nén và xuất PDF")}
   catch(e){console.error(e);$("compressStatus").textContent="Có lỗi khi nén.";showToast("Lỗi nén: "+e.message)}
   finally{setBusy(false);setTimeout(()=>$("progressArea").classList.add("hidden"),1800)}
 };
@@ -1762,16 +1846,16 @@ $("saveSelectedButton").onclick=async()=>{
   if(!idx.length)return showToast("Hãy chọn các trang cần lưu (Shift+click để chọn dải, Ctrl+click để chọn rời)");
   setBusy(true);
   try{
-    await exportNormal(idx.map(i=>pages[i]),"PDF-Studio-trang-"+rangeLabel(idx)+".pdf");
-    $("enhanceStatus").textContent=`Đã lưu ${idx.length} trang đã chọn thành 1 file PDF.`;
-    showToast(`Đã lưu ${idx.length} trang thành 1 file PDF`);
+    const ok=await exportNormal(idx.map(i=>pages[i]),"PDF-Studio-trang-"+rangeLabel(idx)+".pdf");
+    if(ok){$("enhanceStatus").textContent=`Đã lưu ${idx.length} trang đã chọn thành 1 file PDF.`;showToast(`Đã lưu ${idx.length} trang thành 1 file PDF`)}
+    else showToast("Đã hủy lưu tệp");
   }catch(e){console.error(e);showToast("Lỗi lưu trang đã chọn: "+e.message)}
   finally{setBusy(false);setTimeout(()=>$("progressArea").classList.add("hidden"),1200)}
 };
 
 /* ====== IN TRỰC TIẾP ====== */
 // In một đoạn HTML bằng iframe ẩn (không cần mở tab mới)
-function printHTML(html){
+function printHTML(html,onDone){
   return new Promise(resolve=>{
     const f=document.createElement("iframe");
     f.style.cssText="position:fixed;left:-9999px;top:0;width:900px;height:700px;border:0";
@@ -1779,42 +1863,50 @@ function printHTML(html){
     const w=f.contentWindow,d=w.document;
     d.open();d.write(html);d.close();
     let cleaned=false;
-    const cleanup=()=>{if(cleaned)return;cleaned=true;setTimeout(()=>f.remove(),500)};
+    const cleanup=()=>{if(cleaned)return;cleaned=true;setTimeout(()=>{f.remove();if(onDone)onDone()},500)};
     w.onafterprint=cleanup;
-    setTimeout(cleanup,180000);
-    const imgs=[...d.images];
-    Promise.all(imgs.map(i=>i.complete?1:new Promise(r=>{i.onload=i.onerror=r}))).then(()=>{
-      setTimeout(()=>{try{w.focus();w.print()}catch(e){console.error(e);showToast("Không mở được hộp thoại in: "+e.message)}resolve()},250);
+    setTimeout(cleanup,900000);
+    Promise.all([...d.images].map(i=>i.complete?1:new Promise(r=>{i.onload=i.onerror=r}))).then(()=>{
+      setTimeout(()=>{try{w.focus();w.print()}catch(e){console.error(e);showToast("Không mở được hộp thoại in: "+e.message);cleanup()}resolve()},30);
     });
   });
 }
+const PRINT_DPI=LOW_END?120:150,PRINT_MAXPX=LOW_END?1.8e6:2.6e6;
 $("printSelectedButton").onclick=async()=>{
   if(busy)return;
   const idx=selectedIndexes();
   if(!idx.length)return showToast("Hãy chọn các trang cần in (Shift+click để chọn dải, Ctrl+click để chọn rời)");
   if(idx.length>80&&!confirm(`Bạn đang in ${idx.length} trang, có thể mất nhiều thời gian và bộ nhớ. Tiếp tục?`))return;
   setBusy(true);
+  const urls=[],revoke=()=>urls.forEach(u=>URL.revokeObjectURL(u));
+  let handed=false;
   try{
-    const sheets=[];
-    for(let n=0;n<idx.length;n++){
-      const cv=await renderItemCanvas(pages[idx[n]],{dpi:150});
-      sheets.push({src:cv.toDataURL("image/jpeg",.92),land:cv.width>cv.height});
-      cv.width=cv.height=1;
-      setProgress((n+1)/idx.length*100,`Đang chuẩn bị in trang ${n+1}/${idx.length}...`);
-      await new Promise(r=>setTimeout(r,0));
-    }
+    const n=idx.length,sheets=new Array(n);let next=0,done=0;
+    const work=async()=>{
+      while(next<n){
+        const k=next++,cv=await renderItemCanvas(pages[idx[k]],{dpi:PRINT_DPI,maxPx:PRINT_MAXPX});
+        const land=cv.width>cv.height,blob=await new Promise(r=>cv.toBlob(r,"image/jpeg",.88));
+        cv.width=cv.height=1;
+        if(!blob)throw Error("Không tạo được ảnh trang "+(idx[k]+1));
+        const url=URL.createObjectURL(blob);urls.push(url);sheets[k]={url,land};
+        setProgress(++done/n*100,`Đang chuẩn bị in trang ${done}/${n}...`);
+        await new Promise(r=>setTimeout(r,0));
+      }
+    };
+    await Promise.all(Array.from({length:Math.min(n,LOW_END?1:2)},work));
     const html=`<!DOCTYPE html><html><head><meta charset="utf-8"><title>PDF Studio - In trang</title><style>
 @page{size:A4 portrait;margin:0}@page land{size:A4 landscape;margin:0}
 html,body{margin:0;padding:0;background:#fff}
-.pg{width:209mm;height:296mm;display:flex;align-items:center;justify-content:center;overflow:hidden;break-after:page;page-break-after:always}
+.pg{width:209mm;height:296mm;overflow:hidden;break-after:page;page-break-after:always}
 .pg.land{page:land;width:296mm;height:209mm}
 .pg:last-child{break-after:auto;page-break-after:auto}
-.pg img{max-width:100%;max-height:100%;object-fit:contain;display:block}
-</style></head><body>${sheets.map(s=>`<div class="pg${s.land?" land":""}"><img src="${s.src}"></div>`).join("")}</body></html>`;
-    showToast(`Đang mở hộp thoại in ${idx.length} trang...`);
-    await printHTML(html);
+.pg img{display:block;width:100%;height:100%;object-fit:contain}
+</style></head><body>${sheets.map(s=>`<div class="pg${s.land?" land":""}"><img src="${s.url}"></div>`).join("")}</body></html>`;
+    showToast(`Đang mở hộp thoại in ${n} trang...`);
+    handed=true;
+    await printHTML(html,revoke);
   }catch(e){console.error(e);showToast("Lỗi in trang đã chọn: "+e.message)}
-  finally{setBusy(false);setTimeout(()=>$("progressArea").classList.add("hidden"),800)}
+  finally{if(!handed)revoke();setBusy(false);setTimeout(()=>$("progressArea").classList.add("hidden"),800)}
 };
 
 /* ====== TRÌNH SOẠN THẢO VĂN BẢN (kiểu Word) ====== */
@@ -2007,9 +2099,9 @@ function edPrint(){
   printHTML(edDocHTML(false));
 }
 $("edPrint").onclick=edPrint;
-$("edSaveDoc").onclick=()=>{
-  const blob=new Blob(["\ufeff"+edDocHTML(true)],{type:"application/msword"}),url=URL.createObjectURL(blob),a=document.createElement("a");
-  a.href=url;a.download="Van-ban.doc";a.click();setTimeout(()=>URL.revokeObjectURL(url),4000);showToast("Đã tải Van-ban.doc");
+$("edSaveDoc").onclick=async()=>{
+  const blob=new Blob(["﻿"+edDocHTML(true)],{type:"application/msword"});
+  if(await downloadBytes(blob,"Van-ban.doc","application/msword"))showToast("Đã lưu văn bản .doc");
 };
 $("edClear").onclick=()=>{if(confirm("Xóa toàn bộ nội dung văn bản?")){edResetEmpty();edRange=null;edSaveDraft();ed.focus()}};
 function openEditor(){
