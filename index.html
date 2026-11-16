@@ -121,7 +121,33 @@ button,input,select{font:inherit}button{cursor:pointer}.hidden{display:none!impo
 .ed-toolbar label.ed-lbl{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:4px}
 .ed-sep{width:1px;height:24px;background:var(--border);margin:0 2px}
 .ed-scroll{background:#343642;overflow:auto;flex:1;padding:20px;display:block}
-.ed-page{background:#fff;width:210mm;min-height:297mm;padding:20mm;margin:0 auto;box-shadow:0 5px 25px #0006;outline:none;color:#000;font-family:"Times New Roman",Times,serif;font-size:13pt;line-height:1.3}
+.ed-wrap{position:relative;display:grid;grid-template-columns:22px max-content;grid-template-rows:22px auto;width:max-content;margin:0 auto}
+.ed-corner{background:#e3e5ee;position:sticky;top:0;left:0;z-index:6}
+.ed-hr,.ed-vr{position:relative;background:#f4f5fa;user-select:none;color:#555;touch-action:none}
+.ed-hr{height:22px;border-bottom:1px solid #c9ccda;position:sticky;top:0;z-index:5}
+.ed-vr{width:22px;align-self:start;border-right:1px solid #c9ccda}
+.ed-hr .tk{position:absolute;bottom:0;width:1px;background:#888}
+.ed-vr .tk{position:absolute;right:0;height:1px;background:#888}
+.ed-hr .t1{height:4px}.ed-hr .t5{height:7px}.ed-hr .t10{height:11px}
+.ed-vr .t1{width:4px}.ed-vr .t5{width:7px}.ed-vr .t10{width:11px}
+.ed-hr .lb,.ed-vr .lb{position:absolute;font-size:9px;font-style:normal;font-weight:400;color:#555;pointer-events:none}
+.ed-hr .lb{top:1px;transform:translateX(-50%)}
+.ed-vr .lb{left:3px;transform:translateY(-50%)}
+.ed-hr .rz,.ed-vr .rz{position:absolute;background:#d3d6e4;pointer-events:none}
+.ed-hr .rz{top:0;bottom:0}.ed-hr .rz[data-z=l]{left:0}.ed-hr .rz[data-z=r]{right:0}
+.ed-vr .rz{left:0;right:0}.ed-vr .rz[data-z=t]{top:0}.ed-vr .rz[data-z=b]{bottom:0}
+.ed-hr .rm,.ed-vr .rm{position:absolute;background:var(--primary);z-index:2}
+.ed-hr .rm{top:3px;width:14px;height:16px;clip-path:polygon(50% 100%,100% 55%,100% 0,0 0,0 55%);cursor:ew-resize}
+.ed-vr .rm{left:3px;width:16px;height:14px;clip-path:polygon(100% 50%,55% 100%,0 100%,0 0,55% 0);cursor:ns-resize}
+.ed-hr .rm:hover,.ed-vr .rm:hover{background:var(--primary2)}
+.ed-guide{position:absolute;pointer-events:none;z-index:7}
+.ed-guide.v{top:0;bottom:0;width:0;border-left:1px dashed #635bff}
+.ed-guide.h{left:0;right:0;height:0;border-top:1px dashed #635bff}
+.ed-page{position:relative;background:#fff;width:210mm;min-height:297mm;padding:20mm;margin:0;box-shadow:0 5px 25px #0006;outline:none;color:#000;font-family:"Times New Roman",Times,serif;font-size:13pt;line-height:1.3}
+.ed-tb{position:absolute;border:1px solid #000;padding:6px;box-sizing:border-box;overflow:hidden;resize:both;min-width:20mm;min-height:8mm;cursor:move;z-index:2;outline:none;background:transparent}
+.ed-tb.sel{outline:2px solid var(--primary);outline-offset:1px}
+.ed-tb-body{outline:none;min-height:100%;cursor:text}
+.ed-tb-body p{margin:0}
 .ed-page p{margin:0 0 6pt}
 .ed-page ul,.ed-page ol{margin:0 0 6pt}
 .ed-page table{border-collapse:collapse}
@@ -138,7 +164,7 @@ button,input,select{font:inherit}button{cursor:pointer}.hidden{display:none!impo
 </div></div>
 
 <div class="app hidden" id="app">
-<header class="header"><div class="brand"><div class="brand-icon">📄</div><div><h1>PDF Studio Ver 3.0</h1><small>Quản lý, chỉnh sửa và làm đẹp PDF</small></div></div>
+<header class="header"><div class="brand"><div class="brand-icon">📄</div><div><h1>PDF Studio Ver 4.0</h1><small>Quản lý, chỉnh sửa và làm đẹp PDF</small></div></div>
 <div class="header-actions"><button class="btn" id="editorButton" title="Mở trình soạn thảo văn bản kiểu Word">📝 Soạn văn bản</button><button class="btn" id="addFilesButton">＋ Thêm tệp</button><button class="btn primary" id="exportButton">Xuất PDF ↓</button></div></header>
 
 <section class="panel"><div class="dropzone" id="dropzone"><div class="big-icon">📂</div><h3>Kéo thả PDF hoặc hình ảnh vào đây</h3><p>Hỗ trợ PDF, JPG, JPEG, PNG và WEBP</p><p>Hoặc nhấn vào đây để chọn tệp từ máy tính</p></div>
@@ -303,6 +329,23 @@ button,input,select{font:inherit}button{cursor:pointer}.hidden{display:none!impo
 <button class="ed-btn" data-cmd="redo" title="Làm lại (Ctrl+Y)">↷</button>
 <button class="ed-btn" id="edImgBtn" type="button" title="Chèn ảnh vào văn bản">🖼 Ảnh</button>
 <span class="ed-sep"></span>
+<label class="ed-lbl" title="Hướng giấy">Khổ giấy: <select id="edOrient"><option value="port">A4 dọc</option><option value="land">A4 ngang</option></select></label>
+<button class="ed-btn" id="edMarginReset" type="button" title="Đặt lại các lề về 20 mm">↺ Lề</button>
+<span class="ed-sep"></span>
+<button class="ed-btn" id="edTbBtn" type="button" title="Chèn hộp văn bản (textbox) có thể di chuyển">🔲 Textbox</button>
+<span id="edTbTools" style="display:contents">
+<button class="ed-btn" data-mv="-1,0" title="Dời textbox sang trái (←)">◀</button>
+<button class="ed-btn" data-mv="0,-1" title="Dời textbox lên (↑)">▲</button>
+<button class="ed-btn" data-mv="0,1" title="Dời textbox xuống (↓)">▼</button>
+<button class="ed-btn" data-mv="1,0" title="Dời textbox sang phải (→)">▶</button>
+<select id="edStep" title="Bước dời mỗi lần bấm phím mũi tên (giữ Shift: ×5)"><option value="0.05">0,05 mm</option><option value="0.1">0,1 mm</option><option value="0.25" selected>0,25 mm</option><option value="0.5">0,5 mm</option><option value="1">1 mm</option><option value="2">2 mm</option><option value="5">5 mm</option></select>
+<button class="ed-btn" id="edTbBorder" type="button" title="Bật / tắt viền textbox">Viền</button>
+<label class="ed-lbl" title="Chọn màu viền cho textbox đang chọn">Màu viền<input type="color" id="edTbBorderColor" value="#000000"></label>
+<button class="ed-btn" id="edTbTransp" type="button" title="Đặt viền trong suốt (bấm lần nữa để trả lại màu)">⬚ Trong suốt</button>
+<select id="edTbBorderW" title="Độ dày viền textbox"><option value="0.5">Viền 0,5 px</option><option value="1" selected>Viền 1 px</option><option value="2">Viền 2 px</option><option value="3">Viền 3 px</option><option value="4">Viền 4 px</option><option value="6">Viền 6 px</option></select>
+<button class="ed-btn" id="edTbDel" type="button" title="Xóa textbox đang chọn">✕ Textbox</button>
+</span>
+<span class="ed-sep"></span>
 <label class="ed-lbl">Bảng: <input type="number" id="edRows" min="1" max="30" value="3" title="Số hàng"> hàng ×<input type="number" id="edCols" min="1" max="12" value="3" title="Số cột"> cột</label>
 <button class="ed-btn" id="edTable" type="button" title="Chèn bảng tại vị trí con trỏ">▦ Chèn bảng</button>
 <span id="edTableTools" style="display:contents">
@@ -316,8 +359,12 @@ button,input,select{font:inherit}button{cursor:pointer}.hidden{display:none!impo
 <label class="ed-lbl" title="Tô màu ô đang chọn">Ô<input type="color" id="edCellColor" value="#e8eaf6"></label>
 </span>
 </div>
-<div class="ed-scroll" id="edScroll"><div id="edPage" class="ed-page" contenteditable="true" spellcheck="false"><p><br></p></div></div>
-<div class="ed-hint">Tab trong bảng: sang ô kế tiếp (ô cuối sẽ tự thêm hàng). Nội dung được tự lưu nháp trong trình duyệt. In: bấm “🖨 In” hoặc Ctrl+P — chọn “Lưu dưới dạng PDF” nếu muốn xuất PDF.</div>
+<div class="ed-scroll" id="edScroll"><div class="ed-wrap" id="edWrap">
+<div class="ed-corner"></div><div class="ed-hr" id="edHR"></div><div class="ed-vr" id="edVR"></div>
+<div id="edPage" class="ed-page" contenteditable="true" spellcheck="false"><p><br></p></div>
+<div class="ed-guide hidden" id="edGuide"></div>
+</div></div>
+<div class="ed-hint"><b id="edMarginInfo"></b> · Kéo mũi tên tím trên thước để chỉnh lề. Textbox: bấm vào viền để chọn, kéo hoặc dùng phím ← ↑ ↓ → để dời (Shift: ×5), Enter / nhấp đúp để gõ chữ, Esc để thoát chế độ gõ, Delete để xóa; chọn textbox rồi dùng “Màu viền” / “⬚ Trong suốt” / độ dày viền trên thanh công cụ; khi đang gõ trong textbox, Alt + mũi tên vẫn dời được. Tab trong bảng: sang ô kế tiếp. Nội dung tự lưu nháp. In: “🖨 In” hoặc Ctrl+P — chọn “Lưu dưới dạng PDF” để xuất PDF.</div>
 </div></div>
 <input type="file" id="edImgInput" accept="image/*" hidden>
 <div class="toast hidden" id="toast"></div>
@@ -1675,9 +1722,26 @@ html,body{margin:0;padding:0;background:#fff}
 const ED_KEY="pdfstudio_editor_draft_v1";
 const ed=$("edPage");
 let edRange=null,edPendingSize=null;
-const ED_BASE_CSS=`body{margin:0;font-family:"Times New Roman",Times,serif;font-size:13pt;line-height:1.3;color:#000}p{margin:0 0 6pt}ul,ol{margin:0 0 6pt}table{border-collapse:collapse}td,th{vertical-align:top}img{max-width:100%}`;
-function edSaveDraft(){try{localStorage.setItem(ED_KEY,ed.innerHTML)}catch(e){}}
-function edLoadDraft(){try{const v=localStorage.getItem(ED_KEY);if(v&&v.trim())ed.innerHTML=v}catch(e){}}
+const ED_BASE_CSS=`body{margin:0;font-family:"Times New Roman",Times,serif;font-size:13pt;line-height:1.3;color:#000}p{margin:0 0 6pt}ul,ol{margin:0 0 6pt}table{border-collapse:collapse}td,th{vertical-align:top}img{max-width:100%}.sheet{position:relative}.ed-tb{position:absolute;border:1px solid #000;padding:6px;box-sizing:border-box;overflow:hidden}.ed-tb p{margin:0}`;
+function edSaveDraft(){try{localStorage.setItem(ED_KEY,edClone("draft"))}catch(e){}}
+function edLoadDraft(){
+  try{const v=localStorage.getItem(ED_KEY);if(v&&v.trim())ed.innerHTML=v}catch(e){}
+  ed.querySelectorAll(".ed-tb").forEach(tb=>{tb.classList.remove("sel");tb.tabIndex=0;tb.contentEditable="false";const b=tb.querySelector(".ed-tb-body");if(b)b.contentEditable="true"});
+}
+// Bản sao nội dung để lưu nháp hoặc in (bỏ trạng thái chọn; khi in thì dời toạ độ textbox theo lề)
+function edClone(mode){
+  const c=ed.cloneNode(true);
+  c.querySelectorAll(".ed-tb").forEach(tb=>{
+    tb.classList.remove("sel");
+    if(mode==="print"){
+      tb.removeAttribute("tabindex");tb.removeAttribute("contenteditable");
+      tb.style.left=((parseFloat(tb.dataset.x)||0)-edCfg.l)+"mm";
+      tb.style.top=((parseFloat(tb.dataset.y)||0)-edCfg.t)+"mm";
+      tb.querySelectorAll("[contenteditable]").forEach(x=>x.removeAttribute("contenteditable"));
+    }
+  });
+  return c.innerHTML;
+}
 function edResetEmpty(){ed.innerHTML="<p><br></p>"}
 function edInRange(n){return n&&ed.contains(n.nodeType===3?n.parentNode:n)}
 document.addEventListener("selectionchange",()=>{
@@ -1781,6 +1845,7 @@ $("edCellColor").addEventListener("input",e=>{
 });
 // Phím Tab & phím tắt
 ed.addEventListener("keydown",e=>{
+  if(edTbKey(e))return;
   if(e.key==="Tab"){
     e.preventDefault();
     const cell=edCurrentCell();
@@ -1815,9 +1880,9 @@ $("edImgInput").onchange=e=>{
 // In / lưu .doc / xóa
 function edDocHTML(forWord){
   const head=forWord
-    ?`<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>Văn bản</title><style>@page{size:21cm 29.7cm;margin:2cm}${ED_BASE_CSS}</style></head>`
-    :`<!DOCTYPE html><html><head><meta charset="utf-8"><title>Văn bản</title><style>@page{size:A4;margin:20mm}${ED_BASE_CSS}</style></head>`;
-  return head+"<body>"+ed.innerHTML+"</body></html>";
+    ?`<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>Văn bản</title><style>@page Section1{size:${edPageCss(true)};mso-page-orientation:${edCfg.land?"landscape":"portrait"};margin:${edMarginCss()}}div.Section1{page:Section1}${ED_BASE_CSS}</style></head>`
+    :`<!DOCTYPE html><html><head><meta charset="utf-8"><title>Văn bản</title><style>@page{size:${edPageCss(false)};margin:${edMarginCss()}}${ED_BASE_CSS}</style></head>`;
+  return head+'<body><div class="Section1 sheet">'+edClone("print")+"</div></body></html>";
 }
 function edPrint(){
   const txt=ed.innerText.replace(/\s/g,"");
@@ -1835,9 +1900,216 @@ function openEditor(){
   setTimeout(()=>{ed.focus();try{document.execCommand("defaultParagraphSeparator",false,"p")}catch(e){}},50);
 }
 function closeEditor(){edSaveDraft();$("editorModal").classList.add("hidden")}
-$("editorButton").onclick=openEditor;
+$("editorButton").onclick=()=>{openEditor();setTimeout(edReplaceTbs,60)};
 $("closeEditor").onclick=closeEditor;
-edLoadDraft();
+
+/* ====== KHỔ GIẤY (dọc / ngang), LỀ & THƯỚC KẺ ====== */
+const ED_CFG_KEY="pdfstudio_editor_cfg_v1",MM_PX=96/25.4;
+let edCfg={land:false,t:20,r:20,b:20,l:20};
+function edLoadCfg(){try{const c=JSON.parse(localStorage.getItem(ED_CFG_KEY)||"null");if(c&&typeof c==="object")edCfg={...edCfg,...c}}catch(e){}}
+function edSaveCfg(){try{localStorage.setItem(ED_CFG_KEY,JSON.stringify(edCfg))}catch(e){}}
+function edPageMM(){return edCfg.land?{w:297,h:210}:{w:210,h:297}}
+function edPageCss(word){const l=edCfg.land;return word?(l?"29.7cm 21cm":"21cm 29.7cm"):("A4 "+(l?"landscape":"portrait"))}
+function edMarginCss(){return `${edCfg.t}mm ${edCfg.r}mm ${edCfg.b}mm ${edCfg.l}mm`}
+function edBuildRulers(){
+  const {w,h}=edPageMM(),hr=$("edHR"),vr=$("edVR");
+  hr.style.width=w+"mm";vr.style.height=h+"mm";
+  let a="",b="";
+  for(let i=0;i<=w;i++){
+    a+=`<i class="tk ${i%10===0?"t10":i%5===0?"t5":"t1"}" style="left:${i}mm"></i>`;
+    if(i%10===0&&i>0&&i<w)a+=`<b class="lb" style="left:${i}mm">${i/10}</b>`;
+  }
+  for(let i=0;i<=h;i++){
+    b+=`<i class="tk ${i%10===0?"t10":i%5===0?"t5":"t1"}" style="top:${i}mm"></i>`;
+    if(i%10===0&&i>0&&i<h)b+=`<b class="lb" style="top:${i}mm">${i/10}</b>`;
+  }
+  a+=`<div class="rz" data-z="l"></div><div class="rz" data-z="r"></div><div class="rm" data-m="l" title="Kéo để chỉnh lề trái"></div><div class="rm" data-m="r" title="Kéo để chỉnh lề phải"></div>`;
+  b+=`<div class="rz" data-z="t"></div><div class="rz" data-z="b"></div><div class="rm" data-m="t" title="Kéo để chỉnh lề trên"></div><div class="rm" data-m="b" title="Kéo để chỉnh lề dưới"></div>`;
+  hr.innerHTML=a;vr.innerHTML=b;
+  edMarkMargins();
+}
+function edMarkMargins(){
+  const {w,h}=edPageMM(),c=edCfg,q=s=>document.querySelector(s);
+  q("#edHR [data-z=l]").style.width=c.l+"mm";q("#edHR [data-z=r]").style.width=c.r+"mm";
+  q("#edHR [data-m=l]").style.left=`calc(${c.l}mm - 7px)`;q("#edHR [data-m=r]").style.left=`calc(${w-c.r}mm - 7px)`;
+  q("#edVR [data-z=t]").style.height=c.t+"mm";q("#edVR [data-z=b]").style.height=c.b+"mm";
+  q("#edVR [data-m=t]").style.top=`calc(${c.t}mm - 7px)`;q("#edVR [data-m=b]").style.top=`calc(${h-c.b}mm - 7px)`;
+  ed.style.padding=edMarginCss();
+  $("edMarginInfo").textContent=`Lề (mm): trái ${c.l} · phải ${c.r} · trên ${c.t} · dưới ${c.b}`;
+}
+function edApplyCfg(){
+  const {w,h}=edPageMM();
+  ed.style.width=w+"mm";ed.style.minHeight=h+"mm";
+  $("edOrient").value=edCfg.land?"land":"port";
+  edBuildRulers();edReplaceTbs();edSaveCfg();edSaveDraft();
+}
+$("edOrient").onchange=()=>{edCfg.land=$("edOrient").value==="land";edApplyCfg();showToast(edCfg.land?"Đã chuyển sang A4 ngang":"Đã chuyển sang A4 dọc")};
+$("edMarginReset").onclick=()=>{edCfg.t=edCfg.r=edCfg.b=edCfg.l=20;edMarkMargins();edSaveCfg();showToast("Đã đặt lại lề 20 mm")};
+// kéo mũi tên tím trên thước để đổi lề
+let edRulerDrag=null;
+function edGuideMove(e){
+  const g=$("edGuide"),wr=$("edWrap").getBoundingClientRect(),d=edRulerDrag;if(!d)return;
+  if(d.m==="l"||d.m==="r"){g.className="ed-guide v";g.style.top="";g.style.left=(e.clientX-wr.left)+"px"}
+  else{g.className="ed-guide h";g.style.left="";g.style.top=(e.clientY-wr.top)+"px"}
+}
+[$("edHR"),$("edVR")].forEach(r=>{
+  r.addEventListener("pointerdown",e=>{
+    const m=e.target.dataset&&e.target.dataset.m;if(!m)return;
+    edRulerDrag={m};e.target.setPointerCapture(e.pointerId);e.preventDefault();edGuideMove(e);
+  });
+  r.addEventListener("pointermove",e=>{
+    const d=edRulerDrag;if(!d)return;
+    const {w,h}=edPageMM(),c=edCfg,MIN=40;
+    if(d.m==="l"||d.m==="r"){
+      const rc=$("edHR").getBoundingClientRect(),mm=(e.clientX-rc.left)/rc.width*w;
+      if(d.m==="l")c.l=clamp(Math.round(mm),0,w-c.r-MIN);else c.r=clamp(Math.round(w-mm),0,w-c.l-MIN);
+    }else{
+      const rc=$("edVR").getBoundingClientRect(),mm=(e.clientY-rc.top)/rc.height*h;
+      if(d.m==="t")c.t=clamp(Math.round(mm),0,h-c.b-MIN);else c.b=clamp(Math.round(h-mm),0,h-c.t-MIN);
+    }
+    edMarkMargins();edGuideMove(e);
+  });
+  const end=()=>{if(!edRulerDrag)return;edRulerDrag=null;$("edGuide").className="ed-guide hidden";edSaveCfg()};
+  r.addEventListener("pointerup",end);r.addEventListener("pointercancel",end);
+});
+
+/* ====== TEXTBOX: chèn, kéo, dời bằng phím mũi tên ====== */
+let tbSel=null,tbDrag=null;
+const TB_ARROWS={ArrowLeft:[-1,0],ArrowRight:[1,0],ArrowUp:[0,-1],ArrowDown:[0,1]};
+function markSel(tb){
+  ed.querySelectorAll(".ed-tb.sel").forEach(x=>{if(x!==tb)x.classList.remove("sel")});
+  tbSel=tb||null;if(tb)tb.classList.add("sel");
+  tbSyncBorderUI(tb);
+}
+// Đồng bộ ô chọn màu / độ dày viền với textbox đang chọn
+function tbRgbToHex(c){
+  const m=(c||"").match(/[\d.]+/g);if(!m||m.length<3)return null;
+  return "#"+m.slice(0,3).map(v=>Math.round(Number(v)).toString(16).padStart(2,"0")).join("");
+}
+function tbIsTransparent(tb){
+  const m=getComputedStyle(tb).borderTopColor.match(/[\d.]+/g)||[];
+  return m.length>3&&parseFloat(m[3])===0;
+}
+function tbSyncBorderUI(tb){
+  const t=$("edTbTransp"),c=$("edTbBorderColor"),w=$("edTbBorderW");
+  if(!t||!c||!w)return;
+  if(!tb){t.classList.remove("on");return}
+  const tr=tbIsTransparent(tb);
+  t.classList.toggle("on",tr);
+  if(tr){if(tb.dataset.bc)c.value=tb.dataset.bc}
+  else{const h=tbRgbToHex(getComputedStyle(tb).borderTopColor);if(h)c.value=h}
+  const px=parseFloat(getComputedStyle(tb).borderTopWidth)||parseFloat(tb.style.borderWidth)||0;
+  if(px>0){const o=[...w.options].find(o=>Number(o.value)===px);if(o)w.value=o.value}
+}
+// Bảo đảm viền đang hiển thị (nếu đang tắt "Viền" thì bật lại khi chỉnh màu / độ dày)
+function tbEnsureBorder(tb){
+  if(tb.style.borderStyle==="none"||!tb.style.borderStyle)tb.style.borderStyle="solid";
+  const bw=tb.style.borderWidth;
+  if(!bw||bw==="medium")tb.style.borderWidth=$("edTbBorderW").value+"px";
+}
+function tbSelect(tb){markSel(tb);edRange=null;tb.focus({preventScroll:true})}
+function tbPlace(tb,x,y){
+  const {w,h}=edPageMM(),tw=tb.offsetWidth/MM_PX,th=tb.offsetHeight/MM_PX;
+  x=Math.round(clamp(x,0,Math.max(0,w-tw))*100)/100;y=Math.round(clamp(y,0,Math.max(0,h-th))*100)/100;
+  tb.dataset.x=x;tb.dataset.y=y;tb.style.left=x+"mm";tb.style.top=y+"mm";
+}
+function tbMove(tb,dx,dy){tbPlace(tb,(parseFloat(tb.dataset.x)||0)+dx,(parseFloat(tb.dataset.y)||0)+dy);edSaveDraft()}
+function edReplaceTbs(){ed.querySelectorAll(".ed-tb").forEach(tb=>tbPlace(tb,parseFloat(tb.dataset.x)||0,parseFloat(tb.dataset.y)||0))}
+function tbEdit(tb){
+  const b=tb.querySelector(".ed-tb-body");if(!b)return;
+  b.focus();const r=document.createRange();r.selectNodeContents(b);r.collapse(false);const s=getSelection();s.removeAllRanges();s.addRange(r);
+}
+function tbRemove(tb){
+  if(tb.innerText.trim()&&!confirm("Xóa textbox này và nội dung bên trong?"))return;
+  tb.remove();markSel(null);ed.focus();edSaveDraft();
+}
+function edAddTextbox(){
+  const n=ed.querySelectorAll(".ed-tb").length,tb=document.createElement("div");
+  tb.className="ed-tb";tb.tabIndex=0;tb.contentEditable="false";tb.style.width="60mm";tb.style.height="25mm";
+  tb.innerHTML='<div class="ed-tb-body" contenteditable="true">Văn bản</div>';
+  ed.appendChild(tb);
+  tbPlace(tb,edCfg.l+8+(n%6)*7,edCfg.t+8+(n%6)*7);
+  tbSelect(tb);edSaveDraft();
+  showToast("Đã chèn textbox · dùng phím ← ↑ ↓ → để dời, Enter hoặc nhấp đúp để gõ chữ");
+}
+function edTbKey(e){
+  const tb=e.target.closest&&e.target.closest(".ed-tb");if(!tb)return false;
+  if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="p")return false;
+  const a=TB_ARROWS[e.key],step=(Number($("edStep").value)||1)*(e.shiftKey?5:1);
+  if(e.target===tb){ // chế độ dời: đang chọn khung textbox
+    if(a){e.preventDefault();tbMove(tb,a[0]*step,a[1]*step);return true}
+    if(e.key==="Enter"||e.key==="F2"){e.preventDefault();tbEdit(tb);return true}
+    if(e.key==="Delete"||e.key==="Backspace"){e.preventDefault();tbRemove(tb);return true}
+    if(e.key==="Escape"){e.preventDefault();e.stopPropagation();markSel(null);ed.focus();return true}
+    return true;
+  }
+  // đang gõ chữ trong textbox
+  if(e.key==="Escape"){e.preventDefault();e.stopPropagation();tbSelect(tb);return true}
+  if(e.altKey&&a){e.preventDefault();tbMove(tb,a[0]*step,a[1]*step);return true}
+  if(e.key==="Tab"){e.preventDefault();document.execCommand("insertText",false,"    ");return true}
+  return false;
+}
+ed.addEventListener("focusin",e=>{markSel(e.target.closest&&e.target.closest(".ed-tb"))});
+ed.addEventListener("pointerdown",e=>{
+  const tb=e.target;
+  if(tb.classList&&tb.classList.contains("ed-tb")){
+    const r=tb.getBoundingClientRect();
+    if(e.clientX>r.right-18&&e.clientY>r.bottom-18)return; // góc kéo đổi cỡ
+    tbSelect(tb);
+    tbDrag={tb,sx:e.clientX,sy:e.clientY,x:parseFloat(tb.dataset.x)||0,y:parseFloat(tb.dataset.y)||0};
+    tb.setPointerCapture(e.pointerId);e.preventDefault();
+  }else if(!(e.target.closest&&e.target.closest(".ed-tb")))markSel(null);
+});
+ed.addEventListener("pointermove",e=>{
+  if(!tbDrag)return;
+  tbPlace(tbDrag.tb,tbDrag.x+(e.clientX-tbDrag.sx)/MM_PX,tbDrag.y+(e.clientY-tbDrag.sy)/MM_PX);
+});
+const tbDragEnd=()=>{if(tbDrag){tbDrag=null;edSaveDraft()}};
+ed.addEventListener("pointerup",tbDragEnd);ed.addEventListener("pointercancel",tbDragEnd);
+// kéo đổi cỡ bằng góc dưới-phải cũng cần lưu
+ed.addEventListener("mouseup",()=>{if(tbSel)edSaveDraft()});
+ed.addEventListener("dblclick",e=>{const tb=e.target.classList&&e.target.classList.contains("ed-tb")?e.target:null;if(tb){e.preventDefault();tbEdit(tb)}});
+$("edTbBtn").onclick=edAddTextbox;
+document.querySelectorAll("#edToolbar [data-mv]").forEach(b=>b.addEventListener("click",()=>{
+  if(!tbSel)return showToast("Hãy bấm vào viền một textbox để chọn trước");
+  const [dx,dy]=b.dataset.mv.split(",").map(Number),st=Number($("edStep").value)||1;
+  tbMove(tbSel,dx*st,dy*st);
+}));
+$("edStep").addEventListener("change",()=>{if(tbSel)tbSel.focus({preventScroll:true})});
+$("edTbBorder").onclick=()=>{
+  if(!tbSel)return showToast("Hãy bấm vào viền một textbox để chọn trước");
+  // chỉ bật/tắt kiểu viền, giữ nguyên màu và độ dày đã chọn
+  if(tbSel.style.borderStyle==="none")tbEnsureBorder(tbSel);
+  else tbSel.style.borderStyle="none";
+  tbSyncBorderUI(tbSel);edSaveDraft();
+};
+$("edTbBorderColor").addEventListener("input",e=>{
+  if(!tbSel)return showToast("Hãy bấm vào viền một textbox để chọn trước");
+  tbEnsureBorder(tbSel);
+  tbSel.style.borderColor=e.target.value;tbSel.dataset.bc=e.target.value;
+  $("edTbTransp").classList.remove("on");edSaveDraft();
+});
+$("edTbTransp").onclick=()=>{
+  if(!tbSel)return showToast("Hãy bấm vào viền một textbox để chọn trước");
+  tbEnsureBorder(tbSel);
+  if(tbIsTransparent(tbSel)){ // trả lại màu trước đó
+    tbSel.style.borderColor=tbSel.dataset.bc||$("edTbBorderColor").value||"#000000";
+  }else{ // đặt trong suốt, nhớ màu hiện tại
+    const h=tbRgbToHex(getComputedStyle(tbSel).borderTopColor);
+    tbSel.dataset.bc=h||$("edTbBorderColor").value||"#000000";
+    tbSel.style.borderColor="transparent";
+  }
+  tbSyncBorderUI(tbSel);edSaveDraft();
+};
+$("edTbBorderW").addEventListener("change",()=>{
+  if(!tbSel)return showToast("Hãy bấm vào viền một textbox để chọn trước");
+  tbEnsureBorder(tbSel);
+  tbSel.style.borderWidth=$("edTbBorderW").value+"px";
+  edSaveDraft();tbSel.focus({preventScroll:true});
+});
+$("edTbDel").onclick=()=>{if(!tbSel)return showToast("Hãy bấm vào viền một textbox để chọn trước");tbRemove(tbSel)};
+
+edLoadDraft();edLoadCfg();edApplyCfg();
 
 $("undoButton").onclick=undo;$("redoButton").onclick=redo;
 renderGrid();updateHistoryButtons();
