@@ -191,6 +191,10 @@ button,input,select{font:inherit}button{cursor:pointer}.hidden{display:none!impo
 .card-item .cb{display:flex;gap:4px;margin-top:6px;flex-wrap:wrap}
 .card-item .cb button{border:1px solid var(--border);background:#fff;border-radius:6px;padding:3px 8px;font-size:12px}
 .card-item .cb button:hover{background:#eeedff}
+.cc-wrap{height:min(62vh,620px);overflow:auto;background:#343642;display:flex;position:relative}
+.cc-stage{position:relative;margin:auto;flex:none}.cc-stage canvas{display:block;background:#fff}
+#ccOv{position:absolute;left:0;top:0;touch-action:none;cursor:crosshair;background:transparent}
+.dup-chips{display:flex;gap:8px;flex-wrap:wrap}.dup-chips .btn{min-width:54px;padding:9px 12px}
 .card-grp{flex-basis:100%;font-size:12px;color:#3d3a8a;background:#eeedff;border-radius:8px;padding:4px 10px}
 </style>
 </head>
@@ -202,7 +206,7 @@ button,input,select{font:inherit}button{cursor:pointer}.hidden{display:none!impo
 </div></div>
 
 <div class="app hidden" id="app">
-<header class="header"><div class="brand"><div class="brand-icon">📄</div><div><h1>PDF Studio Ver 5.4</h1><small>Quản lý, chỉnh sửa và làm đẹp PDF</small></div></div>
+<header class="header"><div class="brand"><div class="brand-icon">📄</div><div><h1>PDF Studio Ver 5.5</h1><small>Quản lý, chỉnh sửa và làm đẹp PDF</small></div></div>
 <div class="header-actions"><button class="btn" id="editorButton" title="Mở trình soạn thảo văn bản kiểu Word">📝 Soạn văn bản</button><button class="btn" id="addFilesButton">＋ Thêm tệp</button><button class="btn primary" id="exportButton">Xuất PDF ↓</button></div></header>
 
 <section class="panel"><div class="dropzone" id="dropzone"><div class="big-icon">📂</div><h3>Kéo thả PDF hoặc hình ảnh vào đây</h3><p>Hỗ trợ PDF, JPG, JPEG, PNG và WEBP</p><p>Hoặc nhấn vào đây để chọn tệp từ máy tính</p></div>
@@ -326,8 +330,8 @@ button,input,select{font:inherit}button{cursor:pointer}.hidden{display:none!impo
 <div class="muted">Thứ tự trong danh sách = thứ tự ghép (thẻ đầu tiên ở trên cùng). Dùng ◀ ▶ để đổi chỗ, ↺ ↻ để xoay cho thẻ đứng đúng chiều, ✕ để bỏ thẻ nhận nhầm.</div>
 <div class="card-list" id="cardList"></div></div>
 <div class="merge-opts">
-<label class="opt-field">Chọn thẻ<select id="cardMode"><option value="auto">Tự động – quét tất cả các trang</option><option value="manual">Thủ công – chỉ quét các trang đã chọn</option></select></label>
-<button class="btn" id="cardRescan" type="button" style="margin-bottom:12px">🔍 Quét lại</button>
+<label class="opt-field">Chọn thẻ<select id="cardMode"><option value="auto">Tự động – quét tất cả các trang</option><option value="manual">Thủ công – chỉ quét các trang đã chọn</option><option value="draw">Tự cắt từng thẻ (tự kéo khung)</option></select></label>
+<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px"><button class="btn" id="cardRescan" type="button">🔍 Quét lại</button><button class="btn primary" id="cardDrawMore" type="button" title="Tự kéo khung quanh thẻ mà máy nhận diện sót hoặc sai, rồi thêm vào danh sách">✂ Tự cắt thêm thẻ</button></div>
 <label class="opt-field">Số thẻ trên mỗi trang ghép<select id="cardPer"><option value="2" selected>2 (mặt trước + mặt sau)</option><option value="1">1</option><option value="3">3</option><option value="4">4</option></select></label>
 <label class="opt-field">Cách xếp<select id="cardLayout"><option value="vertical" selected>Xếp dọc (trước ở trên, sau ở dưới)</option><option value="horizontal">Xếp ngang (trước bên trái)</option></select></label>
 <label class="opt-field">Khổ giấy<select id="cardPage"><option value="port" selected>A4 dọc</option><option value="land">A4 ngang</option></select></label>
@@ -343,6 +347,26 @@ button,input,select{font:inherit}button{cursor:pointer}.hidden{display:none!impo
 <label class="opt-check"><input type="checkbox" id="cardDelete"> Xóa các trang gốc sau khi ghép</label>
 </div></div>
 <div class="modal-footer"><span class="muted" id="cardInfo"></span><span style="display:flex;gap:8px"><button class="btn" id="cancelCard">Hủy</button><button class="btn primary" id="applyCard">Tạo trang ghép thẻ</button></span></div>
+</div></div>
+<div class="modal hidden" id="cardCropModal"><div class="modal-box" style="width:min(1100px,100%)">
+<div class="modal-header"><div class="modal-title">✂ Tự cắt thẻ trên trang quét</div><button class="close-btn" id="ccClose" type="button">×</button></div>
+<div style="padding:10px 14px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+<button class="btn" id="ccPrev" type="button">◀ Trang trước</button><b id="ccLabel"></b><button class="btn" id="ccNext" type="button">Trang sau ▶</button>
+<span class="spacer"></span>
+<label class="muted">Thu phóng <select id="ccZoom" style="padding:7px;border:1px solid var(--border);border-radius:8px"><option value="1">100%</option><option value="1.5">150%</option><option value="2">200%</option><option value="3">300%</option></select></label></div>
+<div class="cc-wrap" id="ccWrap"><div class="cc-stage" id="ccStage"><canvas id="ccImg"></canvas><canvas id="ccOv"></canvas></div><div id="ccLoading" class="muted" style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);color:#fff">Đang tải trang…</div></div>
+<div class="muted" style="padding:8px 14px">Kéo chuột trên ảnh để vẽ khung quanh thẻ, rồi kéo 4 góc cho khớp (thẻ bị nghiêng vẫn được nắn thẳng; kéo bên trong khung để dời cả khung). Bấm “Thêm thẻ này” rồi làm tiếp thẻ kế. Thứ tự thêm = thứ tự ghép (thẻ đầu tiên ở trên).</div>
+<div class="modal-footer"><span class="muted" id="ccInfo"></span><span style="display:flex;gap:8px"><button class="btn" id="ccReset" type="button">Vẽ lại</button><button class="btn primary" id="ccAdd" type="button">＋ Thêm thẻ này</button><button class="btn" id="ccDone" type="button">Xong</button></span></div>
+</div></div>
+<div class="modal hidden" id="dupModal" style="z-index:1400"><div class="modal-box" style="width:min(440px,100%)">
+<div class="modal-header"><div class="modal-title">▣ Nhân bản</div><button class="close-btn" id="dupClose" type="button">×</button></div>
+<div style="padding:18px;display:flex;flex-direction:column;gap:14px">
+<div class="muted" id="dupInfo"></div>
+<div class="dup-chips" id="dupChips"></div>
+<label class="opt-field" style="margin:0">Hoặc nhập số lần (×N)<input type="number" id="dupN" min="2" max="50" step="1" value="2"></label>
+<div class="mv-info" id="dupPreview"></div>
+</div>
+<div class="modal-footer"><span class="muted">Bản sao được xếp xuống cuối danh sách</span><span style="display:flex;gap:8px"><button class="btn" id="dupCancel" type="button">Hủy</button><button class="btn primary" id="dupGo" type="button">Nhân bản</button></span></div>
 </div></div>
 <div class="modal hidden" id="mergeModal"><div class="modal-box" style="width:min(900px,100%)">
 <div class="modal-header"><div class="modal-title">Ghép ảnh đã chọn vào 1 trang</div><button class="close-btn" id="closeMerge">×</button></div>
@@ -823,31 +847,64 @@ function selectedIndexes(){return pages.map((p,i)=>selectedPages.has(p.id)?i:-1)
 $("selectAllButton").onclick=()=>{if(selectedPages.size===pages.length)selectedPages.clear();else pages.forEach(p=>selectedPages.add(p.id));if(getGroups().length>=2)renderGrid();else refreshSelection()};
 $("rotateButton").onclick=()=>{if(!selectedPages.size)return showToast("Chọn trang cần xoay");pushHistory();pages.forEach(p=>{if(selectedPages.has(p.id)){p.rotation=(p.rotation+90)%360;clearShapeCrop(p)}});renderGrid()};
 function cloneItem(x,extra){return {...x,id:crypto.randomUUID(),cropMm:x.cropMm?{...x.cropMm}:undefined,perspectiveCrop:x.perspectiveCrop?x.perspectiveCrop.map(q=>({...q})):undefined,...extra}}
-function copyName(n){return String(n).replace(/ \(bản sao\)$/,"")+" (bản sao)"}
-$("duplicateButton").onclick=()=>{
-  if(!selectedPages.size)return showToast("Chọn trang hoặc tệp cần nhân đôi");
+function copyName(n,r){return String(n).replace(/ \(bản sao( \d+)?\)$/,"")+(r>1?` (bản sao ${r})`:" (bản sao)")}
+/* Nhân bản ×N: bản sao luôn được xếp xuống CUỐI, theo từng vòng (1,2 → 1,2,1',2',1'',2'') */
+function duplicatePlan(){
   const groups=getGroups(),multi=groups.length>=2;
-  // Nhiều tệp: tệp nào được chọn đủ mọi trang thì nhân đôi thành 1 TỆP MỚI (2 tệp → 4 tệp)
-  const whole=new Set(multi?groups.filter(g=>g.items.length&&g.items.every(p=>selectedPages.has(p.id))).map(g=>g.key):[]);
+  const whole=multi?groups.filter(g=>g.items.length&&g.items.every(p=>selectedPages.has(p.id))):[];
+  const wholeKeys=new Set(whole.map(g=>g.key));
+  const loose=pages.filter(p=>selectedPages.has(p.id)&&!wholeKeys.has(groupKey(p)));
+  return{whole,wholeKeys,loose};
+}
+function duplicateSelected(times){
+  const {whole,wholeKeys,loose}=duplicatePlan(),extra=Math.max(1,times-1);
   pushHistory();
-  const lastIdx=new Map();pages.forEach((p,i)=>lastIdx.set(groupKey(p),i));
-  const newKey=new Map();whole.forEach(k=>newKey.set(k,"dup-"+crypto.randomUUID()));
-  const out=[],newSel=new Set();let fileCopies=0,pageCopies=0;
+  const lastOfGroup=new Map();pages.forEach((p,i)=>lastOfGroup.set(groupKey(p),i));
+  const looseByGroup=new Map();loose.forEach(p=>{const k=groupKey(p);if(!looseByGroup.has(k))looseByGroup.set(k,[]);looseByGroup.get(k).push(p)});
+  const out=[],newSel=new Set();let pageCopies=0,fileCopies=0;
   pages.forEach((p,i)=>{
-    out.push(p);const k=groupKey(p);
-    if(whole.has(k)){
-      if(lastIdx.get(k)===i){
-        const nk=newKey.get(k);
-        pages.filter(x=>groupKey(x)===k).forEach(x=>{const c=cloneItem(x,{group:nk,name:copyName(x.name)});out.push(c);newSel.add(c.id)});
-        fileCopies++;
-      }
-    }else if(selectedPages.has(p.id)){
-      const c=cloneItem(p);out.push(c);newSel.add(c.id);pageCopies++;
+    out.push(p);
+    const k=groupKey(p),L=looseByGroup.get(k);
+    if(L&&lastOfGroup.get(k)===i){
+      for(let r=1;r<=extra;r++)L.forEach(x=>{const c=cloneItem(x);out.push(c);newSel.add(c.id);pageCopies++});
     }
   });
-  whole.forEach(k=>{if(openGroups.has(k))openGroups.add(newKey.get(k))});
+  for(let r=1;r<=extra;r++){
+    whole.forEach(g=>{
+      const nk="dup-"+crypto.randomUUID();
+      g.items.forEach(x=>{const c=cloneItem(x,{group:nk,name:copyName(x.name,extra>1?r+1:1)});out.push(c);newSel.add(c.id)});
+      if(openGroups.has(g.key))openGroups.add(nk);
+      fileCopies++;
+    });
+  }
   pages=out;selectedPages=newSel;renderGrid();
-  showToast(fileCopies?`Đã nhân đôi ${fileCopies} tệp thành ${fileCopies} tệp mới`+(pageCopies?` và ${pageCopies} trang lẻ`:""):`Đã nhân đôi ${pageCopies} trang`);
+  const parts=[];if(fileCopies)parts.push(`${fileCopies} tệp mới`);if(pageCopies)parts.push(`${pageCopies} trang`);
+  showToast(`Đã nhân bản ×${times}: thêm ${parts.join(" và ")} xuống cuối`);
+}
+function dupUpdate(){
+  const n=clamp(Math.round(Number($("dupN").value)||2),2,50),{whole,loose}=duplicatePlan(),extra=n-1;
+  $("dupChips").querySelectorAll("button").forEach(b=>b.classList.toggle("primary",Number(b.dataset.n)===n));
+  const f=whole.length*extra,p=loose.length*extra;
+  $("dupPreview").textContent=`×${n}: tạo thêm ${[f?f+" tệp mới":"",p?p+" trang":""].filter(Boolean).join(" và ")} (cuối danh sách).`;
+  return n;
+}
+function closeDup(){$("dupModal").classList.add("hidden")}
+$("dupChips").innerHTML=[2,3,4,5,6,8,10].map(n=>`<button class="btn" type="button" data-n="${n}">×${n}</button>`).join("");
+$("dupChips").onclick=e=>{const b=e.target.closest("button[data-n]");if(!b)return;$("dupN").value=b.dataset.n;dupUpdate()};
+$("dupN").addEventListener("input",dupUpdate);
+$("dupN").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();$("dupGo").click()}});
+$("dupClose").onclick=$("dupCancel").onclick=closeDup;
+$("dupGo").onclick=()=>{
+  const n=dupUpdate(),{whole,loose}=duplicatePlan(),total=(whole.reduce((a,g)=>a+g.items.length,0)+loose.length)*(n-1);
+  if(total>400&&!confirm(`Sẽ tạo thêm ${total} trang, có thể nặng máy. Tiếp tục?`))return;
+  closeDup();duplicateSelected(n);
+};
+$("duplicateButton").onclick=()=>{
+  if(!selectedPages.size)return showToast("Chọn trang hoặc tệp cần nhân bản");
+  const {whole,loose}=duplicatePlan();
+  $("dupInfo").textContent=[whole.length?`${whole.length} tệp nguyên vẹn`:"",loose.length?`${loose.length} trang lẻ`:""].filter(Boolean).join(" + ")+" sẽ được nhân bản. ×2 = thêm 1 bản, ×3 = thêm 2 bản…";
+  $("dupN").value=2;dupUpdate();$("dupModal").classList.remove("hidden");
+  setTimeout(()=>{$("dupN").focus();$("dupN").select()},30);
 };
 $("deleteButton").onclick=()=>{if(!selectedPages.size)return showToast("Chọn trang cần xóa");pushHistory();pages=pages.filter(p=>!selectedPages.has(p.id));selectedPages.clear();renderGrid()};
 $("clearButton").onclick=()=>{if(pages.length&&confirm("Xóa toàn bộ trang?")){pages=[];documents=[];thumbCache.clear();thumbQueue.length=0;openGroups.clear();undoStack.length=0;redoStack.length=0;selectedPages.clear();renderGrid();updateHistoryButtons()}};
@@ -1171,10 +1228,10 @@ $("rectCropButton").onclick=()=>{const indexes=selectedIndexes();if(!indexes.len
 $("closePreview").onclick=()=>{$("previewModal").classList.add("hidden");manualCropState=null;exitManualCropMode()};$("previewModal").onclick=e=>{if(e.target===$("previewModal")){$("previewModal").classList.add("hidden");manualCropState=null;exitManualCropMode()}};
 $("previousPageButton").onclick=async()=>{if(previewIndex>0){previewIndex--;await renderPreview()}};
 $("nextPageButton").onclick=async()=>{if(previewIndex<pages.length-1){previewIndex++;await renderPreview()}};
-document.addEventListener("keydown",async e=>{if((e.ctrlKey||e.metaKey)&&!manualCropState&&!anyModalOpen()&&!$("app").classList.contains("hidden")&&!/INPUT|SELECT|TEXTAREA/.test(document.activeElement?.tagName||"")){const k=e.key.toLowerCase();if(k==="z"&&!e.shiftKey){e.preventDefault();undo();return}if(k==="y"||(k==="z"&&e.shiftKey)){e.preventDefault();redo();return}}if(e.key==="Escape"){if(saveCtx){finishSave(false);return}closeStamp();closeMerge();closeMove();closeMoveTo();$("previewModal").classList.add("hidden");manualCropState=null;exitManualCropMode()}if(!$("previewModal").classList.contains("hidden")&&!manualCropState){if(e.key==="ArrowLeft"&&previewIndex>0){previewIndex--;await renderPreview()}if(e.key==="ArrowRight"&&previewIndex<pages.length-1){previewIndex++;await renderPreview()}}if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="a"&&!$("app").classList.contains("hidden")&&!anyModalOpen()&&!/INPUT|SELECT|TEXTAREA/.test(document.activeElement?.tagName||"")){e.preventDefault();pages.forEach(p=>selectedPages.add(p.id));renderGrid()}});
+document.addEventListener("keydown",async e=>{if((e.ctrlKey||e.metaKey)&&!manualCropState&&!anyModalOpen()&&!$("app").classList.contains("hidden")&&!/INPUT|SELECT|TEXTAREA/.test(document.activeElement?.tagName||"")){const k=e.key.toLowerCase();if(k==="z"&&!e.shiftKey){e.preventDefault();undo();return}if(k==="y"||(k==="z"&&e.shiftKey)){e.preventDefault();redo();return}}if(e.key==="Escape"){if(saveCtx){finishSave(false);return}if(!$("dupModal").classList.contains("hidden")){closeDup();return}if(ccState){closeCardCrop();return}closeStamp();closeMerge();closeMove();closeMoveTo();$("previewModal").classList.add("hidden");manualCropState=null;exitManualCropMode()}if(!$("previewModal").classList.contains("hidden")&&!manualCropState){if(e.key==="ArrowLeft"&&previewIndex>0){previewIndex--;await renderPreview()}if(e.key==="ArrowRight"&&previewIndex<pages.length-1){previewIndex++;await renderPreview()}}if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="a"&&!$("app").classList.contains("hidden")&&!anyModalOpen()&&!/INPUT|SELECT|TEXTAREA/.test(document.activeElement?.tagName||"")){e.preventDefault();pages.forEach(p=>selectedPages.add(p.id));renderGrid()}});
 
 /* ====== DÙNG CHUNG: render trang thành canvas, lưu canvas thành trang PDF mới ====== */
-function anyModalOpen(){return ["previewModal","enhancePreviewModal","mergeModal","cardModal","stampModal","moveModal","moveToModal","editorModal","saveModal"].some(id=>!$(id).classList.contains("hidden"))}
+function anyModalOpen(){return ["previewModal","enhancePreviewModal","mergeModal","cardModal","stampModal","moveModal","moveToModal","editorModal","saveModal","dupModal","cardCropModal"].some(id=>!$(id).classList.contains("hidden"))}
 async function renderItemCanvas(item,{dpi,maxSide,maxPx}={}){
   const d=sourceFor(item),p=await d.pdf.getPage(item.pageNum),rotation=((p.rotate||0)+item.rotation)%360;
   const vb=item.perspectiveCrop?undefined:cropViewBox(item,p);
@@ -1433,7 +1490,7 @@ function autoOrderCards(){
 function renderCardUI(){
   const list=$("cardList");list.innerHTML="";
   if(!cardState||!cardState.cards.length){
-    list.innerHTML='<div class="muted">Chưa tìm thấy thẻ nào. Hãy chuyển sang “Thủ công” và chọn đúng trang chứa thẻ, hoặc bấm “Quét lại”.</div>';
+    list.innerHTML='<div class="muted">Chưa có thẻ nào. Bấm “✂ Tự cắt thêm thẻ” để tự kéo khung quanh từng thẻ, hoặc chọn chế độ quét khác rồi “Quét lại”.</div>';
     $("cardPreview").width=10;$("cardPreview").height=10;$("cardSheetNav").classList.add("hidden");$("cardInfo").textContent="Không có thẻ";return;
   }
   const per=Number($("cardPer").value)||2;
@@ -1459,6 +1516,7 @@ function renderCardPreview(){
   $("cardInfo").textContent=`${cardState.cards.length} thẻ → ${groups.length} trang ghép`;
 }
 async function scanCards(){
+  if($("cardMode").value==="draw"){await openCardCrop();return true}
   if(busy)return false;
   const auto=$("cardMode").value==="auto",idx=auto?pages.map((_,i)=>i):selectedIndexes();
   if(!idx.length){showToast("Hãy chọn trang chứa thẻ trong danh sách (hoặc chuyển sang chế độ Tự động)");return false}
@@ -1519,7 +1577,11 @@ $("cardButton").onclick=openCards;
 $("closeCard").onclick=$("cancelCard").onclick=closeCards;
 $("applyCard").onclick=applyCards;
 $("cardRescan").onclick=scanCards;
-$("cardMode").onchange=scanCards;
+$("cardMode").onchange=async()=>{
+  if($("cardMode").value==="draw"){cardState={cards:[],pageCounts:new Map(),sheet:0};$("cardTrim").value="0";renderCardUI();await openCardCrop()}
+  else await scanCards();
+};
+$("cardDrawMore").onclick=()=>openCardCrop();
 $("cardPrevSheet").onclick=()=>{if(cardState){cardState.sheet--;renderCardPreview()}};
 $("cardNextSheet").onclick=()=>{if(cardState){cardState.sheet++;renderCardPreview()}};
 $("cardList").addEventListener("click",e=>{
@@ -1536,6 +1598,129 @@ $("cardList").addEventListener("click",e=>{
 $("cardSize").addEventListener("input",()=>{$("cardCustomWrap").classList.toggle("hidden",$("cardSize").value!=="custom");renderCardPreview()});
 $("cardPer").addEventListener("input",()=>{if($("cardAutoOrder").checked)autoOrderCards();renderCardUI()});
 $("cardAutoOrder").addEventListener("input",()=>{if($("cardAutoOrder").checked)autoOrderCards();renderCardUI()});
+
+/* ====== TỰ CẮT THẺ THỦ CÔNG (kéo khung 4 góc quanh từng thẻ) ====== */
+let ccState=null;
+function pointInPoly(p,q){let c=false;for(let i=0,j=q.length-1;i<q.length;j=i++){if((q[i].y>p.y)!==(q[j].y>p.y)&&p.x<(q[j].x-q[i].x)*(p.y-q[i].y)/(q[j].y-q[i].y)+q[i].x)c=!c}return c}
+async function openCardCrop(){
+  if(!pages.length)return showToast("Hãy thêm PDF hoặc ảnh trước");
+  if(!cardState)cardState={cards:[],pageCounts:new Map(),sheet:0};
+  const sel=selectedIndexes();
+  ccState={k:0,src:null,item:null,quad:null,drag:null,zoom:Number($("ccZoom").value)||1,tok:0};
+  $("cardCropModal").classList.remove("hidden");
+  await ccLoadPage(sel.length?sel[0]:0);
+}
+function closeCardCrop(){
+  $("cardCropModal").classList.add("hidden");
+  if(ccState&&ccState.src){ccState.src.width=ccState.src.height=1}
+  ccState=null;
+  if(cardState)renderCardUI();
+}
+async function ccLoadPage(k){
+  const s=ccState;if(!s)return;
+  const tok=++s.tok;s.k=clamp(k,0,pages.length-1);s.quad=null;s.drag=null;
+  $("ccLabel").textContent=`Trang ${s.k+1} / ${pages.length}`;
+  $("ccLoading").classList.remove("hidden");
+  if(s.src){s.src.width=s.src.height=1;s.src=null}
+  const it=pages[s.k];let cv;
+  try{cv=await renderItemCanvas(it,{dpi:CARD_DPI,maxPx:LOW_END?9e6:14e6})}
+  catch(e){console.error(e);showToast("Không mở được trang: "+e.message);return}
+  if(ccState!==s||s.tok!==tok){cv.width=cv.height=1;return}
+  s.src=cv;s.item=it;$("ccLoading").classList.add("hidden");ccLayout();
+}
+function ccLayout(){
+  const s=ccState;if(!s||!s.src)return;
+  const wrap=$("ccWrap"),aw=Math.max(240,wrap.clientWidth-24),ah=Math.max(240,wrap.clientHeight-24);
+  const fit=Math.min(aw/s.src.width,ah/s.src.height),sc=fit*s.zoom;
+  const w=Math.max(60,Math.round(s.src.width*sc)),h=Math.max(60,Math.round(s.src.height*sc));
+  const c=$("ccImg"),o=$("ccOv");
+  const old=s.quad?s.quad.map(p=>({x:p.x/o.width,y:p.y/o.height})):null;
+  c.width=o.width=w;c.height=o.height=h;
+  const x=c.getContext("2d");x.imageSmoothingQuality="high";x.drawImage(s.src,0,0,w,h);
+  if(old)s.quad=old.map(p=>({x:p.x*w,y:p.y*h}));
+  ccDraw();
+}
+function ccDraw(){
+  const s=ccState;if(!s)return;
+  const o=$("ccOv"),x=o.getContext("2d"),W=o.width,H=o.height;x.clearRect(0,0,W,H);
+  x.lineJoin="round";
+  (cardState?cardState.cards:[]).forEach((cd,i)=>{
+    if(!cd.quadN||!s.item||cd.pageId!==s.item.id)return;
+    const q=cd.quadN.map(p=>({x:p.x*W,y:p.y*H}));
+    x.beginPath();q.forEach((p,j)=>j?x.lineTo(p.x,p.y):x.moveTo(p.x,p.y));x.closePath();
+    x.fillStyle="rgba(34,160,90,.18)";x.fill();x.strokeStyle="#1f9d57";x.lineWidth=2;x.stroke();
+    x.fillStyle="#1f9d57";x.font="bold 14px sans-serif";x.fillText(String(i+1),q[0].x+6,q[0].y+18);
+  });
+  if(s.quad){
+    const q=s.quad;
+    x.beginPath();q.forEach((p,j)=>j?x.lineTo(p.x,p.y):x.moveTo(p.x,p.y));x.closePath();
+    x.fillStyle="rgba(99,91,255,.16)";x.fill();x.strokeStyle="#635bff";x.lineWidth=2;x.stroke();
+    q.forEach(p=>{x.fillStyle="#fff";x.strokeStyle="#5148e5";x.lineWidth=3;x.beginPath();x.rect(p.x-7,p.y-7,14,14);x.fill();x.stroke()});
+  }
+  const n=(cardState?cardState.cards:[]).length;
+  $("ccInfo").textContent=`Đã thêm ${n} thẻ`+(s.quad?" · khung đang chọn chưa được thêm":"");
+}
+function ccPt(e){
+  const o=$("ccOv"),r=o.getBoundingClientRect();
+  return{x:clamp((e.clientX-r.left)*o.width/r.width,0,o.width),y:clamp((e.clientY-r.top)*o.height/r.height,0,o.height)};
+}
+$("ccOv").addEventListener("pointerdown",e=>{
+  const s=ccState;if(!s||!s.src)return;
+  const p=ccPt(e);let d=null;
+  if(s.quad){
+    let bi=-1,bd=18;s.quad.forEach((q,i)=>{const dd=Math.hypot(q.x-p.x,q.y-p.y);if(dd<bd){bd=dd;bi=i}});
+    if(bi>=0)d={type:"corner",i:bi};
+    else if(pointInPoly(p,s.quad))d={type:"move",sx:p.x,sy:p.y,orig:s.quad.map(q=>({...q}))};
+  }
+  if(!d){d={type:"new",x0:p.x,y0:p.y};s.quad=null}
+  s.drag=d;$("ccOv").setPointerCapture(e.pointerId);e.preventDefault();
+});
+$("ccOv").addEventListener("pointermove",e=>{
+  const s=ccState;if(!s||!s.drag)return;
+  const p=ccPt(e),d=s.drag,W=$("ccOv").width,H=$("ccOv").height;
+  if(d.type==="corner")s.quad[d.i]={x:p.x,y:p.y};
+  else if(d.type==="move"){
+    let dx=p.x-d.sx,dy=p.y-d.sy;
+    const xs=d.orig.map(q=>q.x),ys=d.orig.map(q=>q.y);
+    dx=clamp(dx,-Math.min(...xs),W-Math.max(...xs));dy=clamp(dy,-Math.min(...ys),H-Math.max(...ys));
+    s.quad=d.orig.map(q=>({x:q.x+dx,y:q.y+dy}));
+  }else{
+    const x0=Math.min(d.x0,p.x),x1=Math.max(d.x0,p.x),y0=Math.min(d.y0,p.y),y1=Math.max(d.y0,p.y);
+    s.quad=[{x:x0,y:y0},{x:x1,y:y0},{x:x1,y:y1},{x:x0,y:y1}];
+  }
+  ccDraw();
+});
+const ccUp=()=>{
+  const s=ccState;if(!s||!s.drag)return;
+  if(s.drag.type==="new"&&s.quad&&(Math.abs(s.quad[1].x-s.quad[0].x)<10||Math.abs(s.quad[3].y-s.quad[0].y)<10))s.quad=null;
+  s.drag=null;ccDraw();
+};
+$("ccOv").addEventListener("pointerup",ccUp);$("ccOv").addEventListener("pointercancel",ccUp);
+function ccAdd(){
+  const s=ccState;if(!s||!s.src)return;
+  if(!s.quad)return showToast("Hãy kéo khung quanh thẻ trên ảnh trước");
+  const o=$("ccOv"),W=o.width,H=o.height,qn=s.quad.map(p=>({x:p.x/W,y:p.y/H}));
+  const px=qn.map(p=>({x:p.x*s.src.width,y:p.y*s.src.height}));
+  const axis=Math.abs(px[0].y-px[1].y)<2&&Math.abs(px[3].y-px[2].y)<2&&Math.abs(px[0].x-px[3].x)<2&&Math.abs(px[1].x-px[2].x)<2;
+  let c=axis?cropRectCanvas(s.src,px):warpPerspective(s.src,px);
+  if(c.height>c.width)c=rotCanvas(c,90);
+  const cd={id:crypto.randomUUID(),pageId:s.item.id,pos:s.k+1,base:c,view:c,dpi:s.src.dpiUsed||CARD_DPI,rot:0,fallback:false,vr:0,face:skinFraction(c),quadN:qn};
+  cd.view=makeView(cd);cardState.cards.push(cd);
+  cardState.pageCounts.set(s.item.id,(cardState.pageCounts.get(s.item.id)||0)+1);
+  s.quad=null;ccDraw();renderCardUI();
+  showToast(`Đã thêm thẻ ${cardState.cards.length}`);
+}
+$("ccAdd").onclick=ccAdd;
+$("ccReset").onclick=()=>{if(ccState){ccState.quad=null;ccDraw()}};
+$("ccDone").onclick=$("ccClose").onclick=closeCardCrop;
+$("ccPrev").onclick=()=>{if(ccState&&ccState.k>0)ccLoadPage(ccState.k-1)};
+$("ccNext").onclick=()=>{if(ccState&&ccState.k<pages.length-1)ccLoadPage(ccState.k+1)};
+$("ccZoom").onchange=()=>{if(ccState){ccState.zoom=Number($("ccZoom").value)||1;ccLayout()}};
+document.addEventListener("keydown",e=>{
+  if(!ccState||e.target.tagName==="SELECT")return;
+  if(e.key==="Enter"){e.preventDefault();ccAdd()}
+});
+let ccResizeT=0;window.addEventListener("resize",()=>{if(!ccState)return;clearTimeout(ccResizeT);ccResizeT=setTimeout(ccLayout,150)});
 
 /* ====== KHUNG BIẾN ĐỔI TỰ DO (dùng chung cho chèn ảnh & di chuyển vùng cắt) ====== */
 const BOX_HANDLES=[[-1,-1],[0,-1],[1,-1],[1,0],[1,1],[0,1],[-1,1],[-1,0]];
