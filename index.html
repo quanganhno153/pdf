@@ -176,6 +176,8 @@ button,input,select{font:inherit}button{cursor:pointer}.hidden{display:none!impo
 .ed-imgbox.drag b{display:block}
 .ed-page td,.ed-page th{vertical-align:top}
 .ed-hint{padding:7px 14px;font-size:12px;color:var(--muted);border-top:1px solid var(--border)}
+.page-card,.stack-card{content-visibility:auto;contain-intrinsic-size:auto 250px}
+.low-end .modal{background:#111827f2}.low-end .toast,.low-end .panel{box-shadow:none}
 .low-end .page-card,.low-end .stack-card,.low-end .btn{transition:none}
 .low-end .page-card:hover,.low-end .btn:hover{transform:none;box-shadow:none}
 .low-end .page-card{box-shadow:none;border:2px solid #eceef4}
@@ -200,7 +202,7 @@ button,input,select{font:inherit}button{cursor:pointer}.hidden{display:none!impo
 </div></div>
 
 <div class="app hidden" id="app">
-<header class="header"><div class="brand"><div class="brand-icon">📄</div><div><h1>PDF Studio Ver 5.3</h1><small>Quản lý, chỉnh sửa và làm đẹp PDF</small></div></div>
+<header class="header"><div class="brand"><div class="brand-icon">📄</div><div><h1>PDF Studio Ver 5.4</h1><small>Quản lý, chỉnh sửa và làm đẹp PDF</small></div></div>
 <div class="header-actions"><button class="btn" id="editorButton" title="Mở trình soạn thảo văn bản kiểu Word">📝 Soạn văn bản</button><button class="btn" id="addFilesButton">＋ Thêm tệp</button><button class="btn primary" id="exportButton">Xuất PDF ↓</button></div></header>
 
 <section class="panel"><div class="dropzone" id="dropzone"><div class="big-icon">📂</div><h3>Kéo thả PDF hoặc hình ảnh vào đây</h3><p>Hỗ trợ PDF, JPG, JPEG, PNG và WEBP</p><p>Hoặc nhấn vào đây để chọn tệp từ máy tính</p></div>
@@ -568,8 +570,9 @@ $("fileInput").onchange=async e=>{await addFiles([...e.target.files]);e.target.v
 $("dropzone").ondrop=async e=>addFiles([...e.dataTransfer.files]);
 
 async function addFiles(files){if(!files.length)return;pushHistory();setBusy(true);try{for(const f of files){const ext=f.name.split(".").pop().toLowerCase();if(ext==="pdf"||f.type==="application/pdf")await addPDF(f);else if(["jpg","jpeg","png","webp"].includes(ext)||f.type.startsWith("image/"))await addImage(f);else showToast("Không hỗ trợ: "+f.name)}renderGrid();showToast("Đã thêm tệp")}catch(e){console.error(e);showToast("Lỗi đọc tệp: "+e.message)}finally{setBusy(false)}}
-async function addPDF(file){const bytes=new Uint8Array(await file.arrayBuffer()),pdf=await pdfjsLib.getDocument({data:bytes.slice()}).promise,id=nextDocumentId++;documents.push({id,name:file.name,bytes,pdf});for(let n=1;n<=pdf.numPages;n++)pages.push({id:crypto.randomUUID(),docId:id,pageNum:n,rotation:0,name:file.name})}
-async function addImage(file){const bitmap=await createImageBitmap(file),maxSide=6000,ratio=Math.min(1,maxSide/Math.max(bitmap.width,bitmap.height)),c=document.createElement("canvas");c.width=Math.round(bitmap.width*ratio);c.height=Math.round(bitmap.height*ratio);const cx=c.getContext("2d");cx.fillStyle="#fff";cx.fillRect(0,0,c.width,c.height);cx.drawImage(bitmap,0,0,c.width,c.height);bitmap.close();const blob=await new Promise(r=>c.toBlob(r,"image/png"));if(!blob)throw Error("Không chuyển đổi được ảnh");const png=new Uint8Array(await blob.arrayBuffer()),p=await PDFDocument.create(),im=await p.embedPng(png),land=im.width>im.height,w=land?841.89:595.28,h=land?595.28:841.89,pg=p.addPage([w,h]),margin=20,s=Math.min((w-2*margin)/im.width,(h-2*margin)/im.height),iw=im.width*s,ih=im.height*s;pg.drawImage(im,{x:(w-iw)/2,y:(h-ih)/2,width:iw,height:ih});const bytes=new Uint8Array(await p.save()),pdf=await pdfjsLib.getDocument({data:bytes.slice()}).promise,id=nextDocumentId++;documents.push({id,name:file.name,bytes,pdf});pages.push({id:crypto.randomUUID(),docId:id,pageNum:1,rotation:0,name:file.name})}
+async function docBytes(d){return d.bytes||new Uint8Array(await d.file.arrayBuffer())}
+async function addPDF(file){const pdf=await pdfjsLib.getDocument({data:new Uint8Array(await file.arrayBuffer())}).promise,id=nextDocumentId++;documents.push({id,name:file.name,file,size:file.size,pdf});for(let n=1;n<=pdf.numPages;n++)pages.push({id:crypto.randomUUID(),docId:id,pageNum:n,rotation:0,name:file.name})}
+async function addImage(file){const bitmap=await createImageBitmap(file),maxSide=LOW_END?3300:4200,ratio=Math.min(1,maxSide/Math.max(bitmap.width,bitmap.height)),c=document.createElement("canvas");c.width=Math.round(bitmap.width*ratio);c.height=Math.round(bitmap.height*ratio);const cx=c.getContext("2d");cx.fillStyle="#fff";cx.fillRect(0,0,c.width,c.height);cx.drawImage(bitmap,0,0,c.width,c.height);bitmap.close();const blob=await new Promise(r=>c.toBlob(r,"image/jpeg",.93));c.width=c.height=1;if(!blob)throw Error("Không chuyển đổi được ảnh");const png=new Uint8Array(await blob.arrayBuffer()),p=await PDFDocument.create(),im=await p.embedJpg(png),land=im.width>im.height,w=land?841.89:595.28,h=land?595.28:841.89,pg=p.addPage([w,h]),margin=20,s=Math.min((w-2*margin)/im.width,(h-2*margin)/im.height),iw=im.width*s,ih=im.height*s;pg.drawImage(im,{x:(w-iw)/2,y:(h-ih)/2,width:iw,height:ih});const bytes=new Uint8Array(await p.save()),pdf=await pdfjsLib.getDocument({data:bytes.slice()}).promise,id=nextDocumentId++;documents.push({id,name:file.name,bytes,size:bytes.length,pdf});pages.push({id:crypto.randomUUID(),docId:id,pageNum:1,rotation:0,name:file.name})}
 
 const MM_TO_PT=72/25.4;
 function cropValues(item){return item.cropMm||{top:0,bottom:0,left:0,right:0}}
@@ -583,7 +586,7 @@ function cropViewBox(item,pdfPage){
 function clearShapeCrop(item){delete item.perspectiveCrop;delete item.cropMode}
 const LOW_END=(navigator.hardwareConcurrency||4)<=4||(navigator.deviceMemory||8)<=4;
 if(LOW_END)document.body.classList.add("low-end");
-const THUMB_SCALE=LOW_END?.3:.42;
+const THUMB_SCALE=LOW_END?.3:.36;
 const thumbCache=new Map(),thumbQueue=[];let thumbRunning=false;
 function thumbKey(it){return [it.docId,it.pageNum,it.rotation,it.cropMode||"",JSON.stringify(it.perspectiveCrop||null),JSON.stringify(it.cropMm||null)].join("|")}
 function paintFrom(cv,s){cv.width=s.width;cv.height=s.height;cv.getContext("2d").drawImage(s,0,0)}
@@ -604,7 +607,7 @@ async function pumpThumbs(){
       else{
         await renderThumb(job.item,job.canvas);
         const c=document.createElement("canvas");paintFrom(c,job.canvas);thumbCache.set(job.key,c);
-        if(thumbCache.size>(LOW_END?150:300))thumbCache.delete(thumbCache.keys().next().value);
+        if(thumbCache.size>(LOW_END?60:120))thumbCache.delete(thumbCache.keys().next().value);
       }
     }catch(e){console.warn(e)}
     job.res();
@@ -772,7 +775,8 @@ function renderGrid(){
   const grid=$("pageGrid"),bar=$("groupBar"),groups=getGroups(),multi=groups.length>=2;
   if(!multi)openGroups.clear();else[...openGroups].forEach(k=>{if(!groups.some(g=>g.key===k))openGroups.delete(k)});
   grid.innerHTML="";bar.innerHTML="";grid.className="page-grid";updateCount();bar.classList.add("hidden");
-  const gIndex=new Map(groups.map((g,i)=>[g.key,i])),seen=new Set();
+  const gIndex=new Map(groups.map((g,i)=>[g.key,i])),seen=new Set(),posIn=new Map(),eFlags=$("enhanceScope").value!=="all"?enhanceFlags():null;
+  groups.forEach(g=>g.items.forEach((p,j)=>posIn.set(p.id,j)));
   if(multi){
     const b1=document.createElement("button");b1.className="btn";b1.textContent="⤢ Bung tất cả";b1.onclick=()=>{groups.forEach(g=>openGroups.add(g.key));renderGrid()};
     const b2=document.createElement("button");b2.className="btn";b2.textContent="⤡ Thu gọn tất cả";b2.onclick=()=>{openGroups.clear();renderGrid()};
@@ -785,8 +789,8 @@ function renderGrid(){
     const card=document.createElement("div");card.className="page-card"+(selectedPages.has(it.id)?" selected":"");card.draggable=true;card.dataset.id=it.id;
     const wrap=document.createElement("div");wrap.className="thumb-wrap";
     const cv=document.createElement("canvas"),num=document.createElement("div"),check=document.createElement("div");
-    num.className="page-number";num.textContent=multi?g.items.indexOf(it)+1:i+1;check.className="page-check";wrap.append(cv,num,check);
-    if($("enhanceScope").value!=="all"&&!enhanceFlags()[i]){const tag=document.createElement("div");tag.className="skip-tag";tag.textContent="Không khử bóng";wrap.append(tag)}
+    num.className="page-number";num.textContent=multi?posIn.get(it.id)+1:i+1;check.className="page-check";wrap.append(cv,num,check);
+    if(eFlags&&!eFlags[i]){const tag=document.createElement("div");tag.className="skip-tag";tag.textContent="Không khử bóng";wrap.append(tag)}
     const info=document.createElement("div");info.className="page-info";
     const name=document.createElement("span");name.textContent=it.name;name.title=it.name;name.style.cssText="overflow:hidden;text-overflow:ellipsis;white-space:nowrap";
     if(multi){name.className="file-pill";name.style.background=PILL_COLORS[gi%PILL_COLORS.length];name.title=it.name+" — bấm để thu gọn tệp";name.onclick=e=>{e.stopPropagation();openGroups.delete(k);renderGrid()}}
@@ -1176,19 +1180,19 @@ async function renderItemCanvas(item,{dpi,maxSide,maxPx}={}){
   const vb=item.perspectiveCrop?undefined:cropViewBox(item,p);
   const base=p.getViewport({scale:1,rotation});
   let scale=dpi?dpi/72:maxSide/Math.max(base.width,base.height);
-  scale*=Math.min(1,Math.sqrt((maxPx||26_000_000)/(base.width*scale*base.height*scale)));
+  scale*=Math.min(1,Math.sqrt((maxPx||(LOW_END?14e6:26e6))/(base.width*scale*base.height*scale)));
   const v=p.getViewport({scale,rotation,viewBox:vb});
   const c=document.createElement("canvas");c.width=Math.max(1,Math.ceil(v.width));c.height=Math.max(1,Math.ceil(v.height));
   const ctx=c.getContext("2d",{willReadFrequently:true});ctx.fillStyle="#fff";ctx.fillRect(0,0,c.width,c.height);
   await p.render({canvasContext:ctx,viewport:v,background:"rgb(255,255,255)"}).promise;
   const out=applyShapeCrop(c,item);out.dpiUsed=scale*72;return out;
 }
-async function canvasToDocument(canvas,name,dpi){
-  const blob=await new Promise(r=>canvas.toBlob(r,"image/jpeg",.95));if(!blob)throw Error("Không tạo được ảnh trang");
+async function canvasToDocument(canvas,name,dpi,q){
+  const blob=await new Promise(r=>canvas.toBlob(r,"image/jpeg",q||.95));if(!blob)throw Error("Không tạo được ảnh trang");
   const jpg=new Uint8Array(await blob.arrayBuffer()),doc=await PDFDocument.create(),im=await doc.embedJpg(jpg);
   const pw=canvas.width*72/dpi,ph=canvas.height*72/dpi,pg=doc.addPage([pw,ph]);pg.drawImage(im,{x:0,y:0,width:pw,height:ph});
   const bytes=new Uint8Array(await doc.save()),pdf=await pdfjsLib.getDocument({data:bytes.slice()}).promise,id=nextDocumentId++;
-  documents.push({id,name,bytes,pdf});
+  documents.push({id,name,bytes,size:bytes.length,pdf});
   return {id:crypto.randomUUID(),docId:id,pageNum:1,rotation:0,name};
 }
 
@@ -1299,8 +1303,8 @@ function cardQuadsFromRGBA(d,w,h){
     }
     if(pts.length<8)continue;
     const hull=hullOf(pts);let best=null;
-    for(let a=0;a<180;a++){
-      const th=a*Math.PI/360,c=Math.cos(th),s=Math.sin(th);let u0=1e9,u1=-1e9,v0=1e9,v1=-1e9;
+    for(let a=0;a<900;a++){
+      const th=a*Math.PI/1800,c=Math.cos(th),s=Math.sin(th);let u0=1e9,u1=-1e9,v0=1e9,v1=-1e9;
       for(const p of hull){const u=p[0]*c+p[1]*s,v=-p[0]*s+p[1]*c;if(u<u0)u0=u;if(u>u1)u1=u;if(v<v0)v0=v;if(v>v1)v1=v}
       const ar=(u1-u0)*(v1-v0);if(!best||ar<best.ar)best={ar,th,u0,u1,v0,v1,c,s};
     }
@@ -1325,11 +1329,23 @@ function detectCards(canvas){
   const sm=document.createElement("canvas");sm.width=w;sm.height=h;
   const sctx=sm.getContext("2d",{willReadFrequently:true});sctx.drawImage(canvas,0,0,w,h);
   const quads=cardQuadsFromRGBA(sctx.getImageData(0,0,w,h).data,w,h),fx=W/w,fy=H/h,out=[];
+  const SNAP=.3*Math.PI/180;
   for(const q of quads){
-    const ow=Math.max(8,Math.round(q.wR*fx)),oh=Math.max(8,Math.round(q.hR*fy)),c=document.createElement("canvas");c.width=ow;c.height=oh;
-    const x=c.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,ow,oh);x.imageSmoothingQuality="high";
-    x.translate(ow/2,oh/2);x.rotate(-q.th);x.translate(-q.cx*fx,-q.cy*fy);x.drawImage(canvas,0,0);
-    out.push({canvas:oh>ow?rotCanvas(c,90):c});
+    let th=q.th,rw=q.wR,rh=q.hR;
+    /* thẻ gần như thẳng: cắt theo điểm ảnh nguyên, KHÔNG nội suy → giữ nguyên độ nét */
+    if(th<=SNAP)th=0;
+    else if(th>=Math.PI/2-SNAP){th=0;rw=q.hR;rh=q.wR}
+    const ow=Math.max(8,Math.round(rw*fx)),oh=Math.max(8,Math.round(rh*fy)),c=document.createElement("canvas");c.width=ow;c.height=oh;
+    const x=c.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,ow,oh);
+    if(th===0){
+      const sx=Math.round(q.cx*fx-ow/2),sy=Math.round(q.cy*fy-oh/2);
+      const cx0=Math.max(0,sx),cy0=Math.max(0,sy),cx1=Math.min(W,sx+ow),cy1=Math.min(H,sy+oh);
+      if(cx1>cx0&&cy1>cy0)x.drawImage(canvas,cx0,cy0,cx1-cx0,cy1-cy0,cx0-sx,cy0-sy,cx1-cx0,cy1-cy0);
+    }else{
+      x.imageSmoothingQuality="high";
+      x.translate(ow/2,oh/2);x.rotate(-th);x.translate(-q.cx*fx,-q.cy*fy);x.drawImage(canvas,0,0);
+    }
+    out.push({canvas:oh>ow?rotCanvas(c,90):c,tilted:th!==0});
   }
   return out;
 }
@@ -1368,10 +1384,22 @@ function cardOpts(){
   const n=(id,d)=>{const v=Number($(id).value);return isFinite(v)&&v>=0?v:d};
   return{landscape:$("cardPage").value==="land",layout:$("cardLayout").value,size:$("cardSize").value,custom:n("cardCustom",85.6),margin:n("cardMargin",15),gap:n("cardGap",10),align:$("cardAlign").value,border:$("cardBorder").checked};
 }
+const CARD_DPI=LOW_END?250:300;
+/* Thu nhỏ từng nấc (÷2) rồi mới vẽ: sắc nét hơn thu nhỏ một lần, giải phóng canvas trung gian ngay */
+function drawSmooth(ctx,src,dx,dy,dw,dh){
+  let s=src;
+  while(s.width>dw*2&&s.height>dh*2){
+    const t=document.createElement("canvas");t.width=Math.max(1,s.width>>1);t.height=Math.max(1,s.height>>1);
+    const tc=t.getContext("2d");tc.imageSmoothingQuality="high";tc.drawImage(s,0,0,t.width,t.height);
+    if(s!==src)s.width=s.height=1;s=t;
+  }
+  ctx.imageSmoothingQuality="high";ctx.drawImage(s,dx,dy,dw,dh);
+  if(s!==src)s.width=s.height=1;
+}
 function composeCardSheet(cards,o,dpi){
   const mm=72/25.4,pageW=o.landscape?841.89:595.28,pageH=o.landscape?595.28:841.89,k=dpi/72;
   const W=Math.round(pageW*k),H=Math.round(pageH*k),c=document.createElement("canvas");c.width=W;c.height=H;
-  const ctx=c.getContext("2d");ctx.fillStyle="#fff";ctx.fillRect(0,0,W,H);ctx.imageSmoothingQuality="high";
+  const ctx=c.getContext("2d",o.sharpen?{willReadFrequently:true}:undefined);ctx.fillStyle="#fff";ctx.fillRect(0,0,W,H);ctx.imageSmoothingQuality="high";
   if(!cards.length)return c;
   const m=o.margin*mm,gap=o.gap*mm;
   const dims=cards.map(cd=>{
@@ -1385,7 +1413,12 @@ function composeCardSheet(cards,o,dpi){
   let px=x0,py=y0;
   dims.forEach(d=>{
     const w=d.w*fit,h=d.h*fit,x=vert?(pageW-w)/2:px,y=vert?py:y0+(bh-h)/2;
-    ctx.drawImage(d.v,x*k,y*k,w*k,h*k);
+    const X=Math.round(x*k),Y=Math.round(y*k),Wd=Math.max(1,Math.round(w*k)),Hd=Math.max(1,Math.round(h*k));
+    drawSmooth(ctx,d.v,X,Y,Wd,Hd);
+    if(o.sharpen){ /* làm nét nhẹ như nhau cho mọi thẻ, bù độ mềm khi thu nhỏ/xoay */
+      const rx=clamp(X,0,W-1),ry=clamp(Y,0,H-1),rw=Math.min(W-rx,Wd),rh=Math.min(H-ry,Hd);
+      if(rw>8&&rh>8){const im=ctx.getImageData(rx,ry,rw,rh);sharpenLuma(im.data,rw,rh,.6);ctx.putImageData(im,rx,ry)}
+    }
     if(o.border){ctx.strokeStyle="#9aa0b4";ctx.lineWidth=Math.max(1,k*.5);rrPath(ctx,x*k,y*k,w*k,h*k,d.r*fit*k);ctx.stroke()}
     if(vert)py+=h+gap*fit;else px+=w+gap*fit;
   });
@@ -1434,11 +1467,12 @@ async function scanCards(){
     const cards=[],pageCounts=new Map();
     for(let n=0;n<idx.length;n++){
       const it=pages[idx[n]];showToast(`Đang quét thẻ ${n+1}/${idx.length}...`);
-      const cv=await renderItemCanvas(it,{dpi:220,maxPx:14_000_000});
+      const cv=await renderItemCanvas(it,{dpi:CARD_DPI,maxPx:LOW_END?9_000_000:14_000_000});
       let found=detectCards(cv),fb=false;
       if(!found.length&&!auto){found=[{canvas:trimWhite(cv)}];fb=true}
-      found.forEach(f=>{const cd={id:crypto.randomUUID(),pageId:it.id,pos:idx[n]+1,base:f.canvas,view:f.canvas,dpi:cv.dpiUsed||220,rot:0,fallback:fb,vr:0,face:skinFraction(f.canvas)};cd.view=makeView(cd);cards.push(cd)});
+      found.forEach(f=>{const cd={id:crypto.randomUUID(),pageId:it.id,pos:idx[n]+1,base:f.canvas,view:f.canvas,dpi:cv.dpiUsed||CARD_DPI,rot:0,fallback:fb,vr:0,face:skinFraction(f.canvas)};cd.view=makeView(cd);cards.push(cd)});
       pageCounts.set(it.id,found.length);
+      if(!found.some(f=>f.canvas===cv)){cv.width=cv.height=1} /* giải phóng canvas trang lớn ngay */
       await new Promise(r=>setTimeout(r,0));
     }
     cardState={cards,pageCounts,sheet:0};
@@ -1458,13 +1492,14 @@ async function openCards(){
 function closeCards(){$("cardModal").classList.add("hidden");cardState=null}
 async function applyCards(){
   if(busy||!cardState||!cardState.cards.length)return showToast("Chưa có thẻ để ghép");
-  const groups=cardGroups(),o=cardOpts(),counts=cardState.pageCounts,consumed=new Map(),newIds=[];
+  const groups=cardGroups(),o={...cardOpts(),sharpen:true},counts=cardState.pageCounts,consumed=new Map(),newIds=[];
   setBusy(true);
   try{
     pushHistory();
     for(let gi=0;gi<groups.length;gi++){
       const g=groups[gi];showToast(`Đang tạo trang ghép ${gi+1}/${groups.length}...`);
-      const sheet=composeCardSheet(g,o,220),item=await canvasToDocument(sheet,groups.length>1?`Thẻ ghép ${gi+1}`:"Thẻ ghép",220);
+      const sheet=composeCardSheet(g,o,CARD_DPI),item=await canvasToDocument(sheet,groups.length>1?`Thẻ ghép ${gi+1}`:"Thẻ ghép",CARD_DPI,.97);
+      sheet.width=sheet.height=1;
       let last=-1;
       g.forEach(cd=>{last=Math.max(last,pages.findIndex(p=>p.id===cd.pageId));consumed.set(cd.pageId,(consumed.get(cd.pageId)||0)+1)});
       if(last<0)last=pages.length-1;
@@ -1790,7 +1825,7 @@ async function appendNormalPage(out,it,i){
   if(it.perspectiveCrop){
     const srcPage=await d.pdf.getPage(it.pageNum),rotation=((srcPage.rotate||0)+it.rotation)%360;
     const scale=220/72,viewport=srcPage.getViewport({scale,rotation});
-    const maxPixels=24_000_000,reduce=Math.min(1,Math.sqrt(maxPixels/(viewport.width*viewport.height)));
+    const maxPixels=LOW_END?14e6:24e6,reduce=Math.min(1,Math.sqrt(maxPixels/(viewport.width*viewport.height)));
     const canvas=document.createElement("canvas");canvas.width=Math.max(1,Math.floor(viewport.width*reduce));canvas.height=Math.max(1,Math.floor(viewport.height*reduce));
     const ctx=canvas.getContext("2d");ctx.fillStyle="#fff";ctx.fillRect(0,0,canvas.width,canvas.height);
     const v=srcPage.getViewport({scale:scale*reduce,rotation});
@@ -1801,7 +1836,7 @@ async function appendNormalPage(out,it,i){
     const pw=shaped.width/(scale*reduce),ph=shaped.height/(scale*reduce),page=out.addPage([pw,ph]);
     page.drawImage(image,{x:0,y:0,width:pw,height:ph});canvas.width=canvas.height=shaped.width=shaped.height=1;
   }else{
-    const src=d.lib||(d.lib=await PDFDocument.load(d.bytes)),[p]=await out.copyPages(src,[it.pageNum-1]);
+    const src=d.lib||(d.lib=await PDFDocument.load(await docBytes(d))),[p]=await out.copyPages(src,[it.pageNum-1]);
     const c=cropValues(it),box=p.getCropBox(),x=box.x+c.left*MM_TO_PT,y=box.y+c.bottom*MM_TO_PT,w=box.width-(c.left+c.right)*MM_TO_PT,h=box.height-(c.top+c.bottom)*MM_TO_PT;
     if(w<24||h<24)throw Error(`Trang ${i+1}: vùng cắt quá nhỏ`);
     if(c.top||c.bottom||c.left||c.right)p.setCropBox(x,y,w,h);
@@ -1887,7 +1922,8 @@ async function exportNormal(list=pages,fileName="PDF-Studio.pdf",numCfg=null){
     await new Promise(r=>setTimeout(r,0));
   }
   if(numCfg)await applyPageNumbers(out,numCfg);
-  return downloadBytes(await out.save(),fileName);
+  const saved=await out.save();documents.forEach(d=>{d.lib=null}); /* nhả bản PDF đã phân tích để trả RAM */
+  return downloadBytes(saved,fileName);
 }
 
 /* ====== KHỬ BÓNG v2: chia cho "bản đồ nền giấy" ====== */
@@ -2113,7 +2149,7 @@ async function exportEnhanced(cfg){
     const d=sourceFor(it),p=await d.pdf.getPage(it.pageNum),rotation=((p.rotate||0)+it.rotation)%360;
     const vb=it.perspectiveCrop?undefined:cropViewBox(it,p);
     const v=p.getViewport({scale,rotation,viewBox:vb});
-    const maxPixels=28_000_000,reduce=Math.min(1,Math.sqrt(maxPixels/(v.width*v.height))),canvas=document.createElement("canvas");
+    const maxPixels=LOW_END?16e6:28e6,reduce=Math.min(1,Math.sqrt(maxPixels/(v.width*v.height))),canvas=document.createElement("canvas");
     canvas.width=Math.max(1,Math.floor(v.width*reduce));canvas.height=Math.max(1,Math.floor(v.height*reduce));
     const renderViewport=p.getViewport({scale:scale*reduce,rotation,viewBox:vb}),ctx=canvas.getContext("2d",{willReadFrequently:true});
     ctx.fillStyle="#fff";ctx.fillRect(0,0,canvas.width,canvas.height);
@@ -2462,7 +2498,7 @@ async function buildCompressed(dpi,quality,gray,label){
   for(let i=0;i<pages.length;i++){
     const it=pages[i],d=sourceFor(it),p=await d.pdf.getPage(it.pageNum),rotation=((p.rotate||0)+it.rotation)%360;
     const vb=it.perspectiveCrop?undefined:cropViewBox(it,p),v=p.getViewport({scale,rotation,viewBox:vb});
-    const reduce=Math.min(1,Math.sqrt(20_000_000/(v.width*v.height))),canvas=document.createElement("canvas");
+    const reduce=Math.min(1,Math.sqrt((LOW_END?14e6:20e6)/(v.width*v.height))),canvas=document.createElement("canvas");
     canvas.width=Math.max(1,Math.floor(v.width*reduce));canvas.height=Math.max(1,Math.floor(v.height*reduce));
     const ctx=canvas.getContext("2d",{willReadFrequently:true});ctx.fillStyle="#fff";ctx.fillRect(0,0,canvas.width,canvas.height);
     await p.render({canvasContext:ctx,viewport:p.getViewport({scale:scale*reduce,rotation,viewBox:vb}),background:"rgb(255,255,255)"}).promise;
@@ -2480,7 +2516,7 @@ async function buildCompressed(dpi,quality,gray,label){
 async function exportCompressed(){
   if(!pages.length)throw Error("Chưa có trang để nén");
   let dpi=clamp(Number($("compressDpi").value)||120,50,300),q=clamp(Number($("compressQuality").value)||65,20,95)/100,gray=$("compressGray").checked;
-  const origSize=documents.reduce((a,d)=>a+d.bytes.length,0);
+  const origSize=documents.reduce((a,d)=>a+(d.size||(d.bytes?d.bytes.length:0)),0);
   let bytes;
   if($("compressTarget").checked){
     const limit=(Number($("compressTargetMb").value)||2)*1048576;
@@ -2576,7 +2612,9 @@ const ED_KEY="pdfstudio_editor_draft_v1";
 const ed=$("edPage");
 let edRange=null,edPendingSize=null;
 const ED_BASE_CSS=`body{margin:0;font-family:"Times New Roman",Times,serif;font-size:13pt;line-height:1.3;color:#000}p{margin:0 0 6pt}ul,ol{margin:0 0 6pt}table{border-collapse:collapse}td,th{vertical-align:top}img{max-width:100%}img.ed-fimg{position:absolute}.sheet{position:relative}.ed-tb{position:absolute;border:1px solid #000;padding:6px;box-sizing:border-box;overflow:hidden}.ed-tb p{margin:0}`;
-function edSaveDraft(){try{localStorage.setItem(ED_KEY,edClone("draft"))}catch(e){}}
+let edSaveT=0;
+function edSaveDraftNow(){clearTimeout(edSaveT);edSaveT=0;try{localStorage.setItem(ED_KEY,edClone("draft"))}catch(e){}}
+function edSaveDraft(){clearTimeout(edSaveT);edSaveT=setTimeout(edSaveDraftNow,700)}
 function edLoadDraft(){
   try{const v=localStorage.getItem(ED_KEY);if(v&&v.trim())ed.innerHTML=v}catch(e){}
   ed.querySelectorAll(".ed-tb").forEach(tb=>{tb.classList.remove("sel");tb.tabIndex=0;tb.contentEditable="false";const b=tb.querySelector(".ed-tb-body");if(b)b.contentEditable="true"});
@@ -2601,9 +2639,10 @@ function edClone(mode){
 }
 function edResetEmpty(){ed.innerHTML="<p><br></p>"}
 function edInRange(n){return n&&ed.contains(n.nodeType===3?n.parentNode:n)}
+let edUsRaf=0;
 document.addEventListener("selectionchange",()=>{
   const s=getSelection();
-  if(s.rangeCount&&edInRange(s.anchorNode)){edRange=s.getRangeAt(0).cloneRange();if(!$("editorModal").classList.contains("hidden"))edUpdateState()}
+  if(s.rangeCount&&edInRange(s.anchorNode)){edRange=s.getRangeAt(0).cloneRange();if(!$("editorModal").classList.contains("hidden")&&!edUsRaf)edUsRaf=requestAnimationFrame(()=>{edUsRaf=0;edUpdateState()})}
 });
 function edFocus(){
   ed.focus({preventScroll:true});
@@ -2770,7 +2809,7 @@ function openEditor(){
   $("editorModal").classList.remove("hidden");
   setTimeout(()=>{ed.focus();try{document.execCommand("defaultParagraphSeparator",false,"p");document.execCommand("enableObjectResizing",false,false)}catch(e){}edInitImgs()},50);
 }
-function closeEditor(){edImgSelect(null);edSaveDraft();$("editorModal").classList.add("hidden")}
+function closeEditor(){edImgSelect(null);edSaveDraftNow();$("editorModal").classList.add("hidden")}
 $("editorButton").onclick=()=>{openEditor();setTimeout(edReplaceTbs,60)};
 $("closeEditor").onclick=closeEditor;
 
@@ -3026,12 +3065,12 @@ function edImgTick(){
   edImgRaf=0;
   if(!edImg)return;
   if(!edImg.isConnected||$("editorModal").classList.contains("hidden")){edImgSelect(null);return}
-  edImgPos();edImgRaf=requestAnimationFrame(edImgTick);
+  edImgPos();edImgRaf=setTimeout(edImgTick,160);
 }
 function edImgSelect(img){
   edImg=img||null;
   edImgBox.classList.toggle("hidden",!edImg);
-  if(edImg){edImgPos();if(!edImgRaf)edImgRaf=requestAnimationFrame(edImgTick)}
+  if(edImg){edImgPos();if(!edImgRaf)edImgRaf=setTimeout(edImgTick,160)}
   else{$("edImgW").value="";$("edImgH").value=""}
 }
 // vị trí tự do (mm, tính từ mép giấy) giống textbox
