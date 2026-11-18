@@ -242,6 +242,17 @@ button,input,select{font:inherit}button{cursor:pointer}.hidden{display:none!impo
 <button class="btn" id="previewMagicButton">👁 Xem thử trước / sau</button><button class="btn primary" id="magicExportButton">🎨 Áp dụng Magic Color và xuất PDF</button>
 <span class="muted" id="magicScopeInfo"></span></div>
 <div class="enhance-status" id="magicStatus"></div></section>
+<section class="panel enhance-panel" id="wmPanel" style="border-color:#b9e4f2;background:linear-gradient(135deg,#f3fbff,#e6f5fc)"><h2>💧 Xóa watermark – Kiểu CamScanner</h2>
+<div class="muted">Tự nhận diện watermark mờ/nhạt phủ lên trang (chữ chìm, logo mờ, dấu nền xám hoặc màu nhạt…) rồi đưa về màu giấy, giữ nguyên chữ đen, bảng biểu, chữ ký và dấu đỏ. Có thể chọn trang áp dụng; trang còn lại giữ nguyên bản gốc.</div>
+<div class="enhance-options"><label for="wmScope">Áp dụng cho:</label><select id="wmScope"><option value="selected" selected>Chỉ các trang đã chọn</option><option value="all">Tất cả trang</option></select>
+<label for="wmLevel">Mức độ:</label><select id="wmLevel"><option value="light">Nhẹ – Chỉ watermark rất nhạt</option><option value="medium" selected>Vừa – Khuyên dùng</option><option value="strong">Mạnh – Watermark đậm hơn</option><option value="max">Rất mạnh – Xóa tối đa</option></select>
+<label for="wmDpi">Chất lượng xuất:</label><select id="wmDpi"><option value="180">180 DPI – Nhẹ hơn</option><option value="220" selected>220 DPI – Khuyên dùng</option><option value="300">300 DPI – Nét cao, tệp lớn</option></select>
+<label class="opt-check" style="margin:0"><input type="checkbox" id="wmKeepColor" checked> Giữ dấu đỏ / chữ ký màu</label>
+<label class="opt-check" style="margin:0"><input type="checkbox" id="wmSharpen" checked> Làm nét chữ</label>
+<button class="btn" id="wmPreviewButton">👁 Xem thử trước / sau</button><button class="btn primary" id="wmExportButton">💧 Xóa watermark và xuất PDF</button>
+<span class="muted" id="wmScopeInfo"></span></div>
+<div class="enhance-note"><b>Cách xử lý:</b> ước lượng nền giấy từng vùng, rồi những điểm ảnh sáng hơn nét mực nhưng tối hơn giấy (đặc trưng của watermark mờ) được đẩy về màu giấy; nét chữ đen và viền mềm quanh chữ được bảo vệ. Nếu watermark còn sót, tăng “Mức độ”; nếu chữ mảnh/nhạt bị mất, hạ mức độ xuống. Trang được xử lý sẽ chuyển thành ảnh nên chữ có thể không còn chọn/tìm kiếm được. Watermark đậm bằng chữ đen che trực tiếp lên nội dung thì không thể khôi phục.</div>
+<div class="enhance-status" id="wmStatus"></div></section>
 <section class="panel enhance-panel" id="hlPanel" style="border-color:#f3dd7a;background:linear-gradient(135deg,#fffef3,#fff9d9)"><h2>🖍 Bỏ vùng bôi màu – Giữ nguyên chữ</h2>
 <div class="muted">Tự nhận diện các vùng bị tô màu (bút dạ quang vàng, xanh lá, hồng, xanh dương…) rồi xóa màu nền đó về màu giấy, chữ bên trong vẫn giữ nguyên nét. Chữ màu, con dấu đỏ, ảnh chụp và nền giấy bình thường không bị đụng tới.</div>
 <div class="enhance-options"><label for="hlScope">Áp dụng cho:</label><select id="hlScope"><option value="selected" selected="">Chỉ các trang đã chọn</option><option value="all">Tất cả trang</option></select>
@@ -491,7 +502,7 @@ button,input,select{font:inherit}button{cursor:pointer}.hidden{display:none!impo
 <div class="modal-header"><div class="modal-title">📄 Tùy chọn xuất PDF</div><button class="close-btn" id="exClose" type="button">×</button></div>
 <div style="padding:18px;display:flex;flex-direction:column;gap:12px">
 <label class="opt-field">Trang cần xuất<select id="exScope" style="padding:9px;border:1px solid var(--border);border-radius:8px;font:inherit;color:var(--text);background:#fff"><option value="all">Tất cả trang</option><option value="selected">Chỉ các trang đã chọn</option></select></label>
-<label class="opt-field">Xử lý hình ảnh<select id="exProc" style="padding:9px;border:1px solid var(--border);border-radius:8px;font:inherit;color:var(--text);background:#fff"><option value="none">Không – giữ PDF gốc</option><option value="enhance">✨ Khử bóng</option><option value="magic">🎨 Magic Color (kiểu CamScanner)</option></select></label>
+<label class="opt-field">Xử lý hình ảnh<select id="exProc" style="padding:9px;border:1px solid var(--border);border-radius:8px;font:inherit;color:var(--text);background:#fff"><option value="none">Không – giữ PDF gốc</option><option value="enhance">✨ Khử bóng</option><option value="magic">🎨 Magic Color (kiểu CamScanner)</option><option value="wm">💧 Xóa watermark</option></select></label>
 <div id="exMagicBox" class="hidden opt-field" style="margin:0"><span>Mức độ khử bóng / làm sạch</span><select id="exMagicLevel" style="padding:9px;border:1px solid var(--border);border-radius:8px;font:inherit;color:var(--text);background:#fff"><option value="light">Nhẹ – Giữ tự nhiên, can thiệp ít</option><option value="medium" selected>Vừa – Khuyên dùng</option><option value="strong">Mạnh – Bóng đậm, nền sạch tối đa</option></select></div>
 <div id="exEnhBox" class="hidden" style="display:flex;flex-wrap:wrap;gap:8px"><select id="exMode" style="padding:9px;border:1px solid var(--border);border-radius:8px;font:inherit;color:var(--text);background:#fff"><option value="color">Giữ màu – Khử bóng</option><option value="gray">Thang xám – Sạch nền</option><option value="bw">Đen trắng – Kiểu scan</option></select><select id="exLevel" style="padding:9px;border:1px solid var(--border);border-radius:8px;font:inherit;color:var(--text);background:#fff"><option value="light">Nhẹ</option><option value="medium" selected>Vừa – Khuyên dùng</option><option value="strong">Mạnh</option></select><select id="exWhiten" style="padding:9px;border:1px solid var(--border);border-radius:8px;font:inherit;color:var(--text);background:#fff"><option value="keep">Giữ màu giấy gốc</option><option value="white">Làm trắng nền giấy</option></select><label class="opt-check" style="margin:0"><input type="checkbox" id="exSharpen" checked> Làm nét chữ</label></div>
 <label class="opt-field" id="exDpiRow">Chất lượng xuất<select id="exProcDpi" style="padding:9px;border:1px solid var(--border);border-radius:8px;font:inherit;color:var(--text);background:#fff"><option value="180">180 DPI – Nhẹ hơn</option><option value="220" selected>220 DPI – Khuyên dùng</option><option value="300">300 DPI – Nét cao, tệp lớn</option></select></label>
@@ -534,7 +545,7 @@ function login(){if($("passwordInput").value==="2001"){$("loginScreen").classLis
 $("loginButton").onclick=login;$("passwordInput").onkeydown=e=>{if(e.key==="Enter")login()};
 function showToast(m){const el=$("toast");el.textContent=m;el.classList.remove("hidden");clearTimeout(showToast.timer);showToast.timer=setTimeout(()=>el.classList.add("hidden"),3000)}
 function setProgress(p,m){$("progressArea").classList.remove("hidden");$("progressFill").style.width=p+"%";$("progressText").textContent=m}
-function setBusy(v){busy=v;["addFilesButton","exportButton","enhanceExportButton","hlExportButton","hlPreviewButton","compressExportButton","rotateButton","duplicateButton","deleteButton","clearButton","selectAllButton","saveSelectedButton","printSelectedButton","editorButton","manualCropButton","autoCropButton","rectCropButton","mergeButton","cardButton","stampButton","moveCropButton","copyCropButton","moveCropPrev","applyManualCrop","autoDetectCrop","startManualCrop","startRectCrop","moveToButton","moveLeftButton","moveRightButton"].forEach(id=>$(id).disabled=v);updateHistoryButtons()}
+function setBusy(v){busy=v;["addFilesButton","exportButton","enhanceExportButton","hlExportButton","hlPreviewButton","wmExportButton","wmPreviewButton","compressExportButton","rotateButton","duplicateButton","deleteButton","clearButton","selectAllButton","saveSelectedButton","printSelectedButton","editorButton","manualCropButton","autoCropButton","rectCropButton","mergeButton","cardButton","stampButton","moveCropButton","copyCropButton","moveCropPrev","applyManualCrop","autoDetectCrop","startManualCrop","startRectCrop","moveToButton","moveLeftButton","moveRightButton"].forEach(id=>$(id).disabled=v);updateHistoryButtons()}
 function getDoc(id){return documents.find(d=>d.id===id)}
 function sourceFor(item){const d=getDoc(item.docId);if(!d)throw Error("Không tìm thấy tài liệu nguồn");return d}
 function updateSaveButton(){updateEnhanceInfo();const b=$("saveSelectedButton"),pb=$("printSelectedButton");if(!b)return;const n=selectedPages.size;b.textContent=n?`💾 Lưu ${n} trang đã chọn`:"💾 Lưu trang đã chọn";if(pb)pb.textContent=n?`🖨 In ${n} trang đã chọn`:"🖨 In trang đã chọn"}
@@ -2336,7 +2347,7 @@ function updateMagicInfo(){
   el.textContent=$("magicScope").value==="all"?`Sẽ áp dụng cho tất cả ${pages.length} trang`:(n?`Sẽ áp dụng cho ${n}/${pages.length} trang đã chọn`:"Hãy chọn trang trong danh sách phía trên");
 }
 function updateEnhanceInfo(){
-  updateMagicInfo();updateHlInfo();
+  updateMagicInfo();updateHlInfo();updateWmInfo();
   const el=$("enhanceScopeInfo");if(!el)return;
   const scope=$("enhanceScope").value,f=enhanceFlags(),n=f.filter(Boolean).length;
   if(!pages.length){el.textContent="";return}
@@ -2402,8 +2413,8 @@ async function renderEnhancementComparison(magic){
   before.width=after.width=shaped.width;before.height=after.height=shaped.height;
   before.getContext("2d").drawImage(shaped,0,0);
   after.getContext("2d").drawImage(shaped,0,0);
-  if(magic)magicCanvas(after,{sharpen:true,level:$("magicLevel").value});else enhanceByMode(after,$("enhanceLevel").value,$("enhanceMode").value,enhanceOpts());
-  $("enhancePreviewLabel").textContent=magic?`${item.name} · trang ${item.pageNum} · Magic Color · mức ${$("magicLevel").selectedOptions[0].text.split(" –")[0]}`:`${item.name} · trang ${item.pageNum} · ${$("enhanceMode").selectedOptions[0].text} · mức ${$("enhanceLevel").selectedOptions[0].text}`;
+  if(magic==="wm")watermarkCanvas(after,{level:$("wmLevel").value,keepColor:$("wmKeepColor").checked,sharpen:$("wmSharpen").checked});else if(magic)magicCanvas(after,{sharpen:true,level:$("magicLevel").value});else enhanceByMode(after,$("enhanceLevel").value,$("enhanceMode").value,enhanceOpts());
+  $("enhancePreviewLabel").textContent=magic==="wm"?`${item.name} · trang ${item.pageNum} · Xóa watermark · mức ${$("wmLevel").selectedOptions[0].text.split(" –")[0]}`:magic?`${item.name} · trang ${item.pageNum} · Magic Color · mức ${$("magicLevel").selectedOptions[0].text.split(" –")[0]}`:`${item.name} · trang ${item.pageNum} · ${$("enhanceMode").selectedOptions[0].text} · mức ${$("enhanceLevel").selectedOptions[0].text}`;
   $("enhancePreviewModal").classList.remove("hidden");
 }
 $("previewEnhanceButton").onclick=async()=>{
@@ -2416,7 +2427,7 @@ $("enhancePreviewModal").onclick=e=>{if(e.target===$("enhancePreviewModal"))$("e
 function exList(){return $("exScope").value==="selected"?selectedIndexes().map(i=>pages[i]):pages.slice()}
 function exSync(){
   const proc=$("exProc").value,comp=$("exCompress").checked,n=exList().length;
-  $("exEnhBox").classList.toggle("hidden",proc!=="enhance");$("exMagicBox").classList.toggle("hidden",proc!=="magic");$("exCBox").classList.toggle("hidden",!comp);
+  $("exEnhBox").classList.toggle("hidden",proc!=="enhance");$("exMagicBox").classList.toggle("hidden",proc!=="magic"&&proc!=="wm");$("exCBox").classList.toggle("hidden",!comp);
   $("exDpiRow").classList.toggle("hidden",proc==="none"||comp);$("exTargetMb").disabled=!$("exTarget").checked;
   {const on=$("exNum").checked;$("exNumBox").classList.toggle("hidden",!on);
    const rangeMode=document.querySelector('input[name="exNumMode"]:checked').value==="range";
@@ -2445,7 +2456,7 @@ async function exBuild(list,cfg,dpi,q,label){
     const ctx=c.getContext("2d",{willReadFrequently:true});ctx.fillStyle="#fff";ctx.fillRect(0,0,c.width,c.height);
     await p.render({canvasContext:ctx,viewport:p.getViewport({scale:scale*reduce,rotation,viewBox:vb}),background:"rgb(255,255,255)"}).promise;
     const sh=applyShapeCrop(c,it);
-    if(cfg.proc==="magic")magicCanvas(sh,{sharpen:true,level:cfg.magicLevel});else if(cfg.proc==="enhance")enhanceByMode(sh,cfg.level,cfg.mode,cfg.opts);
+    if(cfg.proc==="magic")magicCanvas(sh,{sharpen:true,level:cfg.magicLevel});else if(cfg.proc==="wm")watermarkCanvas(sh,{level:cfg.magicLevel,keepColor:true,sharpen:true});else if(cfg.proc==="enhance")enhanceByMode(sh,cfg.level,cfg.mode,cfg.opts);
     if(cfg.gray){const sc=sh.getContext("2d",{willReadFrequently:true}),im=sc.getImageData(0,0,sh.width,sh.height),a=im.data;for(let k=0;k<a.length;k+=4){a[k]=a[k+1]=a[k+2]=.299*a[k]+.587*a[k+1]+.114*a[k+2]}sc.putImageData(im,0,0)}
     const blob=await new Promise(r=>sh.toBlob(r,"image/jpeg",q));if(!blob)throw Error("Không tạo được ảnh trang "+(i+1));
     const img=await out.embedJpg(new Uint8Array(await blob.arrayBuffer())),pw=sh.width/(scale*reduce),ph=sh.height/(scale*reduce);
@@ -2473,7 +2484,7 @@ $("exGo").onclick=async()=>{
         for(let n=0;n<steps.length;n++){const [d2,q2]=steps[n];dpi=Math.max(50,Math.round(d2));q=clamp(q2,.2,.95);bytes=await exBuild(list,cfg,dpi,q,`Lần thử ${n+1}/${steps.length}`);if(bytes.length<=limit)break}
         if(bytes.length>limit)showToast("Chưa đạt "+fmtSize(limit)+" ở mức nén thấp nhất; thử bật thang xám hoặc bỏ bớt trang");
       }else bytes=await exBuild(list,cfg,dpi,q,"Đang xuất");
-      ok=await downloadBytes(bytes,"PDF-Studio"+(cfg.proc==="magic"?"-Magic":cfg.proc==="enhance"?"-Khu-Bong":"")+(comp?"-Nen":"")+".pdf");
+      ok=await downloadBytes(bytes,"PDF-Studio"+(cfg.proc==="magic"?"-Magic":cfg.proc==="wm"?"-Xoa-Watermark":cfg.proc==="enhance"?"-Khu-Bong":"")+(comp?"-Nen":"")+".pdf");
     }
     showToast(ok?"Xuất PDF thành công":"Đã hủy lưu tệp");
   }catch(e){console.error(e);showToast("Lỗi xuất PDF: "+e.message)}
@@ -2503,6 +2514,83 @@ $("magicExportButton").onclick=async()=>{
   setBusy(true);$("magicStatus").textContent="Đang xử lý Magic Color từng trang...";
   try{const ok=await exportEnhanced({flags,dpi:Number($("magicDpi").value)||220,process:c=>magicCanvas(c,{sharpen:true,level:$("magicLevel").value}),verb:"xử lý Magic Color",fileName:"PDF-Studio-Magic-Color.pdf"});if(ok){$("magicStatus").textContent=`Hoàn tất: đã áp dụng Magic Color cho ${n} trang.`;showToast("Đã áp dụng Magic Color và xuất PDF")}else{$("magicStatus").textContent="Đã hủy lưu tệp.";showToast("Đã hủy lưu tệp")}}
   catch(e){console.error(e);$("magicStatus").textContent="Có lỗi trong quá trình xử lý.";showToast("Lỗi xử lý: "+e.message)}
+  finally{setBusy(false);setTimeout(()=>$("progressArea").classList.add("hidden"),1800)}
+};
+
+/* ====== XÓA WATERMARK (kiểu CamScanner) ======
+   Watermark mờ = điểm ảnh sáng hơn mực nhưng tối hơn nền giấy. Ta chuẩn hóa theo "bản đồ nền giấy" rồi
+   đẩy dải sáng-trung-bình đó về màu giấy, trong khi nét mực (tối) và viền mềm quanh nét mực được bảo vệ. */
+const WM_LEVELS={
+  light :{lo:.80,hi:.92,ink:.55,T:250},
+  medium:{lo:.70,hi:.88,ink:.52,T:252},
+  strong:{lo:.60,hi:.84,ink:.48,T:253},
+  max   :{lo:.50,hi:.80,ink:.42,T:254}
+};
+function watermarkCanvas(canvas,opts){
+  opts=opts||{};const L=WM_LEVELS[opts.level]||WM_LEVELS.medium;
+  const ctx=canvas.getContext("2d",{willReadFrequently:true}),w=canvas.width,h=canvas.height;
+  const image=ctx.getImageData(0,0,w,h),d=image.data,N=w*h;
+  const bg=buildBackground(d,w,h,.055,"rgb"),sm=makeSampler(w,h,bg.lw,bg.lh),P0=bg.planes[0],P1=bg.planes[1],P2=bg.planes[2];
+  /* 1) làm phẳng nền (khử bóng) và tính độ sáng chuẩn hóa 0..1 */
+  const norm=new Float32Array(N),sat=opts.keepColor?new Float32Array(N):null;
+  for(let y=0;y<h;y++){
+    const rw=sm.row(y);
+    for(let x=0;x<w;x++){
+      const i=y*w+x,k=i*4;
+      let r=d[k]*Math.min(2.6,L.T/bil(P0,sm,rw,x)),g=d[k+1]*Math.min(2.6,L.T/bil(P1,sm,rw,x)),b=d[k+2]*Math.min(2.6,L.T/bil(P2,sm,rw,x));
+      r=r>255?255:r;g=g>255?255:g;b=b>255?255:b;
+      d[k]=r;d[k+1]=g;d[k+2]=b;
+      norm[i]=(.299*r+.587*g+.114*b)/255;
+      if(sat){const mx=Math.max(r,g,b),mn=Math.min(r,g,b);sat[i]=mx>1?(mx-mn)/mx:0}
+    }
+  }
+  /* 2) vùng bảo vệ = mực tối (+ nở vài điểm ảnh để giữ viền mềm của nét chữ) */
+  const dark=new Float32Array(N);
+  for(let i=0;i<N;i++){
+    let v=norm[i]<L.ink?1:0;
+    if(!v&&sat&&sat[i]>.38&&norm[i]<.86)v=1; /* dấu đỏ, chữ ký màu đậm */
+    dark[i]=v;
+  }
+  const rad=Math.max(1,Math.round(Math.max(w,h)/1800)),prot=morph2D(dark,w,h,rad,true);
+  /* 3) đẩy dải watermark về giấy */
+  for(let i=0;i<N;i++){
+    if(prot[i]>.5)continue;
+    const l=norm[i];if(l<L.lo)continue;
+    let t=(l-L.lo)/(L.hi-L.lo);t=t>1?1:t;t=t*t*(3-2*t);
+    const k=i*4,keep=1-t;
+    d[k]=d[k]*keep+255*t;d[k+1]=d[k+1]*keep+255*t;d[k+2]=d[k+2]*keep+255*t;
+  }
+  /* 4) vùng gần như giấy → trắng hẳn để nền sạch */
+  for(let i=0;i<N;i++){
+    if(prot[i]>.5)continue;
+    if(norm[i]>=L.hi){const k=i*4;d[k]=d[k+1]=d[k+2]=255}
+  }
+  if(opts.sharpen!==false)sharpenLuma(d,w,h,.6);
+  ctx.putImageData(image,0,0);
+}
+function wmFlags(){return $("wmScope").value==="all"?pages.map(()=>true):pages.map(p=>selectedPages.has(p.id))}
+function updateWmInfo(){
+  const el=$("wmScopeInfo");if(!el)return;
+  if(!pages.length){el.textContent="";return}
+  const n=wmFlags().filter(Boolean).length;
+  el.textContent=$("wmScope").value==="all"?`Sẽ áp dụng cho tất cả ${pages.length} trang`:(n?`Sẽ áp dụng cho ${n}/${pages.length} trang đã chọn`:"Hãy chọn trang trong danh sách phía trên");
+}
+$("wmScope").onchange=updateWmInfo;
+$("wmPreviewButton").onclick=async()=>{
+  try{await renderEnhancementComparison("wm")}catch(e){console.error(e);showToast("Không tạo được bản xem thử: "+e.message)}
+};
+$("wmExportButton").onclick=async()=>{
+  if(busy)return;if(!pages.length)return showToast("Hãy thêm PDF hoặc ảnh trước");
+  const flags=wmFlags(),n=flags.filter(Boolean).length;
+  if(n===0)return showToast("Hãy chọn các trang cần xóa watermark (hoặc chọn “Tất cả trang”)");
+  if(!confirm(`Xóa watermark trên ${n}/${pages.length} trang`+(n<pages.length?` (giữ nguyên ${pages.length-n} trang còn lại)`:"")+" và xuất PDF mới? Trang được xử lý sẽ chuyển thành ảnh; chữ trên các trang đó có thể không còn chọn/tìm kiếm được."))return;
+  setBusy(true);$("wmStatus").textContent="Đang xóa watermark từng trang...";
+  const level=$("wmLevel").value,keepColor=$("wmKeepColor").checked,sharpen=$("wmSharpen").checked;
+  try{
+    const ok=await exportEnhanced({flags,dpi:Number($("wmDpi").value)||220,process:c=>watermarkCanvas(c,{level,keepColor,sharpen}),verb:"xóa watermark",fileName:"PDF-Studio-Xoa-Watermark.pdf"});
+    if(ok){$("wmStatus").textContent=`Hoàn tất: đã xóa watermark trên ${n} trang.`;showToast("Đã xóa watermark và xuất PDF")}
+    else{$("wmStatus").textContent="Đã hủy lưu tệp.";showToast("Đã hủy lưu tệp")}
+  }catch(e){console.error(e);$("wmStatus").textContent="Có lỗi trong quá trình xử lý.";showToast("Lỗi xử lý: "+e.message)}
   finally{setBusy(false);setTimeout(()=>$("progressArea").classList.add("hidden"),1800)}
 };
 
