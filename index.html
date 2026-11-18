@@ -667,11 +667,28 @@ function moveBeforeAfter(idSet,refId,after){
   const key=groupKey(ref),dest=pages.filter(p=>!idSet.has(p.id)&&groupKey(p)===key);
   return moveItems(idSet,key,dest.findIndex(p=>p.id===refId)+(after?1:0));
 }
-function moveGroup(srcKey,targetKey){
-  if(srcKey===targetKey)return;
-  const src=pages.filter(p=>groupKey(p)===srcKey),rest=pages.filter(p=>groupKey(p)!==srcKey);
-  const at=rest.findIndex(p=>groupKey(p)===targetKey);if(at<0)return;
+/* Di chuyển một hoặc nhiều tệp (chồng giấy) cùng lúc tới vị trí của tệp đích.
+   Kéo về phía trước → chèn trước tệp đích; kéo về phía sau → chèn sau tệp đích. */
+function moveGroups(srcKeys,targetKey){
+  const set=new Set(srcKeys);
+  if(!set.size||set.has(targetKey))return 0;
+  const order=getGroups().map(g=>g.key),tIdx=order.indexOf(targetKey);
+  if(tIdx<0)return 0;
+  const firstSrc=Math.min(...srcKeys.map(k=>order.indexOf(k)).filter(i=>i>=0));
+  const after=firstSrc<tIdx;
+  const src=pages.filter(p=>set.has(groupKey(p))),rest=pages.filter(p=>!set.has(groupKey(p)));
+  let at;
+  if(after){let last=-1;rest.forEach((p,i)=>{if(groupKey(p)===targetKey)last=i});at=last+1}
+  else at=rest.findIndex(p=>groupKey(p)===targetKey);
+  if(at<0)return 0;
   pushHistory();pages=[...rest.slice(0,at),...src,...rest.slice(at)];
+  return set.size;
+}
+function moveGroup(srcKey,targetKey){return moveGroups([srcKey],targetKey)}
+/* Các tệp được kéo: nếu tệp đang kéo đã được chọn nguyên vẹn thì kéo theo mọi tệp đã chọn nguyên vẹn khác */
+function groupsToDrag(key){
+  const full=getGroups().filter(g=>g.items.length&&g.items.every(p=>selectedPages.has(p.id))).map(g=>g.key);
+  return full.includes(key)?full:[key];
 }
 function groupNameOf(key){const g=getGroups().find(x=>x.key===key);return g?g.name:""}
 function shiftSelected(dir){
@@ -761,7 +778,7 @@ function doDropOnPage(refId,after){
 }
 function doDropOnStack(key){
   const p=dragPayload;endDrag();if(!p)return;
-  if(p.type==="group"){moveGroup(p.key,key);renderGrid();showToast("Đã đổi thứ tự tệp");return}
+  if(p.type==="group"){const n=moveGroups(p.keys||[p.key],key);renderGrid();if(n)showToast(n>1?`Đã di chuyển ${n} tệp`:"Đã đổi thứ tự tệp");return}
   const n=moveItems(new Set(p.ids),key,Infinity);
   if(!n)return;
   selectedPages=new Set(p.ids);openGroups.add(key);renderGrid();showToast(`Đã chuyển ${n} trang vào cuối “${groupNameOf(key)}”`);
@@ -783,9 +800,16 @@ function makeStack(g,gi){
   const cnt=document.createElement("div");cnt.className="stack-count";cnt.textContent=g.items.length+" trang";
   card.append(st,pill,cnt);
   card.onclick=()=>{openGroups.add(g.key);renderGrid()};
-  card.ondragstart=e=>{dragPayload={type:"group",key:g.key};e.dataTransfer.effectAllowed="move";e.dataTransfer.setData("text/plain","pdf-studio-group");setTimeout(()=>card.classList.add("dragging"),0)};
+  card.ondragstart=e=>{
+    const keys=groupsToDrag(g.key);
+    dragPayload={type:"group",key:g.key,keys};
+    e.dataTransfer.effectAllowed="move";e.dataTransfer.setData("text/plain","pdf-studio-group");
+    setTimeout(()=>document.querySelectorAll(".stack-card").forEach(c=>{if(c._gk!==undefined&&keys.includes(c._gk))c.classList.add("dragging")}),0);
+    if(keys.length>1)showToast(`Đang kéo ${keys.length} tệp · thả lên tệp đích`);
+  };
+  card._gk=g.key;
   card.ondragover=e=>{
-    if(!dragPayload||(dragPayload.type==="group"&&dragPayload.key===g.key))return;
+    if(!dragPayload||(dragPayload.type==="group"&&(dragPayload.keys||[dragPayload.key]).includes(g.key)))return;
     e.preventDefault();e.dataTransfer.dropEffect="move";card.classList.add("drop-target");
   };
   card.ondragleave=e=>{if(!card.contains(e.relatedTarget))card.classList.remove("drop-target")};
