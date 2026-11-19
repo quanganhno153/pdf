@@ -511,6 +511,8 @@ button,input,select{font:inherit}button{cursor:pointer}.hidden{display:none!impo
 <label class="opt-field" id="exDpiRow">Chất lượng xuất<select id="exProcDpi" style="padding:9px;border:1px solid var(--border);border-radius:8px;font:inherit;color:var(--text);background:#fff"><option value="180">180 DPI – Nhẹ hơn</option><option value="220" selected>220 DPI – Khuyên dùng</option><option value="300">300 DPI – Nét cao, tệp lớn</option></select></label>
 <label class="opt-check" style="margin:0"><input type="checkbox" id="exCompress"> 🗜 Giảm dung lượng file</label>
 <div id="exCBox" class="hidden" style="display:flex;flex-wrap:wrap;gap:8px;align-items:center"><select id="exPreset" style="padding:9px;border:1px solid var(--border);border-radius:8px;font:inherit;color:var(--text);background:#fff"><option value="light">Nhẹ (150 DPI)</option><option value="medium" selected>Vừa (120 DPI)</option><option value="strong">Mạnh (90 DPI)</option><option value="custom">Tùy chỉnh</option></select><span class="muted">DPI</span><input type="number" id="exDpi" min="50" max="300" step="10" value="120" style="width:80px;padding:9px;border:1px solid var(--border);border-radius:8px"><span class="muted">JPEG %</span><input type="number" id="exQ" min="20" max="95" step="5" value="65" style="width:80px;padding:9px;border:1px solid var(--border);border-radius:8px"><label class="opt-check" style="margin:0"><input type="checkbox" id="exGray"> Thang xám</label><label class="opt-check" style="margin:0"><input type="checkbox" id="exTarget"> Tối đa</label><input type="number" id="exTargetMb" min="0.1" max="100" step="0.1" value="2" style="width:80px;padding:9px;border:1px solid var(--border);border-radius:8px"><span class="muted">MB</span></div>
+<label class="opt-check" style="margin:0"><input type="checkbox" id="exErase"> 🧹 Xóa số trang cũ (nếu có)</label>
+<div id="exEraseNote" class="mv-info hidden">Tự tìm số trang cũ ở đầu/cuối mỗi trang (dạng 5, - 5 -, Trang 5, 5/20…) rồi che bằng đúng màu giấy. Nếu bật “Đánh số trang” cùng lúc, chỉ các trang được đánh số mới bị xóa số cũ (hợp với chế độ “theo đoạn trang”); nếu không, xóa trên mọi trang xuất. Trang PDF văn bản: số cũ được che phủ (chữ ẩn bên dưới vẫn còn trong tệp).</div>
 <label class="opt-check" style="margin:0"><input type="checkbox" id="exNum"> 🔢 Đánh số trang</label>
 <div id="exNumBox" class="num-box hidden">
 <div class="num-part active" id="exNumPartAuto"><label class="hd"><input type="radio" name="exNumMode" value="auto" checked> Phần 1 · Tự động từ trang đầu tiên</label>
@@ -522,7 +524,12 @@ button,input,select{font:inherit}button{cursor:pointer}.hidden{display:none!impo
 <label>Vị trí dọc<select id="exNumV" style="padding:9px;border:1px solid var(--border);border-radius:8px;font:inherit;color:var(--text);background:#fff"><option value="bottom" selected>Cuối trang</option><option value="top">Đầu trang</option></select></label>
 <label>Vị trí ngang<select id="exNumH" style="padding:9px;border:1px solid var(--border);border-radius:8px;font:inherit;color:var(--text);background:#fff"><option value="left">Bên trái</option><option value="center" selected>Ở giữa</option><option value="right">Bên phải</option></select></label>
 <label>Kiểu hiển thị<select id="exNumFmt" style="padding:9px;border:1px solid var(--border);border-radius:8px;font:inherit;color:var(--text);background:#fff"><option value="n" selected>1</option><option value="dash">- 1 -</option><option value="page">Trang 1</option><option value="total">1 / tổng</option></select></label>
-<label>Cỡ chữ<select id="exNumSize" style="padding:9px;border:1px solid var(--border);border-radius:8px;font:inherit;color:var(--text);background:#fff"><option value="9">Nhỏ</option><option value="11" selected>Vừa</option><option value="14">Lớn</option></select></label></div>
+<label>Đánh số cho trang<select id="exNumOrient" style="padding:9px;border:1px solid var(--border);border-radius:8px;font:inherit;color:var(--text);background:#fff"><option value="all" selected>Tất cả (dọc và ngang)</option><option value="port">Chỉ trang khổ dọc</option><option value="land">Chỉ trang khổ ngang</option></select></label>
+<label>Hướng chữ số<select id="exNumDir" style="padding:9px;border:1px solid var(--border);border-radius:8px;font:inherit;color:var(--text);background:#fff"><option value="0" selected>Theo chiều trang (dọc đánh dọc, ngang đánh ngang)</option><option value="90">Đánh ngang – đọc khi xoay trang sang phải ↻</option><option value="270">Đánh ngang – đọc khi xoay trang sang trái ↺</option><option value="180">Lộn ngược 180°</option></select></label>
+<label>Phông chữ<select id="exNumFont" style="padding:9px;border:1px solid var(--border);border-radius:8px;font:inherit;color:var(--text);background:#fff"><option value="Helvetica" selected>Helvetica (Arial)</option><option value="Times">Times New Roman</option><option value="Courier">Courier New</option></select></label>
+<label>Cỡ chữ (pt)<span style="display:flex;gap:6px"><select id="exNumSizePre" style="padding:9px;border:1px solid var(--border);border-radius:8px;font:inherit;color:var(--text);background:#fff"><option value="8">8</option><option value="9">9</option><option value="10">10</option><option value="11" selected>11</option><option value="12">12</option><option value="14">14</option><option value="16">16</option><option value="18">18</option><option value="20">20</option><option value="24">24</option><option value="28">28</option><option value="36">36</option></select><input type="number" id="exNumSize" min="6" max="72" step="0.5" value="11" style="width:70px;padding:9px;border:1px solid var(--border);border-radius:8px;font:inherit;color:var(--text);background:#fff"></span></label>
+<label>Kiểu chữ<span style="display:flex;gap:10px;align-items:center;height:38px"><label class="opt-check" style="margin:0"><input type="checkbox" id="exNumBold"> <b>B</b></label><label class="opt-check" style="margin:0"><input type="checkbox" id="exNumItalic"> <i>I</i></label></span></label>
+<label>Màu chữ<input type="color" id="exNumColor" value="#1f1f1f" style="width:46px;height:38px;padding:2px;border:1px solid var(--border);border-radius:8px;background:#fff"></label></div>
 </div>
 <div class="mv-info" id="exInfo"></div>
 </div>
@@ -1022,6 +1029,14 @@ $("duplicateButton").onclick=()=>{
   setTimeout(()=>{$("dupN").focus();$("dupN").select()},30);
 };
 $("deleteButton").onclick=()=>{if(!selectedPages.size)return showToast("Chọn trang cần xóa");pushHistory();pages=pages.filter(p=>!selectedPages.has(p.id));selectedPages.clear();renderGrid()};
+document.addEventListener("keydown",e=>{
+  if(e.key!=="Delete"&&e.key!=="Backspace")return;
+  if(e.ctrlKey||e.metaKey||e.altKey||busy||$("app").classList.contains("hidden")||anyModalOpen())return;
+  const t=document.activeElement,tag=t?t.tagName:"";
+  if(/INPUT|SELECT|TEXTAREA/.test(tag)||(t&&t.isContentEditable))return;
+  if(!selectedPages.size)return;
+  e.preventDefault();$("deleteButton").click(); /* Ctrl+Z để hoàn tác */
+});
 $("clearButton").onclick=()=>{if(pages.length&&confirm("Xóa toàn bộ trang?")){pages=[];documents=[];thumbCache.clear();thumbQueue.length=0;openGroups.clear();undoStack.length=0;redoStack.length=0;selectedPages.clear();renderGrid();updateHistoryButtons()}};
 
 /* ====== HỘP THOẠI "CHUYỂN TRANG ĐẾN…" ====== */
@@ -2159,12 +2174,122 @@ function parsePageRanges(text,total){
   }
   return{ranges:out};
 }
+
+/* ====== TỰ TÌM & XÓA SỐ TRANG CŨ ====== */
+const OLD_PN=/^[\s\-–—•·\[\(]*(?:(?:trang|tr\.?|page|p\.?)\s*)?\d{1,4}(?:\s*(?:\/|of|trên)\s*\d{1,4})?[\s\-–—•·\]\)]*$/i;
+const median=a=>{a.sort((x,y)=>x-y);return a[a.length>>1]};
+/* màu giấy quanh một hộp (toạ độ điểm ảnh) – trung vị các điểm sáng ở vành ngoài */
+function paperAround(cv,x0,y0,x1,y1){
+  const w=cv.width,h=cv.height,r=Math.max(3,Math.round(Math.max(w,h)*.006));
+  const ax=Math.max(0,x0-r),ay=Math.max(0,y0-r),bx=Math.min(w,x1+r),by=Math.min(h,y1+r);
+  const d=cv.getContext("2d",{willReadFrequently:true}).getImageData(ax,ay,bx-ax,by-ay).data,rw=bx-ax,R=[],G=[],B=[];
+  for(let y=ay;y<by;y++)for(let x=ax;x<bx;x++){
+    if(x>=x0&&x<x1&&y>=y0&&y<y1)continue;
+    const k=((y-ay)*rw+(x-ax))*4,l=.299*d[k]+.587*d[k+1]+.114*d[k+2];
+    if(l>140){R.push(d[k]);G.push(d[k+1]);B.push(d[k+2])}
+  }
+  if(R.length<20)return[255,255,255];
+  const c=[median(R),median(G),median(B)];
+  return c.every(v=>v>=246)?[255,255,255]:c;
+}
+function mkBox(cv,x0,y0,x1,y1){
+  const W=cv.width,H=cv.height,px=Math.max(3,Math.round(W*.006)),py=Math.max(2,Math.round(H*.004));
+  x0=clamp(Math.floor(x0-px),0,W-1);y0=clamp(Math.floor(y0-py),0,H-1);x1=clamp(Math.ceil(x1+px),x0+1,W);y1=clamp(Math.ceil(y1+py),y0+1,H);
+  return{x0:x0/W,y0:y0/H,x1:x1/W,y1:y1/H,color:paperAround(cv,x0,y0,x1,y1)};
+}
+/* Trang ảnh/scan: tìm cụm mực nhỏ, đứng riêng ở sát mép trên hoặc dưới */
+function detectNumImg(cv){
+  const w=cv.width,h=cv.height,px=cv.getContext("2d",{willReadFrequently:true}).getImageData(0,0,w,h).data,lum=new Uint8Array(w*h);
+  for(let i=0,k=0;i<lum.length;i++,k+=4)lum[i]=.299*px[k]+.587*px[k+1]+.114*px[k+2];
+  const res=[],sh=Math.round(h*.12),ex0=Math.round(w*.012),ex1=w-ex0,span=ex1-ex0,ey=Math.max(1,Math.round(h*.006));
+  for(const side of["bottom","top"]){
+    const Y=r=>side==="top"?r:h-1-r,hist=new Uint32Array(256);let n=0;
+    for(let r=0;r<sh;r+=2)for(let x=0;x<w;x+=2){hist[lum[Y(r)*w+x]]++;n++}
+    let acc=0,paper=255;for(let t=0;t<256;t++){acc+=hist[t];if(acc>=n*.85){paper=t;break}}
+    if(paper<130)continue;
+    const thr=paper-55,cnt=new Int32Array(sh);
+    for(let r=0;r<sh;r++){const row=Y(r)*w;let c=0;for(let x=ex0;x<ex1;x++)if(lum[row+x]<thr)c++;cnt[r]=c}
+    const isLine=r=>cnt[r]>.4*span;
+    let r=ey;while(r<sh&&!cnt[r])r++;
+    if(r>=sh||isLine(r))continue;
+    const rs=r;let re=r,gap=0;
+    for(let q=r+1;q<sh;q++){if(isLine(q))break;if(cnt[q]){re=q;gap=0}else if(++gap>2)break}
+    const bh=re-rs+1;if(bh<Math.max(3,h*.004)||bh>h*.035)continue;
+    let rn=re+1;while(rn<sh&&!cnt[rn])rn++;
+    if(rn<sh&&rn-re-1<Math.round(h*.015))continue; /* sát dòng chữ khác → là nội dung, không phải số trang */
+    const col=new Uint8Array(w);let ink=0;
+    for(let q=rs;q<=re;q++){const row=Y(q)*w;for(let x=ex0;x<ex1;x++)if(lum[row+x]<thr){col[x]=1;ink++}}
+    if(ink<15)continue;
+    const gmax=Math.round(w*.025);let xa=-1,xb=-1,last=-1;
+    for(let x=ex0;x<ex1;x++)if(col[x]){if(xa<0)xa=x;xb=x;last=x}
+    if(xa<0||xb-xa+1>w*.16)continue;
+    const ya=side==="top"?rs:h-1-re,yb=side==="top"?re+1:h-rs;
+    res.push(mkBox(cv,xa,ya,xb+1,yb));
+  }
+  return res;
+}
+/* Tìm số trang cũ của một trang (theo khung nhìn đã cắt/xoay). Trả về [{x0,y0,x1,y1,color}] chuẩn hóa 0..1, gốc trên-trái */
+async function detectOldPageNumbers(it){
+  const cv=await renderItemCanvas(it,{maxSide:1100,maxPx:3e6});
+  try{
+    let textCount=0,boxes=[];
+    if(!it.perspectiveCrop){
+      try{
+        const d=sourceFor(it),p=await d.pdf.getPage(it.pageNum),rotation=((p.rotate||0)+it.rotation)%360,vp=p.getViewport({scale:1,rotation,viewBox:cropViewBox(it,p)});
+        const tc=await p.getTextContent(),items=[];
+        for(const t of tc.items){
+          if(typeof t.str!=="string"||!t.str.trim())continue;
+          textCount++;
+          const [a,b,c,dd,e,f]=t.transform,ln=Math.hypot(a,b)||1,lh=Math.hypot(c,dd)||1,wd=t.width||0,hh=t.height||lh;
+          const ux=a/ln,uy=b/ln,vx=c/lh,vy=dd/lh,xs=[],ys=[];
+          for(const [cu,cvv] of [[0,-.25],[1,-.25],[1,1],[0,1]]){
+            const q=vp.convertToViewportPoint(e+ux*wd*cu+vx*hh*cvv,f+uy*wd*cu+vy*hh*cvv);xs.push(q[0]);ys.push(q[1]);
+          }
+          const x0=Math.min(...xs)/vp.width,x1=Math.max(...xs)/vp.width,y0=Math.min(...ys)/vp.height,y1=Math.max(...ys)/vp.height,cy=(y0+y1)/2;
+          if(cy<.12||cy>.88)items.push({s:t.str.trim(),x0,x1,y0,y1,cy});
+        }
+        items.sort((p,q)=>p.cy-q.cy);
+        const lines=[];
+        for(const it2 of items){const L=lines.find(l=>Math.abs(l.cy-it2.cy)<.012);if(L)L.items.push(it2);else lines.push({cy:it2.cy,items:[it2]})}
+        const add=arr=>{
+          const x0=Math.min(...arr.map(i=>i.x0)),x1=Math.max(...arr.map(i=>i.x1)),y0=Math.min(...arr.map(i=>i.y0)),y1=Math.max(...arr.map(i=>i.y1));
+          boxes.push(mkBox(cv,x0*cv.width,y0*cv.height,x1*cv.width,y1*cv.height));
+        };
+        for(const L of lines){
+          L.items.sort((p,q)=>p.x0-q.x0);
+          if(OLD_PN.test(L.items.map(i=>i.s).join(" ")))add(L.items);
+          else if(L.items.length>1){
+            const f=L.items[0],l=L.items[L.items.length-1];
+            if(/^\d{1,3}$/.test(f.s))add([f]);
+            if(/^\d{1,3}$/.test(l.s))add([l]);
+          }
+        }
+      }catch(e){console.warn(e)}
+    }
+    if(boxes.length)return boxes;
+    if(it.perspectiveCrop||textCount<10)return detectNumImg(cv);
+    return[];
+  }finally{cv.width=cv.height=1}
+}
+async function computeEraseBoxes(list,cfg){
+  const out=new Array(list.length).fill(null);let found=0;
+  for(let i=0;i<list.length;i++){
+    if(cfg.eraseFlags[i]){
+      try{const b=await detectOldPageNumbers(list[i]);if(b.length){out[i]=b;found++}}catch(e){console.warn(e)}
+    }
+    setProgress((i+1)/list.length*100,`Đang tìm số trang cũ ${i+1}/${list.length} (đã thấy ${found} trang)`);
+    await new Promise(r=>setTimeout(r,0));
+  }
+  return{boxes:out,found};
+}
 function readNumbering(total){
-  if(!$("exNum").checked)return{cfg:null};
-  const mode=document.querySelector('input[name="exNumMode"]:checked').value;
-  const cfg={mode,v:$("exNumV").value,h:$("exNumH").value,fmt:$("exNumFmt").value,size:Number($("exNumSize").value)||11,start:0,restart:false,labels:[]};
+  const numOn=$("exNum").checked,eraseOn=$("exErase").checked;
+  if(!numOn&&!eraseOn)return{cfg:null};
+  const mode=numOn?document.querySelector('input[name="exNumMode"]:checked').value:"none";
+  const cfg={mode,v:$("exNumV").value,h:$("exNumH").value,fmt:$("exNumFmt").value,size:clamp(Number($("exNumSize").value)||11,6,72),font:$("exNumFont").value,dir:numOn?Number($("exNumDir").value)||0:0,orient:numOn?$("exNumOrient").value:"all",bold:$("exNumBold").checked,italic:$("exNumItalic").checked,color:$("exNumColor").value,start:0,restart:false,labels:[]};
   const labels=new Array(total).fill(null);
-  if(mode==="auto"){
+  if(mode==="none"){}
+  else if(mode==="auto"){
     let st=parseInt($("exNumStart").value,10);if(!Number.isFinite(st))st=1;
     cfg.start=clamp(st,0,9999);
     for(let i=0;i<total;i++)labels[i]={n:cfg.start+i,t:cfg.start+total-1};
@@ -2176,7 +2301,8 @@ function readNumbering(total){
       labels[p-1]=cfg.restart?{n:p-a+1,t:b-a+1}:{n:p,t:total};
     }
   }
-  cfg.labels=labels;
+  cfg.labels=labels;cfg.numOn=numOn;cfg.eraseOn=eraseOn;
+  cfg.eraseFlags=labels.map(l=>numOn?!!l:true);
   return{cfg};
 }
 function numText(l,fmt){
@@ -2184,32 +2310,49 @@ function numText(l,fmt){
 }
 async function applyPageNumbers(out,cfg){
   if(!cfg)return;
-  const font=await out.embedFont(PDFLib.StandardFonts.Helvetica),pgs=out.getPages(),color=PDFLib.rgb(.12,.12,.12);
+  const SF=PDFLib.StandardFonts,fam=cfg.font||"Helvetica",bd=!!cfg.bold,it=!!cfg.italic;
+  const fname=fam==="Times"?(bd&&it?SF.TimesRomanBoldItalic:bd?SF.TimesRomanBold:it?SF.TimesRomanItalic:SF.TimesRoman)
+    :fam==="Courier"?(bd&&it?SF.CourierBoldOblique:bd?SF.CourierBold:it?SF.CourierOblique:SF.Courier)
+    :(bd&&it?SF.HelveticaBoldOblique:bd?SF.HelveticaBold:it?SF.HelveticaOblique:SF.Helvetica);
+  const font=await out.embedFont(fname),pgs=out.getPages(),hx=(cfg.color||"#1f1f1f").replace("#",""),color=PDFLib.rgb(parseInt(hx.slice(0,2),16)/255,parseInt(hx.slice(2,4),16)/255,parseInt(hx.slice(4,6),16)/255);
   for(let i=0;i<pgs.length;i++){
-    const l=cfg.labels[i];if(!l)continue;
+    const l=cfg.labels[i],eb=cfg.erase&&cfg.erase[i];if(!l&&!(eb&&eb.length))continue;
     const p=pgs[i];
     let box;try{box=p.getCropBox()}catch(e){box=p.getMediaBox()}
     const cx=box.x,cy=box.y,cw=box.width,ch=box.height;
     const rot=(((p.getRotation().angle||0)%360)+360)%360;
     const vw=rot%180?ch:cw,vh=rot%180?cw:ch;
+    if((cfg.orient==="port"&&vw>vh)||(cfg.orient==="land"&&vw<=vh))continue; /* lọc theo khổ trang */
+    const map=(vx,vy)=>rot===90?[cx+cw-vy,cy+vx]:rot===180?[cx+cw-vx,cy+ch-vy]:rot===270?[cx+vy,cy+ch-vx]:[cx+vx,cy+vy];
+    if(eb)for(const b of eb){ /* che số cũ bằng đúng màu giấy trước khi vẽ số mới */
+      const A=map(b.x0*vw,vh-b.y0*vh),C=map(b.x1*vw,vh-b.y1*vh);
+      p.drawRectangle({x:Math.min(A[0],C[0]),y:Math.min(A[1],C[1]),width:Math.abs(A[0]-C[0]),height:Math.abs(A[1]-C[1]),color:PDFLib.rgb(b.color[0]/255,b.color[1]/255,b.color[2]/255),borderWidth:0});
+    }
+    if(!l)continue;
+    /* hướng chữ số: có thể xoay khác chiều trang (vd trang dọc nhưng đánh số ngang); vị trí trên/dưới, trái/giữa/phải tính theo khung nhìn đã xoay */
+    const rn=(rot+(cfg.dir||0))%360,nvw=rn%180?ch:cw,nvh=rn%180?cw:ch;
     const size=cfg.size,txt=numText(l,cfg.fmt),tw=font.widthOfTextAtSize(txt,size);
-    const m=Math.max(10,Math.min(30,Math.min(vw,vh)*.06));
-    if(tw+2*m>vw)continue;
-    const vx=cfg.h==="left"?m:cfg.h==="right"?vw-m-tw:(vw-tw)/2;
-    const vy=cfg.v==="top"?vh-m-size*.75:m;
+    const m=Math.max(10,Math.min(30,Math.min(nvw,nvh)*.06));
+    if(tw+2*m>nvw)continue;
+    const vx=cfg.h==="left"?m:cfg.h==="right"?nvw-m-tw:(nvw-tw)/2;
+    const vy=cfg.v==="top"?nvh-m-size*.75:m;
     let x,y;
-    if(rot===90){x=cx+cw-vy;y=cy+vx}
-    else if(rot===180){x=cx+cw-vx;y=cy+ch-vy}
-    else if(rot===270){x=cx+vy;y=cy+ch-vx}
+    if(rn===90){x=cx+cw-vy;y=cy+vx}
+    else if(rn===180){x=cx+cw-vx;y=cy+ch-vy}
+    else if(rn===270){x=cx+vy;y=cy+ch-vx}
     else{x=cx+vx;y=cy+vy}
-    p.drawText(txt,{x,y,size,font,color,rotate:PDFLib.degrees(rot)});
+    p.drawText(txt,{x,y,size,font,color,rotate:PDFLib.degrees(rn)});
   }
 }
+$("exNumSizePre").addEventListener("change",()=>{$("exNumSize").value=$("exNumSizePre").value});
+$("exNumSize").addEventListener("input",()=>{const o=[...$("exNumSizePre").options].find(o=>o.value===$("exNumSize").value);if(o)$("exNumSizePre").value=o.value});
 function updateNumPreview(){
   const b=$("exNumPrev").firstElementChild,v=$("exNumV").value,h=$("exNumH").value;
   b.style.top=v==="top"?"4px":"auto";b.style.bottom=v==="bottom"?"4px":"auto";
   b.style.left=h==="left"?"4px":h==="center"?"50%":"auto";b.style.right=h==="right"?"4px":"auto";
   b.style.transform=h==="center"?"translateX(-50%)":"none";
+  const f=$("exNumFont").value;b.style.fontFamily=f==="Times"?"'Times New Roman',serif":f==="Courier"?"'Courier New',monospace":"Arial,sans-serif";
+  b.style.fontWeight=$("exNumBold").checked?"700":"400";b.style.fontStyle=$("exNumItalic").checked?"italic":"normal";b.style.color=$("exNumColor").value;
 }
 
 async function exportNormal(list=pages,fileName="PDF-Studio.pdf",numCfg=null){
@@ -2509,6 +2652,7 @@ function exSync(){
   const proc=$("exProc").value,comp=$("exCompress").checked,n=exList().length;
   $("exEnhBox").classList.toggle("hidden",proc!=="enhance");$("exMagicBox").classList.toggle("hidden",proc!=="magic"&&proc!=="wm");$("exCBox").classList.toggle("hidden",!comp);
   $("exDpiRow").classList.toggle("hidden",proc==="none"||comp);$("exTargetMb").disabled=!$("exTarget").checked;
+  $("exEraseNote").classList.toggle("hidden",!$("exErase").checked);
   {const on=$("exNum").checked;$("exNumBox").classList.toggle("hidden",!on);
    const rangeMode=document.querySelector('input[name="exNumMode"]:checked').value==="range";
    $("exNumPartAuto").classList.toggle("active",!rangeMode);$("exNumPartAuto").classList.toggle("dim",rangeMode);
@@ -2556,6 +2700,10 @@ $("exGo").onclick=async()=>{
   $("exportOptModal").classList.add("hidden");setBusy(true);
   try{
     let ok;
+    if(cfg.num&&cfg.num.eraseOn){
+      const er=await computeEraseBoxes(list,cfg.num);cfg.num.erase=er.boxes;
+      showToast(er.found?`Đã tìm thấy số trang cũ trên ${er.found} trang · đang xuất…`:"Không tìm thấy số trang cũ nào · đang xuất…");
+    }
     if(cfg.proc==="none"&&!comp)ok=await exportNormal(list,"PDF-Studio.pdf",cfg.num);
     else{
       let dpi=comp?clamp(Number($("exDpi").value)||120,50,300):Number($("exProcDpi").value)||220,q=comp?clamp(Number($("exQ").value)||65,20,95)/100:.96,bytes;
