@@ -2208,7 +2208,7 @@ async function applyMove(){
 }
 $("applyMove").onclick=applyMove;
 
-async function appendNormalPage(out,it,i){
+async function appendNormalPage(out,it,i,pre){
   const d=sourceFor(it);
   if(it.perspectiveCrop||it.freeRot){
     const srcPage=await d.pdf.getPage(it.pageNum),rotation=((srcPage.rotate||0)+it.rotation)%360,vbx=it.perspectiveCrop?undefined:cropViewBox(it,srcPage);
@@ -2218,13 +2218,15 @@ async function appendNormalPage(out,it,i){
     const ctx=canvas.getContext("2d");ctx.fillStyle="#fff";ctx.fillRect(0,0,canvas.width,canvas.height);
     const v=srcPage.getViewport({scale:scale*reduce,rotation,viewBox:vbx});
     await srcPage.render({canvasContext:ctx,viewport:v,background:"rgb(255,255,255)"}).promise;
-    const shaped=applyShapeCrop(canvas,it),png=await new Promise(resolve=>shaped.toBlob(resolve,"image/png"));
+    const shaped=applyShapeCrop(canvas,it),png=await new Promise(resolve=>shaped.toBlob(resolve,"image/jpeg",.92)); /* JPEG thay PNG: nhẹ hơn 5-10 lần với ảnh chụp/scan */
     if(!png)throw Error("Không tạo được trang đã cắt "+(i+1));
-    const image=await out.embedPng(new Uint8Array(await png.arrayBuffer()));
+    const image=await out.embedJpg(new Uint8Array(await png.arrayBuffer()));
     const pw=shaped.width/(scale*reduce),ph=shaped.height/(scale*reduce),page=out.addPage([pw,ph]);
     page.drawImage(image,{x:0,y:0,width:pw,height:ph});canvas.width=canvas.height=shaped.width=shaped.height=1;
   }else{
-    const src=d.lib||(d.lib=await PDFDocument.load(await docBytes(d))),[p]=await out.copyPages(src,[it.pageNum-1]);
+    const pk=d.id+":"+it.pageNum;let p=pre&&pre.get(pk);
+    if(p)pre.delete(pk); /* mỗi trang đã sao chép gộp chỉ dùng 1 lần; bản nhân đôi sao chép riêng */
+    else{const src=d.lib||(d.lib=await PDFDocument.load(await docBytes(d)));[p]=await out.copyPages(src,[it.pageNum-1])}
     const c=cropValues(it),box=p.getCropBox(),x=box.x+c.left*MM_TO_PT,y=box.y+c.bottom*MM_TO_PT,w=box.width-(c.left+c.right)*MM_TO_PT,h=box.height-(c.top+c.bottom)*MM_TO_PT;
     if(w<24||h<24)throw Error(`Trang ${i+1}: vùng cắt quá nhỏ`);
     if(c.top||c.bottom||c.left||c.right)p.setCropBox(x,y,w,h);
@@ -2431,9 +2433,17 @@ function updateNumPreview(){
 async function exportNormal(list=pages,fileName="PDF-Studio.pdf",numCfg=null){
   if(!list.length)throw Error("Chưa có trang");
   const out=await PDFDocument.create();
+  /* Sao chép gộp: mỗi tệp nguồn chỉ gọi copyPages MỘT lần, nhờ vậy ảnh/phông dùng chung giữa các trang chỉ được ghi 1 lần (trước đây mỗi trang ghi lại toàn bộ tài nguyên chung → file phình to) */
+  const pre=new Map(),want=new Map();
+  list.forEach(it=>{if(it.perspectiveCrop||it.freeRot)return;const s=want.get(it.docId)||new Set();s.add(it.pageNum);want.set(it.docId,s)});
+  for(const [docId,set] of want){
+    const d=getDoc(docId);if(!d)continue;
+    const src=d.lib||(d.lib=await PDFDocument.load(await docBytes(d))),nums=[...set].sort((a,b)=>a-b),copied=await out.copyPages(src,nums.map(n=>n-1));
+    nums.forEach((n,k)=>pre.set(docId+":"+n,copied[k]));
+  }
   for(let i=0;i<list.length;i++){
     const it=list[i];
-    await appendNormalPage(out,it,i);
+    await appendNormalPage(out,it,i,pre);
     setProgress((i+1)/list.length*100,`Đang xuất trang ${i+1}/${list.length}${it.perspectiveCrop?(it.cropMode==="rect"?" · cắt chữ nhật":" · nắn freeform"):""}`);
     await new Promise(r=>setTimeout(r,0));
   }
