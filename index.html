@@ -98,7 +98,6 @@ button,input,select{font:inherit}button{cursor:pointer}.hidden{display:none!impo
 .stack-pill{display:inline-block;max-width:100%;padding:5px 14px;border-radius:7px;font-size:13px;font-weight:600;color:#3a3a4a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .stack-count{color:var(--muted);font-size:13px;margin-top:5px}
 .stack-badge{position:absolute;right:4px;top:-6px;z-index:3;background:var(--primary);color:#fff;border-radius:20px;font-size:11px;padding:2px 8px;font-weight:700}
-.skip-tag{position:absolute;left:7px;bottom:7px;background:#fff8e8;color:#775b1b;border:1px solid #f0d58a;border-radius:6px;font-size:11px;padding:2px 7px;font-weight:600}
 .group-bar{display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap}
 .page-grid .stack-pages{height:190px;width:80%}.page-grid .stack-card{padding:8px 6px 4px}.file-pill{padding:2px 9px;border-radius:6px;font-weight:600;color:#3a3a4a;cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
 
@@ -183,6 +182,17 @@ button,input,select{font:inherit}button{cursor:pointer}.hidden{display:none!impo
 .low-end .page-card:hover,.low-end .btn:hover{transform:none;box-shadow:none}
 .low-end .page-card{box-shadow:none;border:2px solid #eceef4}
 .low-end .page-card.selected{border-color:var(--primary)}
+.low-end .stack-layer,.low-end .stack-front,.low-end .preview-area canvas,.low-end .ed-page,.low-end .num-prev,.low-end .stack-check{box-shadow:none}
+.low-end .toast{transition:none}
+.tone-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px 28px;margin-top:14px}
+.tone-row{display:grid;grid-template-columns:150px minmax(0,1fr) 54px;align-items:center;gap:10px;font-size:13px}
+.tone-row input[type=range]{width:100%;accent-color:var(--primary);cursor:pointer}
+.tone-row output{text-align:right;font-weight:700;color:var(--primary);font-size:13px}
+.tone-prev{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:16px}
+.tone-prev>div{background:#eceef4;border-radius:10px;padding:8px;text-align:center;min-height:90px}
+.tone-prev canvas{max-width:100%;max-height:440px;height:auto;width:auto;background:#fff;display:block;margin:0 auto}
+.tone-prev b{display:block;font-size:12px;color:var(--muted);margin-bottom:6px;font-weight:600}
+@media(max-width:600px){.tone-row{grid-template-columns:110px minmax(0,1fr) 48px}.tone-prev{grid-template-columns:1fr}}
 
 /* ====== Ghép thẻ ====== */
 .card-list{display:flex;gap:10px;flex-wrap:wrap}
@@ -222,18 +232,24 @@ button,input,select{font:inherit}button{cursor:pointer}.hidden{display:none!impo
 <div class="muted" style="margin:-4px 0 12px">💡 Chuyển trang: <b>kéo thả</b> trang (hoặc nhiều trang đã chọn) vào vị trí bất kỳ — thả lên <b>chồng giấy</b> của tệp khác để đưa vào cuối tệp đó. Hoặc chọn trang rồi bấm <b>⇄ Chuyển trang đến…</b> để chọn tệp và vị trí chính xác.</div>
 <div id="groupBar" class="group-bar hidden"></div><div id="pageGrid" class="page-grid hidden"></div><div id="emptyState" class="empty-state"><div class="big-icon">📑</div><h3>Chưa có tài liệu nào</h3><p>Thêm PDF hoặc hình ảnh để bắt đầu.</p></div></section>
 
-<section class="panel enhance-panel"><h2>✨ Làm đẹp PDF – Khử bóng điện thoại</h2>
-<div class="muted">Phân tích ánh sáng từng vùng trên mỗi trang để làm sáng vùng bị bóng, cân bằng nền giấy và giữ nguyên nội dung, bảng biểu, hình ảnh, chữ ký cùng dấu màu.</div>
-<div class="enhance-options"><label for="enhanceMode">Kiểu:</label><select id="enhanceMode"><option value="color" selected="">Giữ màu – Khử bóng</option><option value="gray">Thang xám – Sạch nền</option><option value="bw">Đen trắng – Kiểu scan</option></select><label for="enhanceLevel">Mức độ:</label><select id="enhanceLevel">
-<option value="light">Nhẹ – Can thiệp ít</option><option value="medium" selected="">Vừa – Khuyên dùng</option><option value="strong">Mạnh – Bóng đậm</option></select>
-<label for="renderDpi">Chất lượng xuất:</label><select id="renderDpi"><option value="180">180 DPI – Nhẹ hơn</option><option value="220" selected="">220 DPI – Khuyên dùng</option><option value="300">300 DPI – Nét cao, tệp lớn</option></select>
-<button class="btn" id="previewEnhanceButton">👁 Xem thử trước / sau</button><button class="btn primary" id="enhanceExportButton">✨ Khử bóng và xuất PDF</button></div>
-<div class="enhance-options" style="margin-top:12px"><label for="enhanceScope">Áp dụng cho:</label><select id="enhanceScope"><option value="all" selected="">Tất cả trang</option><option value="selected">Chỉ các trang đã chọn</option><option value="except">Tất cả, trừ các trang đã chọn</option></select>
-<label for="enhanceWhiten">Màu giấy:</label><select id="enhanceWhiten"><option value="keep" selected="">Giữ màu giấy gốc (bìa vàng, giấy ngả màu…)</option><option value="white">Làm trắng nền giấy (khử luôn ám màu)</option></select>
-<label class="opt-check" style="margin:0"><input type="checkbox" id="enhanceSharpen" checked=""> Làm nét chữ</label>
-<span class="muted" id="enhanceScopeInfo"></span></div>
-<div class="enhance-note"><b>Cách xử lý:</b> Ước lượng “bản đồ nền giấy” (xoá nét chữ nhưng giữ cạnh bóng đổ), rồi chia từng điểm ảnh cho nền cục bộ nên bóng được khử mà nét mực trong vùng bóng vẫn đậm đúng mức. <b>Chọn trang:</b> bấm chọn trang (hoặc tích ô vuông của cả tệp) trong danh sách rồi chọn “Chỉ các trang đã chọn” hoặc “Tất cả, trừ các trang đã chọn”; trang không áp dụng được giữ nguyên bản gốc. Trang đã khử bóng được raster hóa nên chữ có thể không còn chọn/tìm kiếm được. Kiểu “Thang xám” và “Đen trắng” sẽ bỏ màu (dấu đỏ, chữ ký màu). Bóng che khuất hoàn toàn nội dung thì không thể khôi phục chi tiết đã mất.</div>
-<div class="progress-area hidden" id="progressArea"><div class="progress-track"><div class="progress-fill" id="progressFill"></div></div><div class="status-text" id="progressText">Đang chuẩn bị...</div></div>
+<section class="panel enhance-panel" id="tonePanel" style="border-color:#bfe7cf;background:linear-gradient(135deg,#f4fcf7,#e8f7ee)"><h2>🔆 Tăng độ nét &amp; độ sáng</h2>
+<div class="muted">Kéo thanh trượt để chỉnh độ sáng, tương phản, độ nét, độ rực màu và độ trắng nền giấy. Ảnh xem thử bên dưới thay đổi ngay khi kéo; hài lòng thì bấm xuất PDF. Nhấp đúp vào một thanh trượt để đưa về mức khuyên dùng.</div>
+<div class="enhance-options" style="margin-top:12px"><span class="muted">Mẫu nhanh:</span>
+<button class="btn" type="button" data-tp="default">⭐ Khuyên dùng</button><button class="btn" type="button" data-tp="natural">🌿 Tự nhiên</button><button class="btn" type="button" data-tp="text">🔤 Chữ rõ nét</button><button class="btn" type="button" data-tp="bright">☀ Sáng đẹp</button><button class="btn" type="button" data-tp="strong">💪 Mạnh</button><button class="btn" type="button" data-tp="zero">↺ Về gốc (0)</button></div>
+<div class="tone-grid">
+<div class="tone-row"><label for="toneBright">☀ Độ sáng</label><input type="range" id="toneBright" min="-50" max="100" step="1" value="15" data-def="15"><output id="toneBrightV"></output></div>
+<div class="tone-row"><label for="toneContrast">◐ Độ tương phản</label><input type="range" id="toneContrast" min="-50" max="100" step="1" value="10" data-def="10"><output id="toneContrastV"></output></div>
+<div class="tone-row"><label for="toneSharp">🔍 Độ nét</label><input type="range" id="toneSharp" min="0" max="200" step="5" value="80" data-def="80"><output id="toneSharpV"></output></div>
+<div class="tone-row"><label for="toneSat">🎨 Độ rực màu</label><input type="range" id="toneSat" min="-100" max="100" step="1" value="10" data-def="10"><output id="toneSatV"></output></div>
+<div class="tone-row"><label for="toneWhite">📄 Độ trắng nền giấy</label><input type="range" id="toneWhite" min="0" max="100" step="1" value="0" data-def="0"><output id="toneWhiteV"></output></div>
+</div>
+<div class="tone-prev"><div><b>Gốc</b><canvas id="toneBefore" width="2" height="2"></canvas></div><div><b>Sau khi chỉnh <span id="tonePrevLabel"></span></b><canvas id="toneAfter" width="2" height="2"></canvas><div class="muted" id="toneHint">Bấm “👁 Tải trang xem thử” hoặc kéo một thanh trượt để xem trực tiếp.</div></div></div>
+<div class="enhance-options" style="margin-top:14px"><label for="toneScope">Áp dụng cho:</label><select id="toneScope"><option value="all" selected>Tất cả trang</option><option value="selected">Chỉ các trang đã chọn</option><option value="except">Tất cả, trừ các trang đã chọn</option></select>
+<label for="toneDpi">Chất lượng xuất:</label><select id="toneDpi"><option value="180">180 DPI – Nhẹ hơn</option><option value="220" selected>220 DPI – Khuyên dùng</option><option value="300">300 DPI – Nét cao, tệp lớn</option></select>
+<button class="btn" id="tonePreviewButton" type="button">👁 Tải trang xem thử</button><button class="btn primary" id="toneExportButton" type="button">🔆 Áp dụng và xuất PDF</button>
+<span class="muted" id="toneScopeInfo"></span></div>
+<div class="enhance-note"><b>Gợi ý:</b> chữ mờ → tăng “Độ nét” (100–150%) và “Độ tương phản”; trang ám xám/vàng → tăng “Độ trắng nền giấy”; ảnh tối → tăng “Độ sáng”. Đẩy quá mạnh có thể làm chữ nhòe hoặc mất nét mảnh, hãy xem trước. Xem thử dùng trang đầu tiên đang chọn (hoặc trang 1). Trang được xử lý sẽ chuyển thành ảnh nên chữ có thể không còn chọn/tìm kiếm được.</div>
+<div class="progress-area hidden" id="progressArea"><div class="progress-track"><div class="progress-fill" id="progressFill"></div></div><div class="status-text" id="progressText">Đang chuẩn bị...</div><button class="btn" id="cancelProcessButton" type="button" style="margin-top:8px;padding:6px 12px">✕ Hủy xử lý</button></div>
 <div class="enhance-status" id="enhanceStatus"></div></section>
 <section class="panel enhance-panel" id="magicPanel" style="border-color:#ffd9a8;background:linear-gradient(135deg,#fffaf2,#fff4e3)"><h2>🎨 Magic Color – Làm sạch kiểu CamScanner</h2>
 <div class="muted">Khử bóng, làm trắng nền giấy, làm đậm nét chữ đen và giữ rõ dấu đỏ, chữ ký màu. Chỉ áp dụng cho các trang bạn chọn (hoặc tất cả); trang còn lại được giữ nguyên bản gốc.</div>
@@ -518,9 +534,9 @@ button,input,select{font:inherit}button{cursor:pointer}.hidden{display:none!impo
 <div class="modal-header"><div class="modal-title">📄 Tùy chọn xuất PDF</div><button class="close-btn" id="exClose" type="button">×</button></div>
 <div style="padding:18px;display:flex;flex-direction:column;gap:12px">
 <label class="opt-field">Trang cần xuất<select id="exScope" style="padding:9px;border:1px solid var(--border);border-radius:8px;font:inherit;color:var(--text);background:#fff"><option value="all">Tất cả trang</option><option value="selected">Chỉ các trang đã chọn</option></select></label>
-<label class="opt-field">Xử lý hình ảnh<select id="exProc" style="padding:9px;border:1px solid var(--border);border-radius:8px;font:inherit;color:var(--text);background:#fff"><option value="none">Không – giữ PDF gốc</option><option value="enhance">✨ Khử bóng</option><option value="magic">🎨 Magic Color (kiểu CamScanner)</option><option value="wm">💧 Xóa watermark</option></select></label>
+<label class="opt-field">Xử lý hình ảnh<select id="exProc" style="padding:9px;border:1px solid var(--border);border-radius:8px;font:inherit;color:var(--text);background:#fff"><option value="none">Không – giữ PDF gốc</option><option value="tone">🔆 Tăng nét &amp; sáng (theo thanh trượt)</option><option value="magic">🎨 Magic Color (kiểu CamScanner)</option><option value="wm">💧 Xóa watermark</option></select></label>
 <div id="exMagicBox" class="hidden opt-field" style="margin:0"><span>Mức độ khử bóng / làm sạch</span><select id="exMagicLevel" style="padding:9px;border:1px solid var(--border);border-radius:8px;font:inherit;color:var(--text);background:#fff"><option value="light">Nhẹ – Giữ tự nhiên, can thiệp ít</option><option value="medium" selected>Vừa – Khuyên dùng</option><option value="strong">Mạnh – Bóng đậm, nền sạch tối đa</option></select></div>
-<div id="exEnhBox" class="hidden" style="display:flex;flex-wrap:wrap;gap:8px"><select id="exMode" style="padding:9px;border:1px solid var(--border);border-radius:8px;font:inherit;color:var(--text);background:#fff"><option value="color">Giữ màu – Khử bóng</option><option value="gray">Thang xám – Sạch nền</option><option value="bw">Đen trắng – Kiểu scan</option></select><select id="exLevel" style="padding:9px;border:1px solid var(--border);border-radius:8px;font:inherit;color:var(--text);background:#fff"><option value="light">Nhẹ</option><option value="medium" selected>Vừa – Khuyên dùng</option><option value="strong">Mạnh</option></select><select id="exWhiten" style="padding:9px;border:1px solid var(--border);border-radius:8px;font:inherit;color:var(--text);background:#fff"><option value="keep">Giữ màu giấy gốc</option><option value="white">Làm trắng nền giấy</option></select><label class="opt-check" style="margin:0"><input type="checkbox" id="exSharpen" checked> Làm nét chữ</label></div>
+<div id="exEnhBox" class="hidden mv-info">Dùng đúng các thông số thanh trượt trong mục “Tăng độ nét &amp; độ sáng” trên trang chính.</div>
 <label class="opt-field" id="exDpiRow">Chất lượng xuất<select id="exProcDpi" style="padding:9px;border:1px solid var(--border);border-radius:8px;font:inherit;color:var(--text);background:#fff"><option value="180">180 DPI – Nhẹ hơn</option><option value="220" selected>220 DPI – Khuyên dùng</option><option value="300">300 DPI – Nét cao, tệp lớn</option></select></label>
 <label class="opt-check" style="margin:0"><input type="checkbox" id="exCompress"> 🗜 Giảm dung lượng file</label>
 <div id="exCBox" class="hidden" style="display:flex;flex-wrap:wrap;gap:8px;align-items:center"><select id="exPreset" style="padding:9px;border:1px solid var(--border);border-radius:8px;font:inherit;color:var(--text);background:#fff"><option value="light">Nhẹ (150 DPI)</option><option value="medium" selected>Vừa (120 DPI)</option><option value="strong">Mạnh (90 DPI)</option><option value="custom">Tùy chỉnh</option></select><span class="muted">DPI</span><input type="number" id="exDpi" min="50" max="300" step="10" value="120" style="width:80px;padding:9px;border:1px solid var(--border);border-radius:8px"><span class="muted">JPEG %</span><input type="number" id="exQ" min="20" max="95" step="5" value="65" style="width:80px;padding:9px;border:1px solid var(--border);border-radius:8px"><label class="opt-check" style="margin:0"><input type="checkbox" id="exGray"> Thang xám</label><label class="opt-check" style="margin:0"><input type="checkbox" id="exTarget"> Tối đa</label><input type="number" id="exTargetMb" min="0.1" max="100" step="0.1" value="2" style="width:80px;padding:9px;border:1px solid var(--border);border-radius:8px"><span class="muted">MB</span></div>
@@ -567,8 +583,9 @@ function redo(){if(busy||!redoStack.length)return;undoStack.push(snapshotPages()
 function login(){if($("passwordInput").value==="2001"){$("loginScreen").classList.add("hidden");$("app").classList.remove("hidden")}else $("loginError").textContent="Mật khẩu không chính xác!"}
 $("loginButton").onclick=login;$("passwordInput").onkeydown=e=>{if(e.key==="Enter")login()};
 function showToast(m){const el=$("toast");el.textContent=m;el.classList.remove("hidden");clearTimeout(showToast.timer);showToast.timer=setTimeout(()=>el.classList.add("hidden"),3000)}
-function setProgress(p,m){$("progressArea").classList.remove("hidden");$("progressFill").style.width=p+"%";$("progressText").textContent=m}
-function setBusy(v){busy=v;["addFilesButton","exportButton","enhanceExportButton","hlExportButton","hlPreviewButton","wmExportButton","wmPreviewButton","compressExportButton","rotateButton","duplicateButton","deleteButton","clearButton","selectAllButton","saveSelectedButton","printSelectedButton","editorButton","manualCropButton","autoCropButton","rectCropButton","mergeButton","cardButton","stampButton","moveCropButton","copyCropButton","moveCropPrev","freeRotButton","freeRotPrev","applyManualCrop","autoDetectCrop","startManualCrop","startRectCrop","moveToButton","moveLeftButton","moveRightButton"].forEach(id=>$(id).disabled=v);updateHistoryButtons()}
+let fxCancel=false;
+function setProgress(p,m){if(fxCancel){fxCancel=false;throw Error("Đã hủy xử lý")}$("progressArea").classList.remove("hidden");$("progressFill").style.width=p+"%";$("progressText").textContent=m}
+function setBusy(v){busy=v;if(v)fxCancel=false;["addFilesButton","exportButton","toneExportButton","tonePreviewButton","hlExportButton","hlPreviewButton","wmExportButton","wmPreviewButton","compressExportButton","rotateButton","duplicateButton","deleteButton","clearButton","selectAllButton","saveSelectedButton","printSelectedButton","editorButton","manualCropButton","autoCropButton","rectCropButton","mergeButton","cardButton","stampButton","moveCropButton","copyCropButton","moveCropPrev","freeRotButton","freeRotPrev","applyManualCrop","autoDetectCrop","startManualCrop","startRectCrop","moveToButton","moveLeftButton","moveRightButton"].forEach(id=>$(id).disabled=v);updateHistoryButtons()}
 function getDoc(id){return documents.find(d=>d.id===id)}
 function sourceFor(item){const d=getDoc(item.docId);if(!d)throw Error("Không tìm thấy tài liệu nguồn");return d}
 function updateSaveButton(){updateEnhanceInfo();const b=$("saveSelectedButton"),pb=$("printSelectedButton");if(!b)return;const n=selectedPages.size;b.textContent=n?`💾 Lưu ${n} trang đã chọn`:"💾 Lưu trang đã chọn";if(pb)pb.textContent=n?`🖨 In ${n} trang đã chọn`:"🖨 In trang đã chọn"}
@@ -850,14 +867,14 @@ function makeStack(g,gi){
   if(g.items.length>1){const l=document.createElement("div");l.className="stack-layer l1";st.append(l)}
   const front=document.createElement("div");front.className="stack-front";const cv=document.createElement("canvas");front.append(cv);st.append(front);
   const chk=document.createElement("div");chk.className="stack-check";chk.title="Chọn / bỏ chọn cả tệp";
-  chk.onclick=e=>{e.stopPropagation();if(allSel)g.items.forEach(p=>selectedPages.delete(p.id));else g.items.forEach(p=>selectedPages.add(p.id));renderGrid()};
+  chk.onclick=e=>{e.stopPropagation();if(g.items.every(p=>selectedPages.has(p.id)))g.items.forEach(p=>selectedPages.delete(p.id));else g.items.forEach(p=>selectedPages.add(p.id));refreshSelection()};
   card.append(chk);
   if(someSel&&!allSel){const b=document.createElement("div");b.className="stack-badge";b.textContent=g.items.filter(p=>selectedPages.has(p.id)).length+" đã chọn";card.append(b)}
   const pill=document.createElement("span");pill.className="stack-pill";pill.textContent=g.name;pill.title=g.name;pill.style.background=PILL_COLORS[gi%PILL_COLORS.length];
   const cnt=document.createElement("div");cnt.className="stack-count";cnt.textContent=g.items.length+" trang";
   card.append(st,pill,cnt);
   card.onclick=e=>{
-    if(e.ctrlKey||e.metaKey){if(allSel)g.items.forEach(p=>selectedPages.delete(p.id));else g.items.forEach(p=>selectedPages.add(p.id))}
+    if(e.ctrlKey||e.metaKey){if(g.items.every(p=>selectedPages.has(p.id)))g.items.forEach(p=>selectedPages.delete(p.id));else g.items.forEach(p=>selectedPages.add(p.id))}
     else{selectedPages.clear();g.items.forEach(p=>selectedPages.add(p.id))}
     openGroups.add(g.key);renderGrid();
   };
@@ -884,7 +901,7 @@ function renderGrid(){
   const grid=$("pageGrid"),bar=$("groupBar"),groups=getGroups(),multi=groups.length>=2;
   if(!multi)openGroups.clear();else[...openGroups].forEach(k=>{if(!groups.some(g=>g.key===k))openGroups.delete(k)});
   grid.innerHTML="";bar.innerHTML="";grid.className="page-grid";updateCount();bar.classList.add("hidden");
-  const gIndex=new Map(groups.map((g,i)=>[g.key,i])),seen=new Set(),posIn=new Map(),eFlags=$("enhanceScope").value!=="all"?enhanceFlags():null;
+  const gIndex=new Map(groups.map((g,i)=>[g.key,i])),seen=new Set(),posIn=new Map();
   groups.forEach(g=>g.items.forEach((p,j)=>posIn.set(p.id,j)));
   if(multi){
     const b1=document.createElement("button");b1.className="btn";b1.textContent="⤢ Bung tất cả";b1.onclick=()=>{groups.forEach(g=>openGroups.add(g.key));renderGrid()};
@@ -899,7 +916,6 @@ function renderGrid(){
     const wrap=document.createElement("div");wrap.className="thumb-wrap";
     const cv=document.createElement("canvas"),num=document.createElement("div"),check=document.createElement("div");
     num.className="page-number";num.textContent=multi?posIn.get(it.id)+1:i+1;check.className="page-check";wrap.append(cv,num,check);
-    if(eFlags&&!eFlags[i]){const tag=document.createElement("div");tag.className="skip-tag";tag.textContent="Không khử bóng";wrap.append(tag)}
     const info=document.createElement("div");info.className="page-info";
     const name=document.createElement("span");name.textContent=it.name;name.title=it.name;name.style.cssText="overflow:hidden;text-overflow:ellipsis;white-space:nowrap";
     if(multi){name.className="file-pill";name.style.background=PILL_COLORS[gi%PILL_COLORS.length];name.title=it.name+" — bấm để thu gọn tệp";name.onclick=e=>{e.stopPropagation();openGroups.delete(k);renderGrid()}}
@@ -924,8 +940,17 @@ function selectPage(id,i,e){
   else{selectedPages.clear();selectedPages.add(id)}
   refreshSelection()}
 function refreshSelection(){
-  if($("enhanceScope").value!=="all"){renderGrid();return}
   document.querySelectorAll("#pageGrid .page-card").forEach(c=>c.classList.toggle("selected",selectedPages.has(c.dataset.id)));
+  const sc=document.querySelectorAll("#pageGrid .stack-card");
+  if(sc.length){
+    const gm=new Map(getGroups().map(g=>[g.key,g.items]));
+    sc.forEach(c=>{
+      const items=gm.get(c._gk)||[],n=items.filter(p=>selectedPages.has(p.id)).length,all=items.length>0&&n===items.length;
+      c.classList.toggle("selected",all);
+      const old=c.querySelector(".stack-badge");if(old)old.remove();
+      if(n&&!all){const b=document.createElement("div");b.className="stack-badge";b.textContent=n+" đã chọn";c.append(b)}
+    });
+  }
   updateSaveButton();
 }
 
@@ -934,22 +959,28 @@ function refreshSelection(){
   const grid=$("pageGrid"),panel=grid.closest(".panel"),bar=$("groupBar");
   let mq=null;
   const pageXY=e=>({x:e.clientX+scrollX,y:e.clientY+scrollY});
-  function hitSets(r){
-    const pageIds=new Set();
-    grid.querySelectorAll(".page-card,.stack-card").forEach(c=>{
-      const b=c.getBoundingClientRect(),x0=b.left+scrollX,y0=b.top+scrollY,x1=b.right+scrollX,y1=b.bottom+scrollY;
-      c._mqHit=!(x1<r.x0||x0>r.x1||y1<r.y0||y0>r.y1);
-      if(!c._mqHit)return;
-      if(c.dataset.id)pageIds.add(c.dataset.id);
-      else if(c._gk!==undefined){const g=getGroups().find(x=>x.key===c._gk);if(g)g.items.forEach(p=>pageIds.add(p.id))}
+  function buildCache(){
+    const gm=new Map(getGroups().map(g=>[g.key,g.items.map(p=>p.id)]));
+    mq.cache=[...grid.querySelectorAll(".page-card,.stack-card")].map(c=>{
+      const b=c.getBoundingClientRect();
+      return{c,x0:b.left+scrollX,y0:b.top+scrollY,x1:b.right+scrollX,y1:b.bottom+scrollY,id:c.dataset.id,ids:c._gk!==undefined?(gm.get(c._gk)||[]):null,on:null};
     });
+  }
+  function hitSets(r){
+    if(!mq.cache)buildCache();
+    const pageIds=new Set();
+    for(const e of mq.cache){
+      if(e.x1<r.x0||e.x0>r.x1||e.y1<r.y0||e.y0>r.y1)continue;
+      if(e.id)pageIds.add(e.id);else if(e.ids)e.ids.forEach(i=>pageIds.add(i));
+    }
     return pageIds;
   }
   function paint(ids){
     const sel=mq.base?new Set([...mq.base,...ids]):ids;
-    grid.querySelectorAll(".page-card").forEach(c=>c.classList.toggle("selected",sel.has(c.dataset.id)));
-    grid.querySelectorAll(".stack-card").forEach(c=>{
-      const g=getGroups().find(x=>x.key===c._gk);c.classList.toggle("selected",!!g&&g.items.length>0&&g.items.every(p=>sel.has(p.id)))});
+    for(const e of mq.cache){
+      const on=e.id?sel.has(e.id):(e.ids.length>0&&e.ids.every(i=>sel.has(i)));
+      if(e.on!==on){e.on=on;e.c.classList.toggle("selected",on)}
+    }
     return sel;
   }
   panel.addEventListener("pointerdown",e=>{
@@ -966,21 +997,22 @@ function refreshSelection(){
     const r={x0:Math.min(mq.x,p.x),y0:Math.min(mq.y,p.y),x1:Math.max(mq.x,p.x),y1:Math.max(mq.y,p.y)};
     Object.assign(mq.el.style,{left:r.x0+"px",top:r.y0+"px",width:(r.x1-r.x0)+"px",height:(r.y1-r.y0)+"px"});
     if(e.clientY<60)scrollBy(0,-16);else if(e.clientY>innerHeight-60)scrollBy(0,16);
-    mq.ids=hitSets(r);paint(mq.ids);
+    mq.ids=hitSets(r);
+    if(!mq.raf)mq.raf=requestAnimationFrame(()=>{const m=mq;if(m){m.raf=0;paint(m.ids)}});
   });
   const end=()=>{
     if(!mq)return;const m=mq;mq=null;
     if(m.el)m.el.remove();
-    if(!m.active){if(!m.base&&selectedPages.size){selectedPages.clear();if(getGroups().length>=2||$("enhanceScope").value!=="all")renderGrid();else refreshSelection()}return}
+    if(!m.active){if(!m.base&&selectedPages.size){selectedPages.clear();refreshSelection()}return}
     const sel=m.base?new Set([...m.base,...m.ids]):m.ids;
     selectedPages=new Set(sel);
-    if(getGroups().length>=2||$("enhanceScope").value!=="all")renderGrid();else refreshSelection();
+    refreshSelection();
     if(sel.size)showToast(`Đã chọn ${sel.size} trang`);
   };
   document.addEventListener("pointerup",end);document.addEventListener("pointercancel",end);
 })();
 function selectedIndexes(){return pages.map((p,i)=>selectedPages.has(p.id)?i:-1).filter(i=>i>=0)}
-$("selectAllButton").onclick=()=>{if(selectedPages.size===pages.length)selectedPages.clear();else pages.forEach(p=>selectedPages.add(p.id));if(getGroups().length>=2)renderGrid();else refreshSelection()};
+$("selectAllButton").onclick=()=>{if(selectedPages.size===pages.length)selectedPages.clear();else pages.forEach(p=>selectedPages.add(p.id));refreshSelection()};
 $("rotateButton").onclick=()=>{if(!selectedPages.size)return showToast("Chọn trang cần xoay");pushHistory();pages.forEach(p=>{if(selectedPages.has(p.id)){p.rotation=(p.rotation+90)%360;clearShapeCrop(p)}});renderGrid()};
 function cloneItem(x,extra){return {...x,id:crypto.randomUUID(),cropMm:x.cropMm?{...x.cropMm}:undefined,perspectiveCrop:x.perspectiveCrop?x.perspectiveCrop.map(q=>({...q})):undefined,...extra}}
 function copyName(n,r){return String(n).replace(/ \(bản sao( \d+)?\)$/,"")+(r>1?` (bản sao ${r})`:" (bản sao)")}
@@ -1119,13 +1151,18 @@ $("applyMoveTo").onclick=()=>{
 $("moveToButton").onclick=openMoveTo;
 
 async function openPreview(i){previewIndex=i;$("previewModal").classList.remove("hidden");await renderPreview()}
+let previewTask=null,previewTok=0;
 async function renderPreview(){
   if(previewIndex<0||previewIndex>=pages.length)return;
+  const tok=++previewTok;if(previewTask){try{previewTask.cancel()}catch(e){}previewTask=null}
   const it=pages[previewIndex],d=sourceFor(it),p=await d.pdf.getPage(it.pageNum);
-  const v=p.getViewport({scale:1.35,rotation:((p.rotate||0)+it.rotation)%360});
+  if(tok!==previewTok)return;
+  const v=p.getViewport({scale:LOW_END?1.15:1.35,rotation:((p.rotate||0)+it.rotation)%360});
   const c=$("previewCanvas");c.width=Math.ceil(v.width);c.height=Math.ceil(v.height);
   $("previewTitle").textContent=it.name;$("previewCounter").textContent=`Trang ${previewIndex+1} / ${pages.length}`;
-  await p.render({canvasContext:c.getContext("2d"),viewport:v}).promise;
+  const task=p.render({canvasContext:c.getContext("2d"),viewport:v});previewTask=task;
+  try{await task.promise}catch(e){if(e&&e.name==="RenderingCancelledException")return;throw e}
+  if(tok!==previewTok)return;previewTask=null;
   if(manualCropState){initManualCropShape(it);drawCropOverlay()}
 }
 
@@ -1402,7 +1439,7 @@ async function renderItemCanvas(item,{dpi,maxSide,maxPx}={}){
   const c=document.createElement("canvas");c.width=Math.max(1,Math.ceil(v.width));c.height=Math.max(1,Math.ceil(v.height));
   const ctx=c.getContext("2d",{willReadFrequently:true});ctx.fillStyle="#fff";ctx.fillRect(0,0,c.width,c.height);
   await p.render({canvasContext:ctx,viewport:v,background:"rgb(255,255,255)"}).promise;
-  const out=applyShapeCrop(c,item);out.dpiUsed=scale*72;return out;
+  p.cleanup();const out=applyShapeCrop(c,item);out.dpiUsed=scale*72;return out;
 }
 async function canvasToDocument(canvas,name,dpi,q){
   const blob=await new Promise(r=>canvas.toBlob(r,"image/jpeg",q||.95));if(!blob)throw Error("Không tạo được ảnh trang");
@@ -2218,7 +2255,7 @@ async function appendNormalPage(out,it,i,pre){
     const ctx=canvas.getContext("2d");ctx.fillStyle="#fff";ctx.fillRect(0,0,canvas.width,canvas.height);
     const v=srcPage.getViewport({scale:scale*reduce,rotation,viewBox:vbx});
     await srcPage.render({canvasContext:ctx,viewport:v,background:"rgb(255,255,255)"}).promise;
-    const shaped=applyShapeCrop(canvas,it),png=await new Promise(resolve=>shaped.toBlob(resolve,"image/jpeg",.92)); /* JPEG thay PNG: nhẹ hơn 5-10 lần với ảnh chụp/scan */
+    srcPage.cleanup();const shaped=applyShapeCrop(canvas,it),png=await new Promise(resolve=>shaped.toBlob(resolve,"image/jpeg",.92)); /* JPEG thay PNG: nhẹ hơn 5-10 lần với ảnh chụp/scan */
     if(!png)throw Error("Không tạo được trang đã cắt "+(i+1));
     const image=await out.embedJpg(new Uint8Array(await png.arrayBuffer()));
     const pw=shaped.width/(scale*reduce),ph=shaped.height/(scale*reduce),page=out.addPage([pw,ph]);
@@ -2551,58 +2588,79 @@ function sharpenLuma(data,w,h,amount){
     }
   }
 }
-const ENH_LEVELS={
-  light :{T:248,maxGain:1.6,snap:230,ink:.05,r:.065,str:.85,sharp:.45},
-  medium:{T:251,maxGain:2.1,snap:220,ink:.10,r:.055,str:1,sharp:.65},
-  strong:{T:253,maxGain:2.7,snap:208,ink:.16,r:.045,str:1,sharp:.85}
+/* ====== TĂNG ĐỘ NÉT & ĐỘ SÁNG (thanh trượt) ====== */
+const TONE_DEFAULT={bright:15,contrast:10,sharp:80,sat:10,white:0};
+const TONE_PRESETS={
+  natural:{bright:10,contrast:5,sharp:50,sat:5,white:0},
+  text:{bright:15,contrast:25,sharp:130,sat:0,white:25},
+  bright:{bright:35,contrast:15,sharp:70,sat:15,white:40},
+  strong:{bright:30,contrast:35,sharp:180,sat:20,white:60},
+  zero:{bright:0,contrast:0,sharp:0,sat:0,white:0}
 };
-function enhanceCanvas(canvas,level,opts){
-  opts=opts||{};const whiten=!!opts.whiten,S=ENH_LEVELS[level]||ENH_LEVELS.medium;
-  const ctx=canvas.getContext("2d",{willReadFrequently:true}),w=canvas.width,h=canvas.height;
-  const image=ctx.getImageData(0,0,w,h),data=image.data;
-  const bg=buildBackground(data,w,h,S.r,whiten?"rgb":"v"),sm=makeSampler(w,h,bg.lw,bg.lh),T=S.T;
-  const P0=bg.planes[0],P1=bg.planes[1],P2=bg.planes[2];
-  for(let y=0;y<h;y++){
-    const rw=sm.row(y);
-    for(let x=0;x<w;x++){
-      const k=(y*w+x)*4;
-      let m0,m1,m2;
-      if(whiten){m0=T/bil(P0,sm,rw,x);m1=T/bil(P1,sm,rw,x);m2=T/bil(P2,sm,rw,x)}
-      else m0=m1=m2=T/bil(P0,sm,rw,x);
-      m0=1+(Math.min(S.maxGain,m0)-1)*S.str;m1=1+(Math.min(S.maxGain,m1)-1)*S.str;m2=1+(Math.min(S.maxGain,m2)-1)*S.str;
-      let r=data[k]*m0,g=data[k+1]*m1,b=data[k+2]*m2;
-      const lum=.299*r+.587*g+.114*b;
-      let s=1;
-      if(lum>S.snap){
-        const t=clamp((lum-S.snap)/(T-S.snap),0,1),wt=t*t*(3-2*t),mx=Math.max(r,g,b,1);
-        s=Math.min(1+(255/Math.max(lum,1)-1)*wt,255/mx);
-      }else if(lum<150)s=1-S.ink*(1-lum/150);
-      data[k]=clamp(r*s,0,255);data[k+1]=clamp(g*s,0,255);data[k+2]=clamp(b*s,0,255);
-    }
+const TONE_IDS={bright:"toneBright",contrast:"toneContrast",sharp:"toneSharp",sat:"toneSat",white:"toneWhite"};
+function toneOpts(){const o={};for(const k in TONE_IDS)o[k]=Number($(TONE_IDS[k]).value)||0;return o}
+function toneIsIdentity(o){return !o.bright&&!o.contrast&&!o.sharp&&!o.sat&&!o.white}
+/* Bảng tra 256 mức (điểm trắng → độ sáng gamma → tương phản): nhanh, chạy mượt trên máy yếu */
+function toneCanvas(canvas,o){
+  const w=canvas.width,h=canvas.height,ctx=canvas.getContext("2d",{willReadFrequently:true}),img=ctx.getImageData(0,0,w,h),d=img.data;
+  const lut=new Uint8ClampedArray(256),gamma=Math.pow(2,-o.bright/55),cf=1+o.contrast/100,wp=Math.max(150,255-o.white*.85)/255;
+  for(let i=0;i<256;i++){
+    let x=Math.min(1,i/255/wp);
+    x=Math.pow(x,gamma);
+    x=(x-.5)*cf+.5;
+    lut[i]=Math.round(x*255);
   }
-  if(opts.sharpen)sharpenLuma(data,w,h,S.sharp);
-  ctx.putImageData(image,0,0);
-}
-function scanCanvas(canvas,level,mode,opts){
-  opts=opts||{};
-  const ctx=canvas.getContext("2d",{willReadFrequently:true}),w=canvas.width,h=canvas.height;
-  const image=ctx.getImageData(0,0,w,h),data=image.data,S=ENH_LEVELS[level]||ENH_LEVELS.medium;
-  const bg=buildBackground(data,w,h,S.r,"lum"),sm=makeSampler(w,h,bg.lw,bg.lh),B=bg.planes[0];
-  const P={light:{lo:.50,hi:.76,g:1.25},medium:{lo:.58,hi:.82,g:1.5},strong:{lo:.66,hi:.88,g:1.8}}[level]||{lo:.58,hi:.82,g:1.5};
-  for(let y=0;y<h;y++){
-    const rw=sm.row(y);
-    for(let x=0;x<w;x++){
-      const k=(y*w+x)*4,lum=.299*data[k]+.587*data[k+1]+.114*data[k+2],norm=lum/bil(B,sm,rw,x);
-      let v;
-      if(mode==="bw"){const t=clamp((norm-P.lo)/(P.hi-P.lo),0,1);v=t*t*(3-2*t)}
-      else v=Math.pow(clamp(norm/.97,0,1),P.g);
-      data[k]=data[k+1]=data[k+2]=v*255;
-    }
+  const sv=1+o.sat/100,doSat=Math.abs(o.sat)>.5;
+  for(let k=0,n=w*h*4;k<n;k+=4){
+    let r=lut[d[k]],g=lut[d[k+1]],b=lut[d[k+2]];
+    if(doSat){const l=.299*r+.587*g+.114*b;r=l+(r-l)*sv;g=l+(g-l)*sv;b=l+(b-l)*sv}
+    d[k]=r;d[k+1]=g;d[k+2]=b;
   }
-  if(opts.sharpen&&mode==="gray")sharpenLuma(data,w,h,S.sharp*.8);
-  ctx.putImageData(image,0,0);
+  if(o.sharp>0)sharpenLuma(d,w,h,o.sharp/100);
+  ctx.putImageData(img,0,0);
 }
-function enhanceByMode(canvas,level,mode,opts){if(mode==="gray"||mode==="bw")scanCanvas(canvas,level,mode,opts);else enhanceCanvas(canvas,level,opts)}
+function toneFlags(){const sc=$("toneScope").value;return pages.map(p=>sc==="selected"?selectedPages.has(p.id):sc==="except"?!selectedPages.has(p.id):true)}
+function updateToneInfo(){
+  const el=$("toneScopeInfo");if(!el)return;
+  if(!pages.length){el.textContent="";return}
+  const sc=$("toneScope").value,n=toneFlags().filter(Boolean).length;
+  let t=`Sẽ xử lý ${n}/${pages.length} trang`+(n<pages.length?` · giữ nguyên ${pages.length-n} trang`:"");
+  if(sc!=="all"&&!selectedPages.size)t+=" · hãy chọn trang trong danh sách phía trên";
+  el.textContent=t;
+}
+function toneLabels(){
+  const o=toneOpts(),sg=n=>(n>0?"+":"")+n;
+  $("toneBrightV").textContent=sg(o.bright);$("toneContrastV").textContent=sg(o.contrast);$("toneSharpV").textContent=o.sharp+"%";$("toneSatV").textContent=sg(o.sat);$("toneWhiteV").textContent=o.white+"%";
+}
+let toneBase=null,toneRaf=0,toneLoading=false;
+function toneRender(){
+  if(!toneBase)return;
+  const a=$("toneAfter");a.width=toneBase.width;a.height=toneBase.height;
+  a.getContext("2d",{willReadFrequently:true}).drawImage(toneBase,0,0);
+  const o=toneOpts();if(!toneIsIdentity(o))toneCanvas(a,o);
+}
+async function toneLoadPreview(){
+  if(!pages.length)return showToast("Hãy thêm PDF hoặc ảnh trước");
+  if(toneLoading)return;
+  const idx=selectedIndexes(),it=pages[idx.length?idx[0]:0];
+  toneLoading=true;
+  try{
+    const cv=await renderItemCanvas(it,{maxSide:LOW_END?640:900,maxPx:2e6});
+    if(toneBase)toneBase.width=toneBase.height=1;
+    toneBase=cv;
+    const b=$("toneBefore");b.width=cv.width;b.height=cv.height;b.getContext("2d").drawImage(cv,0,0);
+    $("tonePrevLabel").textContent="· "+it.name+" · trang "+it.pageNum;$("toneHint").classList.add("hidden");
+    toneRender();
+  }catch(e){console.error(e);showToast("Không tạo được ảnh xem thử: "+e.message)}
+  finally{toneLoading=false}
+}
+/* Kéo thanh trượt: chỉ vẽ lại 1 lần mỗi khung hình trên ảnh xem thử nhỏ → rất nhẹ */
+function toneChanged(){
+  toneLabels();
+  if(!toneBase){if(pages.length)toneLoadPreview();return}
+  if(!toneRaf)toneRaf=requestAnimationFrame(()=>{toneRaf=0;toneRender()});
+}
+function toneSet(v){for(const k in TONE_IDS)$(TONE_IDS[k]).value=v[k];toneChanged()}
 /* ====== MAGIC COLOR (kiểu CamScanner) ====== */
 const MAGIC_LEVELS={
   light :{T:248,maxGain:1.7,r:.065,lo:.14,hi:.93,cLo:.08,boost:.18,sharp:.5},
@@ -2640,11 +2698,6 @@ function magicCanvas(canvas,opts){
 }
 
 /* ====== CHỌN TRANG ÁP DỤNG KHỬ BÓNG ====== */
-function enhanceOpts(){return{whiten:$("enhanceWhiten").value==="white",sharpen:$("enhanceSharpen").checked}}
-function enhanceFlags(){
-  const scope=$("enhanceScope").value;
-  return pages.map(p=>scope==="selected"?selectedPages.has(p.id):scope==="except"?!selectedPages.has(p.id):true);
-}
 function magicFlags(){return $("magicScope").value==="all"?pages.map(()=>true):pages.map(p=>selectedPages.has(p.id))}
 function updateMagicInfo(){
   const el=$("magicScopeInfo");if(!el)return;
@@ -2653,17 +2706,11 @@ function updateMagicInfo(){
   el.textContent=$("magicScope").value==="all"?`Sẽ áp dụng cho tất cả ${pages.length} trang`:(n?`Sẽ áp dụng cho ${n}/${pages.length} trang đã chọn`:"Hãy chọn trang trong danh sách phía trên");
 }
 function updateEnhanceInfo(){
-  updateMagicInfo();updateHlInfo();updateWmInfo();
-  const el=$("enhanceScopeInfo");if(!el)return;
-  const scope=$("enhanceScope").value,f=enhanceFlags(),n=f.filter(Boolean).length;
-  if(!pages.length){el.textContent="";return}
-  let t=`Sẽ khử bóng ${n}/${pages.length} trang`+(n<pages.length?` · giữ nguyên ${pages.length-n} trang`:"");
-  if(scope!=="all"&&!selectedPages.size)t+=" · hãy chọn trang trong danh sách phía trên";
-  el.textContent=t;
+  updateMagicInfo();updateHlInfo();updateWmInfo();updateToneInfo();
 }
 async function exportEnhanced(cfg){
   if(!pages.length)throw Error("Chưa có trang để làm đẹp");
-  cfg=cfg||{};const level=$("enhanceLevel").value,mode=$("enhanceMode").value,dpi=cfg.dpi||Number($("renderDpi").value)||220,out=await PDFDocument.create(),scale=dpi/72,opts=enhanceOpts(),flags=cfg.flags||enhanceFlags(),verb=cfg.verb||"khử bóng";
+  cfg=cfg||{};const dpi=cfg.dpi||220,out=await PDFDocument.create(),scale=dpi/72,flags=cfg.flags||pages.map(()=>true),verb=cfg.verb||"xử lý";
   let done=0;const todo=flags.filter(Boolean).length;
   for(let i=0;i<pages.length;i++){
     const it=pages[i];
@@ -2681,8 +2728,8 @@ async function exportEnhanced(cfg){
     ctx.fillStyle="#fff";ctx.fillRect(0,0,canvas.width,canvas.height);
     await p.render({canvasContext:ctx,viewport:renderViewport,background:"rgb(255,255,255)"}).promise;
     const shaped=applyShapeCrop(canvas,it);
-    let keepOriginal=false;
-    if(cfg.process){if(cfg.process(shaped)===false)keepOriginal=true}else enhanceByMode(shaped,level,mode,opts);
+    p.cleanup();let keepOriginal=false;
+    if(cfg.process){if(await cfg.process(shaped)===false)keepOriginal=true}
     if(keepOriginal){
       canvas.width=canvas.height=1;if(shaped!==canvas)shaped.width=shaped.height=1;
       await appendNormalPage(out,it,i);
@@ -2698,7 +2745,7 @@ async function exportEnhanced(cfg){
     setProgress((i+1)/pages.length*100,`Đang ${verb} trang ${i+1}/${pages.length} (${done}/${todo} trang áp dụng, ${dpi} DPI)...`);
     await new Promise(r=>setTimeout(r,0));
   }
-  const bytes=await out.save({useObjectStreams:true});return downloadBytes(bytes,cfg.fileName||(mode==="bw"?"PDF-Studio-Scan-DenTrang.pdf":mode==="gray"?"PDF-Studio-Scan-Xam.pdf":"PDF-Studio-Da-Khu-Bong.pdf"));
+  const bytes=await out.save({useObjectStreams:true});return downloadBytes(bytes,cfg.fileName||"PDF-Studio.pdf");
 }
 async function renderEnhancementComparison(magic){
   if(!pages.length)throw Error("Chưa có trang để xem thử");
@@ -2719,13 +2766,10 @@ async function renderEnhancementComparison(magic){
   before.width=after.width=shaped.width;before.height=after.height=shaped.height;
   before.getContext("2d").drawImage(shaped,0,0);
   after.getContext("2d").drawImage(shaped,0,0);
-  if(magic==="wm")watermarkCanvas(after,wmUiOpts());else if(magic)magicCanvas(after,{sharpen:true,level:$("magicLevel").value});else enhanceByMode(after,$("enhanceLevel").value,$("enhanceMode").value,enhanceOpts());
-  $("enhancePreviewLabel").textContent=magic==="wm"?`${item.name} · trang ${item.pageNum} · Xóa watermark · mức ${$("wmLevel").selectedOptions[0].text.split(" –")[0]}`:magic?`${item.name} · trang ${item.pageNum} · Magic Color · mức ${$("magicLevel").selectedOptions[0].text.split(" –")[0]}`:`${item.name} · trang ${item.pageNum} · ${$("enhanceMode").selectedOptions[0].text} · mức ${$("enhanceLevel").selectedOptions[0].text}`;
+  if(magic==="wm")await fxProcess(after,"wm",wmUiOpts());else if(magic)await fxProcess(after,"magic",{sharpen:true,level:$("magicLevel").value});
+  $("enhancePreviewLabel").textContent=magic==="wm"?`${item.name} · trang ${item.pageNum} · Xóa watermark · mức ${$("wmLevel").selectedOptions[0].text.split(" –")[0]}`:magic?`${item.name} · trang ${item.pageNum} · Magic Color · mức ${$("magicLevel").selectedOptions[0].text.split(" –")[0]}`:`${item.name} · trang ${item.pageNum}`;
   $("enhancePreviewModal").classList.remove("hidden");
 }
-$("previewEnhanceButton").onclick=async()=>{
-  try{await renderEnhancementComparison()}catch(e){console.error(e);showToast("Không tạo được bản xem thử: "+e.message)}
-};
 $("closeEnhancePreview").onclick=$("closeEnhancePreview2").onclick=()=>$("enhancePreviewModal").classList.add("hidden");
 $("enhancePreviewModal").onclick=e=>{if(e.target===$("enhancePreviewModal"))$("enhancePreviewModal").classList.add("hidden")};
 
@@ -2733,7 +2777,7 @@ $("enhancePreviewModal").onclick=e=>{if(e.target===$("enhancePreviewModal"))$("e
 function exList(){return $("exScope").value==="selected"?selectedIndexes().map(i=>pages[i]):pages.slice()}
 function exSync(){
   const proc=$("exProc").value,comp=$("exCompress").checked,n=exList().length;
-  $("exEnhBox").classList.toggle("hidden",proc!=="enhance");$("exMagicBox").classList.toggle("hidden",proc!=="magic"&&proc!=="wm");$("exCBox").classList.toggle("hidden",!comp);
+  $("exEnhBox").classList.toggle("hidden",proc!=="tone");$("exMagicBox").classList.toggle("hidden",proc!=="magic"&&proc!=="wm");$("exCBox").classList.toggle("hidden",!comp);
   $("exDpiRow").classList.toggle("hidden",proc==="none"||comp);$("exTargetMb").disabled=!$("exTarget").checked;
   $("exEraseNote").classList.toggle("hidden",!$("exErase").checked);
   {const on=$("exNum").checked;$("exNumBox").classList.toggle("hidden",!on);
@@ -2762,8 +2806,8 @@ async function exBuild(list,cfg,dpi,q,label){
     c.width=Math.max(1,Math.floor(v.width*reduce));c.height=Math.max(1,Math.floor(v.height*reduce));
     const ctx=c.getContext("2d",{willReadFrequently:true});ctx.fillStyle="#fff";ctx.fillRect(0,0,c.width,c.height);
     await p.render({canvasContext:ctx,viewport:p.getViewport({scale:scale*reduce,rotation,viewBox:vb}),background:"rgb(255,255,255)"}).promise;
-    const sh=applyShapeCrop(c,it);
-    if(cfg.proc==="magic")magicCanvas(sh,{sharpen:true,level:cfg.magicLevel});else if(cfg.proc==="wm")watermarkCanvas(sh,{level:cfg.magicLevel,keepColor:true,sharpen:true,stamp:"auto"});else if(cfg.proc==="enhance")enhanceByMode(sh,cfg.level,cfg.mode,cfg.opts);
+    p.cleanup();const sh=applyShapeCrop(c,it);
+    if(cfg.proc==="magic")await fxProcess(sh,"magic",{sharpen:true,level:cfg.magicLevel});else if(cfg.proc==="wm")await fxProcess(sh,"wm",{level:cfg.magicLevel,keepColor:true,sharpen:true,stamp:"auto"});else if(cfg.proc==="tone")await fxProcess(sh,"tone",cfg.tone);
     if(cfg.gray){const sc=sh.getContext("2d",{willReadFrequently:true}),im=sc.getImageData(0,0,sh.width,sh.height),a=im.data;for(let k=0;k<a.length;k+=4){a[k]=a[k+1]=a[k+2]=.299*a[k]+.587*a[k+1]+.114*a[k+2]}sc.putImageData(im,0,0)}
     const blob=await new Promise(r=>sh.toBlob(r,"image/jpeg",q));if(!blob)throw Error("Không tạo được ảnh trang "+(i+1));
     const img=await out.embedJpg(new Uint8Array(await blob.arrayBuffer())),pw=sh.width/(scale*reduce),ph=sh.height/(scale*reduce);
@@ -2779,7 +2823,7 @@ $("exGo").onclick=async()=>{
   const list=exList();if(!list.length)return showToast("Hãy chọn các trang cần xuất");
   const numRes=readNumbering(list.length);
   if(numRes.error){showToast(numRes.error);if(numRes.error.startsWith("Hãy")||numRes.error.startsWith("Đoạn")||numRes.error.startsWith("Không hiểu"))$("exNumRanges").focus();return}
-  const comp=$("exCompress").checked,cfg={num:numRes.cfg,magicLevel:$("exMagicLevel").value,proc:$("exProc").value,mode:$("exMode").value,level:$("exLevel").value,opts:{whiten:$("exWhiten").value==="white",sharpen:$("exSharpen").checked},gray:comp&&$("exGray").checked};
+  const comp=$("exCompress").checked,cfg={num:numRes.cfg,magicLevel:$("exMagicLevel").value,proc:$("exProc").value,tone:toneOpts(),gray:comp&&$("exGray").checked};
   $("exportOptModal").classList.add("hidden");setBusy(true);
   try{
     let ok;
@@ -2795,24 +2839,35 @@ $("exGo").onclick=async()=>{
         for(let n=0;n<steps.length;n++){const [d2,q2]=steps[n];dpi=Math.max(50,Math.round(d2));q=clamp(q2,.2,.95);bytes=await exBuild(list,cfg,dpi,q,`Lần thử ${n+1}/${steps.length}`);if(bytes.length<=limit)break}
         if(bytes.length>limit)showToast("Chưa đạt "+fmtSize(limit)+" ở mức nén thấp nhất; thử bật thang xám hoặc bỏ bớt trang");
       }else bytes=await exBuild(list,cfg,dpi,q,"Đang xuất");
-      ok=await downloadBytes(bytes,"PDF-Studio"+(cfg.proc==="magic"?"-Magic":cfg.proc==="wm"?"-Xoa-Watermark":cfg.proc==="enhance"?"-Khu-Bong":"")+(comp?"-Nen":"")+".pdf");
+      ok=await downloadBytes(bytes,"PDF-Studio"+(cfg.proc==="magic"?"-Magic":cfg.proc==="wm"?"-Xoa-Watermark":cfg.proc==="tone"?"-Net-Sang":"")+(comp?"-Nen":"")+".pdf");
     }
     showToast(ok?"Xuất PDF thành công":"Đã hủy lưu tệp");
   }catch(e){console.error(e);showToast("Lỗi xuất PDF: "+e.message)}
   finally{setBusy(false);setTimeout(()=>$("progressArea").classList.add("hidden"),1200)}
 };
-$("enhanceExportButton").onclick=async()=>{
+document.querySelectorAll("#tonePanel input[type=range]").forEach(r=>{
+  r.addEventListener("input",toneChanged);
+  r.addEventListener("dblclick",()=>{r.value=r.dataset.def;toneChanged()});
+});
+document.querySelectorAll("#tonePanel [data-tp]").forEach(b=>b.onclick=()=>toneSet(b.dataset.tp==="default"?TONE_DEFAULT:TONE_PRESETS[b.dataset.tp]));
+$("tonePreviewButton").onclick=()=>toneLoadPreview();
+$("toneScope").onchange=updateToneInfo;
+$("toneExportButton").onclick=async()=>{
   if(busy)return;if(!pages.length)return showToast("Hãy thêm PDF hoặc ảnh trước");
-  const scope=$("enhanceScope").value,n=enhanceFlags().filter(Boolean).length;
-  if(scope!=="all"&&!selectedPages.size)return showToast(scope==="selected"?"Hãy chọn các trang cần khử bóng":"Hãy chọn các trang muốn giữ nguyên (không khử bóng)");
-  if(n===0)return showToast("Không còn trang nào để khử bóng");
-  if(!confirm(`Khử bóng ${n}/${pages.length} trang`+(n<pages.length?` (giữ nguyên ${pages.length-n} trang còn lại)`:"")+" và xuất PDF mới? Trang được khử bóng sẽ chuyển thành ảnh; chữ trên các trang đó có thể không còn chọn/tìm kiếm được."))return;
-  setBusy(true);$("enhanceStatus").textContent="Đang phân tích và khử bóng từng trang...";
-  try{if(await exportEnhanced()){$("enhanceStatus").textContent=`Hoàn tất: đã khử bóng ${n} trang và xuất PDF.`;showToast("Đã khử bóng và xuất PDF")}else{$("enhanceStatus").textContent="Đã hủy lưu tệp.";showToast("Đã hủy lưu tệp")}}
-  catch(e){console.error(e);$("enhanceStatus").textContent="Có lỗi trong quá trình xử lý.";showToast("Lỗi xử lý: "+e.message)}
+  const o=toneOpts();if(toneIsIdentity(o))return showToast("Các thanh trượt đang ở mức 0 – hãy chỉnh ít nhất một mức");
+  const scope=$("toneScope").value,flags=toneFlags(),n=flags.filter(Boolean).length;
+  if(scope!=="all"&&!selectedPages.size)return showToast(scope==="selected"?"Hãy chọn các trang cần xử lý":"Hãy chọn các trang muốn giữ nguyên");
+  if(n===0)return showToast("Không còn trang nào để xử lý");
+  if(!confirm(`Tăng độ nét & sáng cho ${n}/${pages.length} trang`+(n<pages.length?` (giữ nguyên ${pages.length-n} trang còn lại)`:"")+" và xuất PDF mới? Trang được xử lý sẽ chuyển thành ảnh; chữ trên các trang đó có thể không còn chọn/tìm kiếm được."))return;
+  setBusy(true);$("enhanceStatus").textContent="Đang tăng độ nét & sáng từng trang...";
+  try{
+    const ok=await exportEnhanced({flags,dpi:Number($("toneDpi").value)||220,process:async c=>{await fxProcess(c,"tone",o)},verb:"tăng nét & sáng",fileName:"PDF-Studio-Net-Sang.pdf"});
+    if(ok){$("enhanceStatus").textContent=`Hoàn tất: đã tăng độ nét & sáng cho ${n} trang.`;showToast("Đã xử lý và xuất PDF")}
+    else{$("enhanceStatus").textContent="Đã hủy lưu tệp.";showToast("Đã hủy lưu tệp")}
+  }catch(e){console.error(e);$("enhanceStatus").textContent="Có lỗi trong quá trình xử lý.";showToast("Lỗi xử lý: "+e.message)}
   finally{setBusy(false);setTimeout(()=>$("progressArea").classList.add("hidden"),1800)}
 };
-$("enhanceScope").onchange=()=>{updateEnhanceInfo();renderGrid()};
+toneLabels();
 $("magicScope").onchange=updateMagicInfo;
 $("previewMagicButton").onclick=async()=>{
   try{await renderEnhancementComparison(true)}catch(e){console.error(e);showToast("Không tạo được bản xem thử: "+e.message)}
@@ -2823,7 +2878,7 @@ $("magicExportButton").onclick=async()=>{
   if(n===0)return showToast("Hãy chọn các trang cần áp dụng Magic Color (hoặc chọn “Tất cả trang”)");
   if(!confirm(`Áp dụng Magic Color cho ${n}/${pages.length} trang`+(n<pages.length?` (giữ nguyên ${pages.length-n} trang còn lại)`:"")+" và xuất PDF mới? Trang được xử lý sẽ chuyển thành ảnh; chữ trên các trang đó có thể không còn chọn/tìm kiếm được."))return;
   setBusy(true);$("magicStatus").textContent="Đang xử lý Magic Color từng trang...";
-  try{const ok=await exportEnhanced({flags,dpi:Number($("magicDpi").value)||220,process:c=>magicCanvas(c,{sharpen:true,level:$("magicLevel").value}),verb:"xử lý Magic Color",fileName:"PDF-Studio-Magic-Color.pdf"});if(ok){$("magicStatus").textContent=`Hoàn tất: đã áp dụng Magic Color cho ${n} trang.`;showToast("Đã áp dụng Magic Color và xuất PDF")}else{$("magicStatus").textContent="Đã hủy lưu tệp.";showToast("Đã hủy lưu tệp")}}
+  try{const ok=await exportEnhanced({flags,dpi:Number($("magicDpi").value)||220,process:async c=>{await fxProcess(c,"magic",{sharpen:true,level:$("magicLevel").value})},verb:"xử lý Magic Color",fileName:"PDF-Studio-Magic-Color.pdf"});if(ok){$("magicStatus").textContent=`Hoàn tất: đã áp dụng Magic Color cho ${n} trang.`;showToast("Đã áp dụng Magic Color và xuất PDF")}else{$("magicStatus").textContent="Đã hủy lưu tệp.";showToast("Đã hủy lưu tệp")}}
   catch(e){console.error(e);$("magicStatus").textContent="Có lỗi trong quá trình xử lý.";showToast("Lỗi xử lý: "+e.message)}
   finally{setBusy(false);setTimeout(()=>$("progressArea").classList.add("hidden"),1800)}
 };
@@ -2945,7 +3000,7 @@ $("wmExportButton").onclick=async()=>{
   setBusy(true);$("wmStatus").textContent="Đang xóa watermark từng trang...";
   const wo=wmUiOpts();
   try{
-    const ok=await exportEnhanced({flags,dpi:Number($("wmDpi").value)||220,process:c=>watermarkCanvas(c,wo),verb:"xóa watermark",fileName:"PDF-Studio-Xoa-Watermark.pdf"});
+    const ok=await exportEnhanced({flags,dpi:Number($("wmDpi").value)||220,process:async c=>{await fxProcess(c,"wm",wo)},verb:"xóa watermark",fileName:"PDF-Studio-Xoa-Watermark.pdf"});
     if(ok){$("wmStatus").textContent=`Hoàn tất: đã xóa watermark trên ${n} trang.`;showToast("Đã xóa watermark và xuất PDF")}
     else{$("wmStatus").textContent="Đã hủy lưu tệp.";showToast("Đã hủy lưu tệp")}
   }catch(e){console.error(e);$("wmStatus").textContent="Có lỗi trong quá trình xử lý.";showToast("Lỗi xử lý: "+e.message)}
@@ -3134,7 +3189,7 @@ $("hlExportButton").onclick=async()=>{
   const sens=$("hlSens").value,hue=$("hlHue").value,dpi=Number($("hlDpi").value)||220,stat={pages:0,regions:0};
   try{
     const ok=await exportEnhanced({flags,dpi,verb:"bỏ vùng bôi màu",fileName:"PDF-Studio-Bo-Boi-Mau.pdf",
-      process:c=>{const r=detectHighlights(c,{pxPerPt:dpi/72,sens,hue,apply:true});if(!r.count)return false;stat.pages++;stat.regions+=r.count}});
+      process:async c=>{const r=await fxProcess(c,"hl",{pxPerPt:dpi/72,sens,hue,apply:true});if(!r.changed)return false;stat.pages++;stat.regions+=r.extra}});
     if(ok){
       $("hlStatus").textContent=stat.pages?`Hoàn tất: đã bỏ ${stat.regions} vùng bôi màu trên ${stat.pages} trang.`:"Không tìm thấy vùng bôi màu nào – tệp xuất ra giống bản gốc.";
       showToast(stat.pages?`Đã bỏ ${stat.regions} vùng bôi màu và xuất PDF`:"Không tìm thấy vùng bôi màu nào");
@@ -3142,6 +3197,76 @@ $("hlExportButton").onclick=async()=>{
   }catch(e){console.error(e);$("hlStatus").textContent="Có lỗi trong quá trình xử lý.";showToast("Lỗi xử lý: "+e.message)}
   finally{setBusy(false);setTimeout(()=>$("progressArea").classList.add("hidden"),1800)}
 };
+
+/* ====== WEB WORKER: xử lý ảnh nặng ở luồng nền (giao diện không bị đứng) ======
+   Worker được tạo từ chính mã nguồn của các hàm bên dưới (Blob URL) nên vẫn là 1 file HTML duy nhất.
+   Hàm xử lý chạy nguyên bản trên mảng điểm ảnh; nếu trình duyệt không cho tạo Worker thì tự chạy trực tiếp như cũ. */
+const FX={w:null,url:null,seq:0,pending:new Map(),dead:false};
+function fxWorkerMain(){
+  onmessage=function(e){
+    const m=e.data;
+    try{
+      const data=new Uint8ClampedArray(m.buf),img={data:data,width:m.w,height:m.h};
+      const ctx={getImageData:function(){return img},putImageData:function(){}};
+      const cv={width:m.w,height:m.h,getContext:function(){return ctx}};
+      let changed=true,extra=0;
+      if(m.kind==="tone")toneCanvas(cv,m.opts);
+      else if(m.kind==="magic")magicCanvas(cv,m.opts);
+      else if(m.kind==="wm")watermarkCanvas(cv,m.opts);
+      else if(m.kind==="hl"){const r=detectHighlights(cv,m.opts);extra=r.count;changed=r.count>0}
+      postMessage({id:m.id,buf:data.buffer,changed:changed,extra:extra},[data.buffer]);
+    }catch(err){postMessage({id:m.id,error:String(err&&err.message||err)})}
+  };
+}
+function fxSource(){
+  const fns=[clamp,sharpenLuma,morph1D,morph2D,boxBlur2D,buildBackground,makeSampler,bil,hlLabel,hlHueBin,wmStampBoxes,toneCanvas,magicCanvas,watermarkCanvas,detectHighlights];
+  return "const MAGIC_LEVELS="+JSON.stringify(MAGIC_LEVELS)+",WM_LEVELS="+JSON.stringify(WM_LEVELS)+",HL_SENS="+JSON.stringify(HL_SENS)+";\n"
+    +fns.map(f=>f.toString()).join("\n")+"\n("+fxWorkerMain.toString()+")();";
+}
+function fxEnsure(){
+  if(FX.w)return FX.w;
+  FX.url=URL.createObjectURL(new Blob([fxSource()],{type:"text/javascript"}));
+  const w=new Worker(FX.url);
+  w.onmessage=e=>{
+    const m=e.data,p=FX.pending.get(m.id);if(!p)return;
+    FX.pending.delete(m.id);
+    if(m.error)p.reject({fallback:true,msg:m.error});else p.resolve(m);
+  };
+  w.onerror=e=>{if(e&&e.preventDefault)e.preventDefault();fxKill({fallback:true,msg:e&&e.message})};
+  FX.w=w;return w;
+}
+function fxKill(reason){
+  if(FX.w){FX.w.terminate();FX.w=null}
+  if(FX.url){URL.revokeObjectURL(FX.url);FX.url=null}
+  const ps=[...FX.pending.values()];FX.pending.clear();ps.forEach(p=>p.reject(reason));
+}
+function fxAbort(){fxKill({cancel:true})}
+function fxSync(canvas,kind,opts){
+  if(kind==="tone"){toneCanvas(canvas,opts);return{changed:true,extra:0}}
+  if(kind==="magic"){magicCanvas(canvas,opts);return{changed:true,extra:0}}
+  if(kind==="wm"){watermarkCanvas(canvas,opts);return{changed:true,extra:0}}
+  const r=detectHighlights(canvas,opts);return{changed:r.count>0,extra:r.count};
+}
+/* Xử lý 1 canvas ở luồng nền. kind: tone | magic | wm | hl. Trả về {changed,extra}. */
+async function fxProcess(canvas,kind,opts){
+  if(!FX.dead){
+    try{
+      const w=fxEnsure(),W=canvas.width,H=canvas.height,ctx=canvas.getContext("2d",{willReadFrequently:true});
+      const img=ctx.getImageData(0,0,W,H),id=++FX.seq;
+      const res=await new Promise((resolve,reject)=>{
+        FX.pending.set(id,{resolve,reject});
+        w.postMessage({id,kind,opts,w:W,h:H,buf:img.data.buffer},[img.data.buffer]);
+      });
+      if(res.changed)ctx.putImageData(new ImageData(new Uint8ClampedArray(res.buf),W,H),0,0);
+      return{changed:res.changed,extra:res.extra};
+    }catch(e){
+      if(e&&e.cancel)throw Error("Đã hủy xử lý");
+      FX.dead=true;fxKill({fallback:true});console.warn("Web Worker lỗi, chuyển sang xử lý trực tiếp:",e);
+    }
+  }
+  return fxSync(canvas,kind,opts);
+}
+$("cancelProcessButton").onclick=()=>{if(!busy)return;fxCancel=true;fxAbort();showToast("Đang hủy...")};
 
 /* ====== GIẢM DUNG LƯỢNG PDF ====== */
 const COMPRESS_PRESETS={light:{dpi:150,q:80},medium:{dpi:120,q:65},strong:{dpi:90,q:50}};
@@ -3158,7 +3283,7 @@ async function buildCompressed(dpi,quality,gray,label){
     const ctx=canvas.getContext("2d",{willReadFrequently:true});ctx.fillStyle="#fff";ctx.fillRect(0,0,canvas.width,canvas.height);
     await p.render({canvasContext:ctx,viewport:p.getViewport({scale:scale*reduce,rotation,viewBox:vb}),background:"rgb(255,255,255)"}).promise;
     const shaped=applyShapeCrop(canvas,it);
-    if(gray){const sc=shaped.getContext("2d",{willReadFrequently:true}),im=sc.getImageData(0,0,shaped.width,shaped.height),a=im.data;for(let k=0;k<a.length;k+=4){const l=.299*a[k]+.587*a[k+1]+.114*a[k+2];a[k]=a[k+1]=a[k+2]=l}sc.putImageData(im,0,0)}
+    p.cleanup();if(gray){const sc=shaped.getContext("2d",{willReadFrequently:true}),im=sc.getImageData(0,0,shaped.width,shaped.height),a=im.data;for(let k=0;k<a.length;k+=4){const l=.299*a[k]+.587*a[k+1]+.114*a[k+2];a[k]=a[k+1]=a[k+2]=l}sc.putImageData(im,0,0)}
     const blob=await new Promise(r=>shaped.toBlob(r,"image/jpeg",quality));if(!blob)throw Error("Không tạo được ảnh trang "+(i+1));
     const image=await out.embedJpg(new Uint8Array(await blob.arrayBuffer())),pw=shaped.width/(scale*reduce),ph=shaped.height/(scale*reduce),np=out.addPage([pw,ph]);
     np.drawImage(image,{x:0,y:0,width:pw,height:ph});
@@ -3269,7 +3394,7 @@ let edRange=null,edPendingSize=null;
 const ED_BASE_CSS=`body{margin:0;font-family:"Times New Roman",Times,serif;font-size:13pt;line-height:1.3;color:#000}p{margin:0 0 6pt}ul,ol{margin:0 0 6pt}table{border-collapse:collapse}td,th{vertical-align:top}img{max-width:100%}img.ed-fimg{position:absolute}.sheet{position:relative}.ed-tb{position:absolute;border:1px solid #000;padding:6px;box-sizing:border-box;overflow:hidden}.ed-tb p{margin:0}`;
 let edSaveT=0;
 function edSaveDraftNow(){clearTimeout(edSaveT);edSaveT=0;try{localStorage.setItem(ED_KEY,edClone("draft"))}catch(e){}}
-function edSaveDraft(){clearTimeout(edSaveT);edSaveT=setTimeout(edSaveDraftNow,700)}
+function edSaveDraft(){clearTimeout(edSaveT);edSaveT=setTimeout(edSaveDraftNow,LOW_END?1500:700)}
 function edLoadDraft(){
   try{const v=localStorage.getItem(ED_KEY);if(v&&v.trim())ed.innerHTML=v}catch(e){}
   ed.querySelectorAll(".ed-tb").forEach(tb=>{tb.classList.remove("sel");tb.tabIndex=0;tb.contentEditable="false";const b=tb.querySelector(".ed-tb-body");if(b)b.contentEditable="true"});
