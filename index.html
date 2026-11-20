@@ -77,6 +77,7 @@ button,input,select{font:inherit}button{cursor:pointer}.hidden{display:none!impo
 @media(max-width:700px){.merge-body{grid-template-columns:1fr}}
 .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:#25263a;color:white;padding:12px 18px;border-radius:10px;z-index:2000;box-shadow:var(--shadow);font-size:13px;max-width:90%;text-align:center}
 .marquee{position:absolute;z-index:900;border:1px solid #635bff;background:rgba(99,91,255,.16);pointer-events:none;border-radius:3px}
+.mem-chip{align-self:center;font-size:12px;padding:6px 10px;border-radius:20px;background:#eef0f7;color:var(--muted);font-weight:600;white-space:nowrap}.mem-chip.warn{background:#fff3d6;color:#8a5a00}.mem-chip.danger{background:#ffe1e2;color:var(--danger)}.mem-save{display:inline-flex;align-items:center;gap:6px;font-size:13px}.mem-save input{margin:0}
 .footer{text-align:center;color:var(--muted);font-size:12px;padding:15px}
 @media(max-width:600px){.app{padding:13px}.panel{padding:14px}.page-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.thumb-wrap{height:165px}.header{align-items:flex-start}}
 
@@ -217,8 +218,8 @@ button,input,select{font:inherit}button{cursor:pointer}.hidden{display:none!impo
 </div></div>
 
 <div class="app hidden" id="app">
-<header class="header"><div class="brand"><div class="brand-icon">📄</div><div><h1>PDF Studio Ver 8.0</h1><small>Quản lý, chỉnh sửa và làm đẹp PDF</small></div></div>
-<div class="header-actions"><button class="btn" id="editorButton" title="Mở trình soạn thảo văn bản kiểu Word">📝 Soạn văn bản</button><button class="btn" id="addFilesButton">＋ Thêm tệp</button><button class="btn primary" id="exportButton">Xuất PDF ↓</button></div></header>
+<header class="header"><div class="brand"><div class="brand-icon">📄</div><div><h1>PDF Studio Ver 8.1</h1><small>Quản lý, chỉnh sửa và làm đẹp PDF</small></div></div>
+<div class="header-actions"><span class="mem-chip" id="memChip" title="Ước lượng bộ nhớ đang dùng của tab này">RAM …</span><label class="btn mem-save" title="Giới hạn số điểm ảnh khi xử lý mỗi trang (8 triệu) để đỡ tốn RAM; ảnh có thể kém nét hơn một chút với trang rất lớn"><input type="checkbox" id="memSave"> Tiết kiệm RAM</label><button class="btn" id="editorButton" title="Mở trình soạn thảo văn bản kiểu Word">📝 Soạn văn bản</button><button class="btn" id="addFilesButton">＋ Thêm tệp</button><button class="btn primary" id="exportButton">Xuất PDF ↓</button></div></header>
 
 <section class="panel"><div class="dropzone" id="dropzone"><div class="big-icon">📂</div><h3>Kéo thả PDF hoặc hình ảnh vào đây</h3><p>Hỗ trợ PDF, JPG, JPEG, PNG và WEBP</p><p>Hoặc nhấn vào đây để chọn tệp từ máy tính</p></div>
 <input type="file" id="fileInput" accept=".pdf,.jpg,.jpeg,.png,.webp,application/pdf,image/*" multiple="" hidden=""></section>
@@ -585,7 +586,7 @@ $("loginButton").onclick=login;$("passwordInput").onkeydown=e=>{if(e.key==="Ente
 function showToast(m){const el=$("toast");el.textContent=m;el.classList.remove("hidden");clearTimeout(showToast.timer);showToast.timer=setTimeout(()=>el.classList.add("hidden"),3000)}
 let fxCancel=false;
 function setProgress(p,m){if(fxCancel){fxCancel=false;throw Error("Đã hủy xử lý")}$("progressArea").classList.remove("hidden");$("progressFill").style.width=p+"%";$("progressText").textContent=m}
-function setBusy(v){busy=v;if(v)fxCancel=false;["addFilesButton","exportButton","toneExportButton","tonePreviewButton","hlExportButton","hlPreviewButton","wmExportButton","wmPreviewButton","compressExportButton","rotateButton","duplicateButton","deleteButton","clearButton","selectAllButton","saveSelectedButton","printSelectedButton","editorButton","manualCropButton","autoCropButton","rectCropButton","mergeButton","cardButton","stampButton","moveCropButton","copyCropButton","moveCropPrev","freeRotButton","freeRotPrev","applyManualCrop","autoDetectCrop","startManualCrop","startRectCrop","moveToButton","moveLeftButton","moveRightButton"].forEach(id=>$(id).disabled=v);updateHistoryButtons()}
+function setBusy(v){busy=v;try{memTick()}catch(e){}if(v)fxCancel=false;["addFilesButton","exportButton","toneExportButton","tonePreviewButton","hlExportButton","hlPreviewButton","wmExportButton","wmPreviewButton","compressExportButton","rotateButton","duplicateButton","deleteButton","clearButton","selectAllButton","saveSelectedButton","printSelectedButton","editorButton","manualCropButton","autoCropButton","rectCropButton","mergeButton","cardButton","stampButton","moveCropButton","copyCropButton","moveCropPrev","freeRotButton","freeRotPrev","applyManualCrop","autoDetectCrop","startManualCrop","startRectCrop","moveToButton","moveLeftButton","moveRightButton"].forEach(id=>$(id).disabled=v);updateHistoryButtons()}
 function getDoc(id){return documents.find(d=>d.id===id)}
 function sourceFor(item){const d=getDoc(item.docId);if(!d)throw Error("Không tìm thấy tài liệu nguồn");return d}
 function updateSaveButton(){updateEnhanceInfo();const b=$("saveSelectedButton"),pb=$("printSelectedButton");if(!b)return;const n=selectedPages.size;b.textContent=n?`💾 Lưu ${n} trang đã chọn`:"💾 Lưu trang đã chọn";if(pb)pb.textContent=n?`🖨 In ${n} trang đã chọn`:"🖨 In trang đã chọn"}
@@ -614,10 +615,21 @@ function downloadBytes(bytes,name,mime="application/pdf"){
 }
 function finishSave(ok){
   const c=saveCtx;saveCtx=null;$("saveModal").classList.add("hidden");
-  if(c)c.resolve(ok);
+  if(c)c.resolve(c.pickOnly?false:ok);
 }
 async function doSave(){
   const c=saveCtx;if(!c)return;
+  if(c.pickOnly){
+    const b0=$("saveName").value.trim().replace(/[\\/:*?"<>|]+/g,"_").replace(/\.+$/,"")||"PDF-Studio";
+    try{
+      const h=await window.showSaveFilePicker({suggestedName:b0+c.ext,types:[{description:c.desc,accept:{[c.mime]:[c.ext]}}]});
+      saveCtx=null;$("saveModal").classList.add("hidden");c.resolve(h);
+    }catch(e){
+      if(e&&e.name==="AbortError")return;
+      console.warn(e);saveCtx=null;$("saveModal").classList.add("hidden");c.resolve("fail");
+    }
+    return;
+  }
   const base=$("saveName").value.trim().replace(/[\\/:*?"<>|]+/g,"_").replace(/\.+$/,"")||"PDF-Studio",fname=base+c.ext;
   const blob=c.bytes instanceof Blob?c.bytes:new Blob([c.bytes],{type:c.mime});
   if(typeof window.showSaveFilePicker==="function"){
@@ -655,7 +667,14 @@ function addFiles(files){
 }
 async function addFilesNow(files){pushHistory();try{for(const f of files){const ext=f.name.split(".").pop().toLowerCase();if(ext==="pdf"||f.type==="application/pdf")await addPDF(f);else if(["jpg","jpeg","png","webp"].includes(ext)||f.type.startsWith("image/"))await addImage(f);else showToast("Không hỗ trợ: "+f.name)}renderGrid();showToast("Đã thêm tệp")}catch(e){console.error(e);showToast("Lỗi đọc tệp: "+e.message)}}
 async function docBytes(d){return d.bytes||new Uint8Array(await d.file.arrayBuffer())}
-async function addPDF(file){const pdf=await pdfjsLib.getDocument({data:new Uint8Array(await file.arrayBuffer())}).promise,id=nextDocumentId++;documents.push({id,name:file.name,file,size:file.size,pdf});for(let n=1;n<=pdf.numPages;n++)pages.push({id:crypto.randomUUID(),docId:id,pageNum:n,rotation:0,name:file.name})}
+async function addPDF(file){
+  /* Đọc qua Blob URL: pdf.js chỉ lấy từng đoạn cần thiết thay vì nạp cả tệp vào RAM. Không được thì quay về cách cũ. */
+  let pdf,url=null;
+  try{url=URL.createObjectURL(file);pdf=await pdfjsLib.getDocument({url,rangeChunkSize:1<<20,disableAutoFetch:true}).promise}
+  catch(e){console.warn("Đọc qua Blob URL không được, quay về cách cũ:",e);if(url){URL.revokeObjectURL(url);url=null}pdf=await pdfjsLib.getDocument({data:new Uint8Array(await file.arrayBuffer())}).promise}
+  const id=nextDocumentId++;documents.push({id,name:file.name,file,size:file.size,pdf,url});
+  for(let n=1;n<=pdf.numPages;n++)pages.push({id:crypto.randomUUID(),docId:id,pageNum:n,rotation:0,name:file.name});
+}
 async function addImage(file){const bitmap=await createImageBitmap(file),maxSide=LOW_END?3300:4200,ratio=Math.min(1,maxSide/Math.max(bitmap.width,bitmap.height)),c=document.createElement("canvas");c.width=Math.round(bitmap.width*ratio);c.height=Math.round(bitmap.height*ratio);const cx=c.getContext("2d");cx.fillStyle="#fff";cx.fillRect(0,0,c.width,c.height);cx.drawImage(bitmap,0,0,c.width,c.height);bitmap.close();const blob=await new Promise(r=>c.toBlob(r,"image/jpeg",.93));c.width=c.height=1;if(!blob)throw Error("Không chuyển đổi được ảnh");const png=new Uint8Array(await blob.arrayBuffer()),p=await PDFDocument.create(),im=await p.embedJpg(png),land=im.width>im.height,w=land?841.89:595.28,h=land?595.28:841.89,pg=p.addPage([w,h]),margin=20,s=Math.min((w-2*margin)/im.width,(h-2*margin)/im.height),iw=im.width*s,ih=im.height*s;pg.drawImage(im,{x:(w-iw)/2,y:(h-ih)/2,width:iw,height:ih});const bytes=new Uint8Array(await p.save()),pdf=await pdfjsLib.getDocument({data:bytes.slice()}).promise,id=nextDocumentId++;documents.push({id,name:file.name,bytes,size:bytes.length,pdf});pages.push({id:crypto.randomUUID(),docId:id,pageNum:1,rotation:0,name:file.name})}
 
 const MM_TO_PT=72/25.4;
@@ -669,6 +688,10 @@ function cropViewBox(item,pdfPage){
 }
 function clearShapeCrop(item){delete item.perspectiveCrop;delete item.cropMode}
 const LOW_END=(navigator.hardwareConcurrency||4)<=4||(navigator.deviceMemory||8)<=4;
+/* Chế độ tiết kiệm RAM: hạ trần số điểm ảnh mỗi trang (mặc định bật trên máy yếu) */
+let MEMSAVE=LOW_END;try{const v=localStorage.getItem('pdfstudio_memsave');if(v!==null)MEMSAVE=v==='1'}catch(e){}
+const MEMSAVE_PX=8e6;
+function pxCap(n){return MEMSAVE?Math.min(n,MEMSAVE_PX):n}
 if(LOW_END)document.body.classList.add("low-end");
 const THUMB_SCALE=LOW_END?.3:.36;
 const thumbCache=new Map(),thumbQueue=[];let thumbRunning=false;
@@ -1085,7 +1108,7 @@ document.addEventListener("keydown",e=>{
   if(!selectedPages.size)return;
   e.preventDefault();$("deleteButton").click(); /* Ctrl+Z để hoàn tác */
 });
-$("clearButton").onclick=()=>{if(pages.length&&confirm("Xóa toàn bộ trang?")){pages=[];documents=[];thumbCache.clear();thumbQueue.length=0;openGroups.clear();undoStack.length=0;redoStack.length=0;selectedPages.clear();renderGrid();updateHistoryButtons()}};
+$("clearButton").onclick=()=>{if(pages.length&&confirm("Xóa toàn bộ trang?")){pages=[];documents.forEach(d=>{if(d.url)URL.revokeObjectURL(d.url)});documents=[];thumbCache.clear();thumbQueue.length=0;openGroups.clear();undoStack.length=0;redoStack.length=0;selectedPages.clear();renderGrid();updateHistoryButtons()}};
 
 /* ====== HỘP THOẠI "CHUYỂN TRANG ĐẾN…" ====== */
 let mv=null;
@@ -1434,7 +1457,7 @@ async function renderItemCanvas(item,{dpi,maxSide,maxPx}={}){
   const vb=item.perspectiveCrop?undefined:cropViewBox(item,p);
   const base=p.getViewport({scale:1,rotation});
   let scale=dpi?dpi/72:maxSide/Math.max(base.width,base.height);
-  scale*=Math.min(1,Math.sqrt((maxPx||(LOW_END?14e6:26e6))/(base.width*scale*base.height*scale)));
+  scale*=Math.min(1,Math.sqrt(pxCap(maxPx||(LOW_END?14e6:26e6))/(base.width*scale*base.height*scale)));
   const v=p.getViewport({scale,rotation,viewBox:vb});
   const c=document.createElement("canvas");c.width=Math.max(1,Math.ceil(v.width));c.height=Math.max(1,Math.ceil(v.height));
   const ctx=c.getContext("2d",{willReadFrequently:true});ctx.fillStyle="#fff";ctx.fillRect(0,0,c.width,c.height);
@@ -2250,7 +2273,7 @@ async function appendNormalPage(out,it,i,pre){
   if(it.perspectiveCrop||it.freeRot){
     const srcPage=await d.pdf.getPage(it.pageNum),rotation=((srcPage.rotate||0)+it.rotation)%360,vbx=it.perspectiveCrop?undefined:cropViewBox(it,srcPage);
     const scale=220/72,viewport=srcPage.getViewport({scale,rotation,viewBox:vbx});
-    const maxPixels=LOW_END?14e6:24e6,reduce=Math.min(1,Math.sqrt(maxPixels/(viewport.width*viewport.height)));
+    const maxPixels=pxCap(LOW_END?14e6:24e6),reduce=Math.min(1,Math.sqrt(maxPixels/(viewport.width*viewport.height)));
     const canvas=document.createElement("canvas");canvas.width=Math.max(1,Math.floor(viewport.width*reduce));canvas.height=Math.max(1,Math.floor(viewport.height*reduce));
     const ctx=canvas.getContext("2d");ctx.fillStyle="#fff";ctx.fillRect(0,0,canvas.width,canvas.height);
     const v=srcPage.getViewport({scale:scale*reduce,rotation,viewBox:vbx});
@@ -2261,9 +2284,8 @@ async function appendNormalPage(out,it,i,pre){
     const pw=shaped.width/(scale*reduce),ph=shaped.height/(scale*reduce),page=out.addPage([pw,ph]);
     page.drawImage(image,{x:0,y:0,width:pw,height:ph});canvas.width=canvas.height=shaped.width=shaped.height=1;
   }else{
-    const pk=d.id+":"+it.pageNum;let p=pre&&pre.get(pk);
-    if(p)pre.delete(pk); /* mỗi trang đã sao chép gộp chỉ dùng 1 lần; bản nhân đôi sao chép riêng */
-    else{const src=d.lib||(d.lib=await PDFDocument.load(await docBytes(d)));[p]=await out.copyPages(src,[it.pageNum-1])}
+    const pk=d.id+":"+it.pageNum,pq=pre&&pre.get(pk);let p=pq&&pq.shift(); /* mỗi bản sao chép gộp chỉ dùng 1 lần */
+    if(!p){const src=d.lib||(d.lib=await PDFDocument.load(await docBytes(d)));[p]=await out.copyPages(src,[it.pageNum-1])}
     const c=cropValues(it),box=p.getCropBox(),x=box.x+c.left*MM_TO_PT,y=box.y+c.bottom*MM_TO_PT,w=box.width-(c.left+c.right)*MM_TO_PT,h=box.height-(c.top+c.bottom)*MM_TO_PT;
     if(w<24||h<24)throw Error(`Trang ${i+1}: vùng cắt quá nhỏ`);
     if(c.top||c.bottom||c.left||c.right)p.setCropBox(x,y,w,h);
@@ -2467,16 +2489,126 @@ function updateNumPreview(){
   b.style.fontWeight=$("exNumBold").checked?"700":"400";b.style.fontStyle=$("exNumItalic").checked?"italic":"normal";b.style.color=$("exNumColor").value;
 }
 
+
+/* ====== GHI PDF THẲNG RA ĐĨA (Chromium: File System Access) ======
+   Tự viết từng trang JPEG thành đối tượng PDF rồi ghi ngay vào tệp đích, nên RAM khi xuất chỉ cỡ một trang. */
+const CAN_STREAM=typeof window.showSaveFilePicker==="function";
+let STREAM_LAST=0;
+function jpegInfo(b){
+  let i=2;
+  while(i+9<b.length){
+    if(b[i]!==255){i++;continue}
+    const m=b[i+1];
+    if(m===255){i++;continue}
+    if(m===1||(m>=208&&m<=217)){i+=2;continue}
+    if(m>=192&&m<=207&&m!==196&&m!==200&&m!==204)return{h:(b[i+5]<<8)|b[i+6],w:(b[i+7]<<8)|b[i+8],n:b[i+9]};
+    i+=2+((b[i+2]<<8)|b[i+3]);
+  }
+  return null;
+}
+class PdfStream{
+  constructor(w){this.w=w;this.pos=0;this.off=[0,0,0];this.kids=[];this.next=3;this.begun=false;this.te=new TextEncoder()}
+  async put(d){if(typeof d==="string")d=this.te.encode(d);await this.w.write(d);this.pos+=d.length}
+  async addJpeg(jpg,pw,ph){
+    if(!this.begun){await this.put(new Uint8Array([37,80,68,70,45,49,46,52,10,37,226,227,207,211,10]));this.begun=true}
+    const inf=jpegInfo(jpg);if(!inf)throw Error("Ảnh JPEG không hợp lệ");
+    const im=this.next++,ct=this.next++,pg=this.next++,f=n=>(+n).toFixed(3);
+    this.off[im]=this.pos;
+    await this.put(`${im} 0 obj\n<< /Type /XObject /Subtype /Image /Width ${inf.w} /Height ${inf.h} /ColorSpace ${inf.n===1?"/DeviceGray":inf.n===4?"/DeviceCMYK":"/DeviceRGB"} /BitsPerComponent 8 /Filter /DCTDecode /Length ${jpg.length} >>\nstream\n`);
+    await this.put(jpg);await this.put("\nendstream\nendobj\n");
+    const cs=`q ${f(pw)} 0 0 ${f(ph)} 0 0 cm /Im0 Do Q`;
+    this.off[ct]=this.pos;await this.put(`${ct} 0 obj\n<< /Length ${cs.length} >>\nstream\n${cs}\nendstream\nendobj\n`);
+    this.off[pg]=this.pos;await this.put(`${pg} 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${f(pw)} ${f(ph)}] /Resources << /XObject << /Im0 ${im} 0 R >> >> /Contents ${ct} 0 R >>\nendobj\n`);
+    this.kids.push(pg);
+  }
+  async finish(){
+    if(!this.begun)throw Error("Không có trang nào để ghi");
+    this.off[2]=this.pos;await this.put(`2 0 obj\n<< /Type /Pages /Count ${this.kids.length} /Kids [${this.kids.map(k=>k+" 0 R").join(" ")}] >>\nendobj\n`);
+    this.off[1]=this.pos;await this.put("1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n");
+    const xr=this.pos,n=this.next;let t=`xref\n0 ${n}\n0000000000 65535 f \n`;
+    for(let i=1;i<n;i++)t+=String(this.off[i]).padStart(10,"0")+" 00000 n \n";
+    t+=`trailer\n<< /Size ${n} /Root 1 0 R >>\nstartxref\n${xr}\n%%EOF\n`;
+    await this.put(t);await this.w.close();STREAM_LAST=this.pos;return this.pos;
+  }
+  async abort(){try{await this.w.abort()}catch(e){}}
+}
+/* Hỏi nơi lưu TRƯỚC khi xử lý (cần thao tác bấm của người dùng). Trả về: {sink} (ghi thẳng) | {sink:null} (dùng cách cũ) | null (hủy) */
+function pickSaveTarget(base,ext,mime){
+  return new Promise(resolve=>{
+    if(saveCtx)finishSave(false);
+    saveCtx={pickOnly:true,mime,ext,resolve,desc:ext.toUpperCase().replace(".","")+" file"};
+    $("saveName").value=base;$("saveExt").textContent=ext;
+    $("saveInfo").textContent="Tệp được ghi dần ra ổ đĩa từng trang một, không dựng cả tệp trong bộ nhớ.";
+    $("saveGo").textContent="📁 Chọn nơi lưu…";
+    $("saveHint").textContent="Chọn nơi lưu trước, sau đó chương trình xử lý và ghi trực tiếp. Hủy ở đây sẽ dừng việc xuất.";
+    $("saveModal").classList.remove("hidden");
+    setTimeout(()=>{$("saveName").focus();$("saveName").select()},30);
+  });
+}
+async function acquireOutput(fileName,allow,estPages){
+  if(allow&&CAN_STREAM){
+    const dot=fileName.lastIndexOf("."),h=await pickSaveTarget(dot>0?fileName.slice(0,dot):fileName,".pdf","application/pdf");
+    if(!h)return null;
+    if(h!=="fail"){try{return{sink:new PdfStream(await h.createWritable())}}catch(e){console.warn("Không ghi trực tiếp được, dùng cách cũ:",e)}}
+  }
+  if(!memGuard((estPages||0)*1.6*1048576,"xuất"))return null;
+  return{sink:null};
+}
+async function emitJpeg(out,sink,blob,pw,ph){
+  const u8=new Uint8Array(await blob.arrayBuffer());
+  if(sink){await sink.addJpeg(u8,pw,ph);return}
+  const img=await out.embedJpg(u8);out.addPage([pw,ph]).drawImage(img,{x:0,y:0,width:pw,height:ph});
+}
+
+/* ====== ƯỚC LƯỢNG BỘ NHỚ & CẢNH BÁO SỚM ====== */
+function memInfo(){
+  /* performance.memory chỉ đo heap JS (không tính worker pdf.js, canvas, bitmap) nên chỉ dùng làm mốc tối thiểu.
+     Ước lượng chính dựa trên dữ liệu app đang giữ. */
+  let est=80*1048576; /* nền: giao diện, pdf.js, pdf-lib */
+  for(const d of documents)est+=(d.size||0)*(d.url?.6:2.5)+(d.pdf&&d.pdf.numPages?d.pdf.numPages:0)*.15*1048576;
+  est+=pages.length*.02*1048576;
+  for(const c of thumbCache.values())est+=(c.width||0)*(c.height||0)*4;
+  if(busy)est+=(MEMSAVE?MEMSAVE_PX:2.4e7)*4*2.5; /* đang xử lý: canvas trang + bản sao + ImageData */
+  const pm=performance&&performance.memory;if(pm&&pm.usedJSHeapSize>est)est=pm.usedJSHeapSize;
+  return{used:est,limit:(navigator.deviceMemory||4)*1073741824*.4,exact:false};
+}
+const fmtMB=b=>Math.round(b/1048576)+" MB";
+let memWarnAt=0;
+function memTick(){
+  const el=$("memChip");if(!el)return;
+  const m=memInfo(),r=m.used/m.limit;
+  el.textContent="RAM ≈ "+fmtMB(m.used)+" / "+fmtMB(m.limit);
+  el.classList.toggle("warn",r>=.6&&r<.8);el.classList.toggle("danger",r>=.8);
+  if(r>=.8&&Date.now()-memWarnAt>60000){memWarnAt=Date.now();showToast("Bộ nhớ gần đầy – nên xuất từng phần (chọn bớt trang), bật “Tiết kiệm RAM” hoặc đóng bớt tab khác.")}
+}
+/* Trước khi dựng tệp trong RAM: nếu ước lượng vượt ngưỡng thì hỏi lại */
+function memGuard(estBytes,what){
+  const m=memInfo();
+  if(m.used+estBytes<=m.limit*.75)return true;
+  return confirm(`Cảnh báo bộ nhớ: việc ${what||"xử lý"} này ước tính cần thêm ~${fmtMB(estBytes)} trong khi tab đang dùng ~${fmtMB(m.used)} (giới hạn ~${fmtMB(m.limit)}). Tab có thể bị treo.\n\nGợi ý: chọn bớt trang để xuất từng phần, hoặc dùng Chrome/Edge để ghi thẳng ra đĩa.\n\nVẫn tiếp tục?`);
+}
+setInterval(memTick,2000);
+$("memSave").checked=MEMSAVE;
+$("memSave").onchange=e=>{MEMSAVE=e.target.checked;try{localStorage.setItem("pdfstudio_memsave",MEMSAVE?"1":"0")}catch(_){}showToast(MEMSAVE?"Đã bật Tiết kiệm RAM (tối đa 8 triệu điểm ảnh/trang)":"Đã tắt Tiết kiệm RAM")};
 async function exportNormal(list=pages,fileName="PDF-Studio.pdf",numCfg=null){
   if(!list.length)throw Error("Chưa có trang");
   const out=await PDFDocument.create();
   /* Sao chép gộp: mỗi tệp nguồn chỉ gọi copyPages MỘT lần, nhờ vậy ảnh/phông dùng chung giữa các trang chỉ được ghi 1 lần (trước đây mỗi trang ghi lại toàn bộ tài nguyên chung → file phình to) */
   const pre=new Map(),want=new Map();
-  list.forEach(it=>{if(it.perspectiveCrop||it.freeRot)return;const s=want.get(it.docId)||new Set();s.add(it.pageNum);want.set(it.docId,s)});
-  for(const [docId,set] of want){
+  /* want: docId → (số trang → số lần xuất hiện). Trang bị nhân đôi được sao chép ở lượt riêng để mỗi bản là một đối tượng độc lập. */
+  list.forEach(it=>{if(it.perspectiveCrop||it.freeRot)return;let m=want.get(it.docId);if(!m)want.set(it.docId,m=new Map());m.set(it.pageNum,(m.get(it.pageNum)||0)+1)});
+  let estBytes=0;for(const docId of want.keys()){const d=getDoc(docId);if(d)estBytes+=(d.size||0)*1.5}
+  if(!memGuard(estBytes+list.length*.5*1048576,"xuất"))return false;
+  for(const [docId,m] of want){
     const d=getDoc(docId);if(!d)continue;
-    const src=d.lib||(d.lib=await PDFDocument.load(await docBytes(d))),nums=[...set].sort((a,b)=>a-b),copied=await out.copyPages(src,nums.map(n=>n-1));
-    nums.forEach((n,k)=>pre.set(docId+":"+n,copied[k]));
+    /* Nạp từng tệp → sao chép các trang cần → thả ngay, không giữ mọi tệp đã phân tích trong RAM cùng lúc */
+    const src=await PDFDocument.load(await docBytes(d)),maxRep=Math.max(...m.values());
+    for(let r=0;r<maxRep;r++){
+      const nums=[...m.entries()].filter(e=>e[1]>r).map(e=>e[0]).sort((a,b)=>a-b),copied=await out.copyPages(src,nums.map(n=>n-1));
+      nums.forEach((n,k)=>{const key=docId+":"+n,arr=pre.get(key)||[];arr.push(copied[k]);pre.set(key,arr)});
+      await new Promise(r2=>setTimeout(r2,0));
+    }
+    d.lib=null;
   }
   for(let i=0;i<list.length;i++){
     const it=list[i];
@@ -2710,8 +2842,13 @@ function updateEnhanceInfo(){
 }
 async function exportEnhanced(cfg){
   if(!pages.length)throw Error("Chưa có trang để làm đẹp");
-  cfg=cfg||{};const dpi=cfg.dpi||220,out=await PDFDocument.create(),scale=dpi/72,flags=cfg.flags||pages.map(()=>true),verb=cfg.verb||"xử lý";
+  cfg=cfg||{};const dpi=cfg.dpi||220,scale=dpi/72,flags=cfg.flags||pages.map(()=>true),verb=cfg.verb||"xử lý";
+  /* Ghi thẳng ra đĩa khi mọi trang đều được xử lý thành ảnh (trang giữ nguyên bản gốc cần pdf-lib nên dùng cách cũ) */
+  const acq=await acquireOutput(cfg.fileName||"PDF-Studio.pdf",flags.every(Boolean)&&cfg.stream!==false,pages.length);
+  if(!acq)return false;
+  const sink=acq.sink,out=sink?null:await PDFDocument.create();
   let done=0;const todo=flags.filter(Boolean).length;
+  try{
   for(let i=0;i<pages.length;i++){
     const it=pages[i];
     if(!flags[i]){
@@ -2722,14 +2859,14 @@ async function exportEnhanced(cfg){
     const d=sourceFor(it),p=await d.pdf.getPage(it.pageNum),rotation=((p.rotate||0)+it.rotation)%360;
     const vb=it.perspectiveCrop?undefined:cropViewBox(it,p);
     const v=p.getViewport({scale,rotation,viewBox:vb});
-    const maxPixels=LOW_END?16e6:28e6,reduce=Math.min(1,Math.sqrt(maxPixels/(v.width*v.height))),canvas=document.createElement("canvas");
+    const maxPixels=pxCap(LOW_END?16e6:28e6),reduce=Math.min(1,Math.sqrt(maxPixels/(v.width*v.height))),canvas=document.createElement("canvas");
     canvas.width=Math.max(1,Math.floor(v.width*reduce));canvas.height=Math.max(1,Math.floor(v.height*reduce));
     const renderViewport=p.getViewport({scale:scale*reduce,rotation,viewBox:vb}),ctx=canvas.getContext("2d",{willReadFrequently:true});
     ctx.fillStyle="#fff";ctx.fillRect(0,0,canvas.width,canvas.height);
     await p.render({canvasContext:ctx,viewport:renderViewport,background:"rgb(255,255,255)"}).promise;
     const shaped=applyShapeCrop(canvas,it);
     p.cleanup();let keepOriginal=false;
-    if(cfg.process){if(await cfg.process(shaped)===false)keepOriginal=true}
+    if(cfg.process){if(await cfg.process(shaped)===false)keepOriginal=!sink}
     if(keepOriginal){
       canvas.width=canvas.height=1;if(shaped!==canvas)shaped.width=shaped.height=1;
       await appendNormalPage(out,it,i);
@@ -2737,15 +2874,15 @@ async function exportEnhanced(cfg){
       await new Promise(r=>setTimeout(r,0));continue;
     }
     const blob=await new Promise(resolve=>shaped.toBlob(resolve,"image/jpeg",.96));if(!blob)throw Error("Không tạo được ảnh trang "+(i+1));
-    const jpg=new Uint8Array(await blob.arrayBuffer()),image=await out.embedJpg(jpg);
-    const pw=shaped.width/(scale*reduce),ph=shaped.height/(scale*reduce),newPage=out.addPage([pw,ph]);
-    newPage.drawImage(image,{x:0,y:0,width:pw,height:ph});
+    await emitJpeg(out,sink,blob,shaped.width/(scale*reduce),shaped.height/(scale*reduce));
     canvas.width=canvas.height=1;if(shaped!==canvas)shaped.width=shaped.height=1;
     done++;
-    setProgress((i+1)/pages.length*100,`Đang ${verb} trang ${i+1}/${pages.length} (${done}/${todo} trang áp dụng, ${dpi} DPI)...`);
+    setProgress((i+1)/pages.length*100,`Đang ${verb} trang ${i+1}/${pages.length} (${done}/${todo} trang áp dụng, ${dpi} DPI${sink?", ghi thẳng ra đĩa":""})...`);
     await new Promise(r=>setTimeout(r,0));
   }
-  const bytes=await out.save({useObjectStreams:true});return downloadBytes(bytes,cfg.fileName||"PDF-Studio.pdf");
+  }catch(e){if(sink)await sink.abort();throw e}
+  if(sink){await sink.finish();return true}
+  const bytes=await out.save({useObjectStreams:true});documents.forEach(d=>{d.lib=null});return downloadBytes(bytes,cfg.fileName||"PDF-Studio.pdf");
 }
 async function renderEnhancementComparison(magic){
   if(!pages.length)throw Error("Chưa có trang để xem thử");
@@ -2797,12 +2934,13 @@ $("exportOptModal").addEventListener("input",exSync);$("exportOptModal").addEven
 $("exPreset").onchange=()=>{const q=COMPRESS_PRESETS[$("exPreset").value];if(q){$("exDpi").value=q.dpi;$("exQ").value=q.q}};
 ["exDpi","exQ"].forEach(id=>$(id).addEventListener("input",()=>{$("exPreset").value="custom"}));
 $("exClose").onclick=$("exCancel").onclick=()=>$("exportOptModal").classList.add("hidden");
-async function exBuild(list,cfg,dpi,q,label){
-  const out=await PDFDocument.create(),scale=dpi/72;
+async function exBuild(list,cfg,dpi,q,label,sink){
+  const out=sink?null:await PDFDocument.create(),scale=dpi/72;
+  try{
   for(let i=0;i<list.length;i++){
     const it=list[i],d=sourceFor(it),p=await d.pdf.getPage(it.pageNum),rotation=((p.rotate||0)+it.rotation)%360;
     const vb=it.perspectiveCrop?undefined:cropViewBox(it,p),v=p.getViewport({scale,rotation,viewBox:vb});
-    const reduce=Math.min(1,Math.sqrt((LOW_END?16e6:24e6)/(v.width*v.height))),c=document.createElement("canvas");
+    const reduce=Math.min(1,Math.sqrt(pxCap(LOW_END?16e6:24e6)/(v.width*v.height))),c=document.createElement("canvas");
     c.width=Math.max(1,Math.floor(v.width*reduce));c.height=Math.max(1,Math.floor(v.height*reduce));
     const ctx=c.getContext("2d",{willReadFrequently:true});ctx.fillStyle="#fff";ctx.fillRect(0,0,c.width,c.height);
     await p.render({canvasContext:ctx,viewport:p.getViewport({scale:scale*reduce,rotation,viewBox:vb}),background:"rgb(255,255,255)"}).promise;
@@ -2810,14 +2948,15 @@ async function exBuild(list,cfg,dpi,q,label){
     if(cfg.proc==="magic")await fxProcess(sh,"magic",{sharpen:true,level:cfg.magicLevel});else if(cfg.proc==="wm")await fxProcess(sh,"wm",{level:cfg.magicLevel,keepColor:true,sharpen:true,stamp:"auto"});else if(cfg.proc==="tone")await fxProcess(sh,"tone",cfg.tone);
     if(cfg.gray){const sc=sh.getContext("2d",{willReadFrequently:true}),im=sc.getImageData(0,0,sh.width,sh.height),a=im.data;for(let k=0;k<a.length;k+=4){a[k]=a[k+1]=a[k+2]=.299*a[k]+.587*a[k+1]+.114*a[k+2]}sc.putImageData(im,0,0)}
     const blob=await new Promise(r=>sh.toBlob(r,"image/jpeg",q));if(!blob)throw Error("Không tạo được ảnh trang "+(i+1));
-    const img=await out.embedJpg(new Uint8Array(await blob.arrayBuffer())),pw=sh.width/(scale*reduce),ph=sh.height/(scale*reduce);
-    out.addPage([pw,ph]).drawImage(img,{x:0,y:0,width:pw,height:ph});
+    await emitJpeg(out,sink,blob,sh.width/(scale*reduce),sh.height/(scale*reduce));
     c.width=c.height=1;if(sh!==c)sh.width=sh.height=1;
     setProgress((i+1)/list.length*100,`${label} · trang ${i+1}/${list.length} (${Math.round(dpi)} DPI)`);
     await new Promise(r=>setTimeout(r,0));
   }
+  }catch(e){if(sink)await sink.abort();throw e}
+  if(sink){await sink.finish();return null}
   if(cfg.num)await applyPageNumbers(out,cfg.num);
-  return new Uint8Array(await out.save({useObjectStreams:true}));
+  const saved=new Uint8Array(await out.save({useObjectStreams:true}));documents.forEach(d=>{d.lib=null});return saved;
 }
 $("exGo").onclick=async()=>{
   const list=exList();if(!list.length)return showToast("Hãy chọn các trang cần xuất");
@@ -2833,13 +2972,19 @@ $("exGo").onclick=async()=>{
     }
     if(cfg.proc==="none"&&!comp)ok=await exportNormal(list,"PDF-Studio.pdf",cfg.num);
     else{
+      let acq={sink:null};
+      const OUTNAME="PDF-Studio"+(cfg.proc==="magic"?"-Magic":cfg.proc==="wm"?"-Xoa-Watermark":cfg.proc==="tone"?"-Net-Sang":"")+(comp?"-Nen":"")+".pdf";
       let dpi=comp?clamp(Number($("exDpi").value)||120,50,300):Number($("exProcDpi").value)||220,q=comp?clamp(Number($("exQ").value)||65,20,95)/100:.96,bytes;
       if(comp&&$("exTarget").checked){
         const limit=(Number($("exTargetMb").value)||2)*1048576,steps=[[dpi,q],[dpi,q*.85],[dpi*.85,q*.75],[dpi*.7,q*.65],[dpi*.6,q*.55],[dpi*.5,q*.45],[50,.3]];
         for(let n=0;n<steps.length;n++){const [d2,q2]=steps[n];dpi=Math.max(50,Math.round(d2));q=clamp(q2,.2,.95);bytes=await exBuild(list,cfg,dpi,q,`Lần thử ${n+1}/${steps.length}`);if(bytes.length<=limit)break}
         if(bytes.length>limit)showToast("Chưa đạt "+fmtSize(limit)+" ở mức nén thấp nhất; thử bật thang xám hoặc bỏ bớt trang");
-      }else bytes=await exBuild(list,cfg,dpi,q,"Đang xuất");
-      ok=await downloadBytes(bytes,"PDF-Studio"+(cfg.proc==="magic"?"-Magic":cfg.proc==="wm"?"-Xoa-Watermark":cfg.proc==="tone"?"-Net-Sang":"")+(comp?"-Nen":"")+".pdf");
+      }else{
+        /* ghi thẳng ra đĩa khi không đánh số/xóa số trang (cần pdf-lib) */
+        acq=cfg.num?{sink:null}:await acquireOutput(OUTNAME,true,list.length);
+        if(acq)bytes=await exBuild(list,cfg,dpi,q,"Đang xuất",acq.sink);
+      }
+      ok=acq===null?false:bytes===null?true:await downloadBytes(bytes,"PDF-Studio"+(cfg.proc==="magic"?"-Magic":cfg.proc==="wm"?"-Xoa-Watermark":cfg.proc==="tone"?"-Net-Sang":"")+(comp?"-Nen":"")+".pdf");
     }
     showToast(ok?"Xuất PDF thành công":"Đã hủy lưu tệp");
   }catch(e){console.error(e);showToast("Lỗi xuất PDF: "+e.message)}
@@ -3188,7 +3333,7 @@ $("hlExportButton").onclick=async()=>{
   setBusy(true);$("hlStatus").textContent="Đang quét vùng bôi màu từng trang...";
   const sens=$("hlSens").value,hue=$("hlHue").value,dpi=Number($("hlDpi").value)||220,stat={pages:0,regions:0};
   try{
-    const ok=await exportEnhanced({flags,dpi,verb:"bỏ vùng bôi màu",fileName:"PDF-Studio-Bo-Boi-Mau.pdf",
+    const ok=await exportEnhanced({flags,dpi,verb:"bỏ vùng bôi màu",fileName:"PDF-Studio-Bo-Boi-Mau.pdf",stream:false,
       process:async c=>{const r=await fxProcess(c,"hl",{pxPerPt:dpi/72,sens,hue,apply:true});if(!r.changed)return false;stat.pages++;stat.regions+=r.extra}});
     if(ok){
       $("hlStatus").textContent=stat.pages?`Hoàn tất: đã bỏ ${stat.regions} vùng bôi màu trên ${stat.pages} trang.`:"Không tìm thấy vùng bôi màu nào – tệp xuất ra giống bản gốc.";
@@ -3273,25 +3418,27 @@ const COMPRESS_PRESETS={light:{dpi:150,q:80},medium:{dpi:120,q:65},strong:{dpi:9
 $("compressPreset").onchange=()=>{const p=COMPRESS_PRESETS[$("compressPreset").value];if(p){$("compressDpi").value=p.dpi;$("compressQuality").value=p.q}};
 ["compressDpi","compressQuality"].forEach(id=>$(id).addEventListener("input",()=>{$("compressPreset").value="custom"}));
 function fmtSize(b){return b>=1048576?(b/1048576).toFixed(2)+" MB":Math.round(b/1024)+" KB"}
-async function buildCompressed(dpi,quality,gray,label){
-  const out=await PDFDocument.create(),scale=dpi/72;
+async function buildCompressed(dpi,quality,gray,label,sink){
+  const out=sink?null:await PDFDocument.create(),scale=dpi/72;
+  try{
   for(let i=0;i<pages.length;i++){
     const it=pages[i],d=sourceFor(it),p=await d.pdf.getPage(it.pageNum),rotation=((p.rotate||0)+it.rotation)%360;
     const vb=it.perspectiveCrop?undefined:cropViewBox(it,p),v=p.getViewport({scale,rotation,viewBox:vb});
-    const reduce=Math.min(1,Math.sqrt((LOW_END?14e6:20e6)/(v.width*v.height))),canvas=document.createElement("canvas");
+    const reduce=Math.min(1,Math.sqrt(pxCap(LOW_END?14e6:20e6)/(v.width*v.height))),canvas=document.createElement("canvas");
     canvas.width=Math.max(1,Math.floor(v.width*reduce));canvas.height=Math.max(1,Math.floor(v.height*reduce));
     const ctx=canvas.getContext("2d",{willReadFrequently:true});ctx.fillStyle="#fff";ctx.fillRect(0,0,canvas.width,canvas.height);
     await p.render({canvasContext:ctx,viewport:p.getViewport({scale:scale*reduce,rotation,viewBox:vb}),background:"rgb(255,255,255)"}).promise;
     const shaped=applyShapeCrop(canvas,it);
     p.cleanup();if(gray){const sc=shaped.getContext("2d",{willReadFrequently:true}),im=sc.getImageData(0,0,shaped.width,shaped.height),a=im.data;for(let k=0;k<a.length;k+=4){const l=.299*a[k]+.587*a[k+1]+.114*a[k+2];a[k]=a[k+1]=a[k+2]=l}sc.putImageData(im,0,0)}
     const blob=await new Promise(r=>shaped.toBlob(r,"image/jpeg",quality));if(!blob)throw Error("Không tạo được ảnh trang "+(i+1));
-    const image=await out.embedJpg(new Uint8Array(await blob.arrayBuffer())),pw=shaped.width/(scale*reduce),ph=shaped.height/(scale*reduce),np=out.addPage([pw,ph]);
-    np.drawImage(image,{x:0,y:0,width:pw,height:ph});
+    await emitJpeg(out,sink,blob,shaped.width/(scale*reduce),shaped.height/(scale*reduce));
     canvas.width=canvas.height=1;if(shaped!==canvas)shaped.width=shaped.height=1;
     setProgress((i+1)/pages.length*100,`${label} · trang ${i+1}/${pages.length} (${dpi} DPI, ${Math.round(quality*100)}%)`);
     await new Promise(r=>setTimeout(r,0));
   }
-  return new Uint8Array(await out.save({useObjectStreams:true}));
+  }catch(e){if(sink)await sink.abort();throw e}
+  if(sink){await sink.finish();return null}
+  const saved=new Uint8Array(await out.save({useObjectStreams:true}));documents.forEach(d=>{d.lib=null});return saved;
 }
 async function exportCompressed(){
   if(!pages.length)throw Error("Chưa có trang để nén");
@@ -3307,7 +3454,12 @@ async function exportCompressed(){
       if(bytes.length<=limit)break;
     }
     if(bytes.length>limit)showToast("Chưa đạt "+fmtSize(limit)+" ở mức nén thấp nhất; thử bật thang xám hoặc bỏ bớt trang");
-  }else bytes=await buildCompressed(dpi,q,gray,"Đang nén");
+  }else{
+    const acq=await acquireOutput("PDF-Studio-Nen.pdf",true,pages.length);
+    if(!acq){$("compressStatus").textContent="Đã hủy lưu tệp.";return false}
+    bytes=await buildCompressed(dpi,q,gray,"Đang nén",acq.sink);
+    if(bytes===null){$("compressStatus").textContent=`Hoàn tất: ${fmtSize(STREAM_LAST)} (${dpi} DPI, JPEG ${Math.round(q*100)}%) · đã ghi thẳng ra đĩa`+(origSize?` · tệp gốc tổng ${fmtSize(origSize)}`:"");return true}
+  }
   if(!await downloadBytes(bytes,"PDF-Studio-Nen.pdf")){$("compressStatus").textContent="Đã hủy lưu tệp.";return false}
   $("compressStatus").textContent=`Hoàn tất: ${fmtSize(bytes.length)} (${dpi} DPI, JPEG ${Math.round(q*100)}%)`+(origSize?` · tệp gốc tổng ${fmtSize(origSize)}`:"");
 }
@@ -3984,7 +4136,7 @@ $("edImgDel").onclick=()=>{
 edLoadDraft();edLoadCfg();edApplyCfg();
 
 $("undoButton").onclick=undo;$("redoButton").onclick=redo;
-renderGrid();updateHistoryButtons();
+renderGrid();updateHistoryButtons();memTick();
 </script>
 
 
