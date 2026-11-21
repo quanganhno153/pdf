@@ -572,6 +572,7 @@ button,input,select{font:inherit}button{cursor:pointer}.hidden{display:none!impo
 </div></div>
 <div class="modal hidden" id="orderModal" style="z-index:1600"><div class="modal-box" style="width:min(900px,100%)">
 <div class="modal-header"><div class="modal-title">🔢 Bấm lần lượt từng tệp theo thứ tự bạn muốn</div></div>
+<label id="orderMixRow" class="opt-check hidden" style="margin:0;padding:10px 16px 0;font-weight:600"><input type="checkbox" id="orderMix"> <span id="orderMixText">Xen kẽ với các tệp đang mở</span></label>
 <div id="orderList" style="padding:12px 16px;overflow:auto;display:flex;flex-direction:column;gap:6px"></div>
 <div class="modal-footer"><span class="muted" id="orderInfo"></span><span style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" id="orderCancel" type="button">Hủy</button><button class="btn" id="orderReset" type="button">Bấm lại</button><button class="btn" id="orderByName" type="button">Theo tên</button><button class="btn primary" id="orderOk" type="button">Thêm tệp</button></span></div>
 </div></div>
@@ -672,14 +673,16 @@ function addFiles(files){
   files=[...files];if(!files.length)return Promise.resolve();
   if(files.length>1){
     files.sort((a,b)=>a.name.localeCompare(b.name,undefined,{numeric:true,sensitivity:"base"}));
-    return askFileOrder(files).then(ordered=>{if(!ordered)return;return queueFiles(ordered)});
+    return askFileOrder(files).then(r=>{if(!r)return;return queueFiles(r.files,r.mix)});
   }
   return queueFiles(files);
 }
 /* Hộp chọn tệp của trình duyệt không cho biết thứ tự bấm, nên hiện bảng để bạn BẤM LẦN LƯỢT từng tệp theo thứ tự muốn */
 function askFileOrder(files){
   return new Promise(resolve=>{
-    const modal=$("orderModal"),list=$("orderList"),picked=[];
+    const modal=$("orderModal"),list=$("orderList"),picked=[],oldN=getGroups().length;
+    {const row=$("orderMixRow");row.classList.toggle("hidden",oldN<1);let v=false;try{v=localStorage.getItem("pdfstudio_mix")==="1"}catch(e){}$("orderMix").checked=v&&oldN>=1;
+     $("orderMixText").textContent="Xen kẽ với "+oldN+" tệp đang mở (1 a 2 b 3 c …, tệp dư xếp xuống cuối)"}
     const render=()=>{
       list.innerHTML="";
       files.forEach(f=>{
@@ -692,7 +695,7 @@ function askFileOrder(files){
       });
       $("orderInfo").textContent="Đã bấm "+picked.length+"/"+files.length+" tệp"+(picked.length<files.length?" · tệp chưa bấm sẽ được thêm cuối cùng theo tên":"");
     };
-    const done=v=>{modal.classList.add("hidden");$("orderOk").onclick=$("orderCancel").onclick=$("orderReset").onclick=$("orderByName").onclick=null;resolve(v)};
+    const done=v=>{const mix=oldN>=1&&$("orderMix").checked;try{localStorage.setItem("pdfstudio_mix",$("orderMix").checked?"1":"0")}catch(e){}if(v)v={files:v,mix};modal.classList.add("hidden");$("orderOk").onclick=$("orderCancel").onclick=$("orderReset").onclick=$("orderByName").onclick=null;resolve(v)};
     $("orderOk").onclick=()=>done([...picked,...files.filter(f=>!picked.includes(f))]);
     $("orderByName").onclick=()=>done(files);
     $("orderReset").onclick=()=>{picked.length=0;render()};
@@ -700,13 +703,21 @@ function askFileOrder(files){
     render();modal.classList.remove("hidden");
   });
 }
-function queueFiles(files){
+function queueFiles(files,mix){
   addPending++;setBusy(true);
-  const job=addQueue.then(()=>addFilesNow(files));
+  const job=addQueue.then(()=>addFilesNow(files,mix));
   addQueue=job.catch(()=>{}).then(()=>{addPending--;if(addPending===0)setBusy(false)});
   return job;
 }
-async function addFilesNow(files){pushHistory();try{for(const f of files){const ext=f.name.split(".").pop().toLowerCase();if(ext==="pdf"||f.type==="application/pdf")await addPDF(f);else if(["jpg","jpeg","png","webp"].includes(ext)||f.type.startsWith("image/"))await addImage(f);else showToast("Không hỗ trợ: "+f.name)}renderGrid();showToast("Đã thêm tệp")}catch(e){console.error(e);showToast("Lỗi đọc tệp: "+e.message)}}
+/* Xen kẽ theo tệp: tệp cũ 1,2,3,4,5 + tệp mới a,b,c → 1,a,2,b,3,c,4,5 */
+function interleaveGroups(oldKeys){
+  const all=getGroups().map(g=>g.key),olds=oldKeys.filter(k=>all.includes(k)),news=all.filter(k=>!oldKeys.includes(k)),order=[];
+  for(let i=0;i<Math.max(olds.length,news.length);i++){if(i<olds.length)order.push(olds[i]);if(i<news.length)order.push(news[i])}
+  if(order.length<2)return;
+  const by=new Map();pages.forEach(p=>{const k=groupKey(p);if(!by.has(k))by.set(k,[]);by.get(k).push(p)});
+  pages=order.flatMap(k=>by.get(k)||[]);
+}
+async function addFilesNow(files,mix){const oldKeys=getGroups().map(g=>g.key);pushHistory();try{for(const f of files){const ext=f.name.split(".").pop().toLowerCase();if(ext==="pdf"||f.type==="application/pdf")await addPDF(f);else if(["jpg","jpeg","png","webp"].includes(ext)||f.type.startsWith("image/"))await addImage(f);else showToast("Không hỗ trợ: "+f.name)}if(mix&&oldKeys.length)interleaveGroups(oldKeys);renderGrid();showToast(mix&&oldKeys.length?"Đã thêm tệp và xen kẽ với các tệp đang mở":"Đã thêm tệp")}catch(e){console.error(e);showToast("Lỗi đọc tệp: "+e.message)}}
 async function docBytes(d){return d.bytes||new Uint8Array(await d.file.arrayBuffer())}
 async function addPDF(file){
   /* Đọc qua Blob URL: pdf.js chỉ lấy từng đoạn cần thiết thay vì nạp cả tệp vào RAM. Không được thì quay về cách cũ. */
