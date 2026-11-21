@@ -2309,9 +2309,9 @@ async function applyMove(){
 }
 $("applyMove").onclick=applyMove;
 
-async function appendNormalPage(out,it,i,pre){
-  const d=sourceFor(it);
-  if(it.perspectiveCrop||it.freeRot){
+const isEncErr=e=>/encrypt/i.test(String(e&&e.message||e));
+/* Trang vẽ lại thành ảnh bằng pdf.js (dùng cho trang cắt/xoay tự do và cho PDF bị mã hóa mà pdf-lib không đọc được) */
+async function appendRasterPage(out,it,i,d){
     const srcPage=await d.pdf.getPage(it.pageNum),rotation=((srcPage.rotate||0)+it.rotation)%360,vbx=it.perspectiveCrop?undefined:cropViewBox(it,srcPage);
     const scale=220/72,viewport=srcPage.getViewport({scale,rotation,viewBox:vbx});
     const maxPixels=pxCap(LOW_END?14e6:24e6),reduce=Math.min(1,Math.sqrt(maxPixels/(viewport.width*viewport.height)));
@@ -2324,9 +2324,16 @@ async function appendNormalPage(out,it,i,pre){
     const image=await out.embedJpg(new Uint8Array(await png.arrayBuffer()));
     const pw=shaped.width/(scale*reduce),ph=shaped.height/(scale*reduce),page=out.addPage([pw,ph]);
     page.drawImage(image,{x:0,y:0,width:pw,height:ph});canvas.width=canvas.height=shaped.width=shaped.height=1;
-  }else{
+}
+async function appendNormalPage(out,it,i,pre){
+  const d=sourceFor(it);
+  if(it.perspectiveCrop||it.freeRot||d.encrypted){await appendRasterPage(out,it,i,d);return}
+  {
     const pk=d.id+":"+it.pageNum,pq=pre&&pre.get(pk);let p=pq&&pq.shift(); /* mỗi bản sao chép gộp chỉ dùng 1 lần */
-    if(!p){const src=d.lib||(d.lib=await PDFDocument.load(await docBytes(d)));[p]=await out.copyPages(src,[it.pageNum-1])}
+    if(!p){
+      try{const src=d.lib||(d.lib=await PDFDocument.load(await docBytes(d)));[p]=await out.copyPages(src,[it.pageNum-1])}
+      catch(e){if(!isEncErr(e))throw e;d.encrypted=true;d.lib=null;await appendRasterPage(out,it,i,d);return}
+    }
     const c=cropValues(it),box=p.getCropBox(),x=box.x+c.left*MM_TO_PT,y=box.y+c.bottom*MM_TO_PT,w=box.width-(c.left+c.right)*MM_TO_PT,h=box.height-(c.top+c.bottom)*MM_TO_PT;
     if(w<24||h<24)throw Error(`Trang ${i+1}: vùng cắt quá nhỏ`);
     if(c.top||c.bottom||c.left||c.right)p.setCropBox(x,y,w,h);
@@ -2643,7 +2650,11 @@ async function exportNormal(list=pages,fileName="PDF-Studio.pdf",numCfg=null){
   for(const [docId,m] of want){
     const d=getDoc(docId);if(!d)continue;
     /* Nạp từng tệp → sao chép các trang cần → thả ngay, không giữ mọi tệp đã phân tích trong RAM cùng lúc */
-    const src=await PDFDocument.load(await docBytes(d)),maxRep=Math.max(...m.values());
+    if(d.encrypted)continue;
+    let src;
+    try{src=await PDFDocument.load(await docBytes(d))}
+    catch(e){if(isEncErr(e)){d.encrypted=true;continue}throw e} /* PDF mã hóa: pdf-lib không giải mã được → các trang của tệp này sẽ được vẽ lại thành ảnh bằng pdf.js */
+    const maxRep=Math.max(...m.values());
     for(let r=0;r<maxRep;r++){
       const nums=[...m.entries()].filter(e=>e[1]>r).map(e=>e[0]).sort((a,b)=>a-b),copied=await out.copyPages(src,nums.map(n=>n-1));
       nums.forEach((n,k)=>{const key=docId+":"+n,arr=pre.get(key)||[];arr.push(copied[k]);pre.set(key,arr)});
