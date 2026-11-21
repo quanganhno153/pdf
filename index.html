@@ -208,6 +208,11 @@ button,input,select{font:inherit}button{cursor:pointer}.hidden{display:none!impo
 #ccOv{position:absolute;left:0;top:0;touch-action:none;cursor:crosshair;background:transparent}
 .dup-chips{display:flex;gap:8px;flex-wrap:wrap}.dup-chips .btn{min-width:54px;padding:9px 12px}
 .card-grp{flex-basis:100%;font-size:12px;color:#3d3a8a;background:#eeedff;border-radius:8px;padding:4px 10px}
+.ord-row{display:flex;align-items:flex-start;gap:10px;padding:9px 12px;border:1.5px solid var(--border);border-radius:10px;cursor:pointer;background:#fff;user-select:none}
+.ord-row:hover{background:#f6f5ff}.ord-row.on{border-color:var(--primary);background:#efedff}
+.ord-n{flex:none;width:28px;height:28px;border-radius:50%;border:1.5px solid #c9ccdc;display:grid;place-items:center;font-weight:700;font-size:13px;color:#fff}
+.ord-row.on .ord-n{background:var(--primary);border-color:var(--primary)}
+.ord-name{flex:1;min-width:0;white-space:normal;overflow-wrap:anywhere;word-break:break-word;line-height:1.35;font-weight:600}
 </style>
 </head>
 <body>
@@ -565,6 +570,11 @@ button,input,select{font:inherit}button{cursor:pointer}.hidden{display:none!impo
 </div>
 <div class="modal-footer"><span class="muted">Có thể kết hợp nhiều tùy chọn trong một lần xuất</span><span style="display:flex;gap:8px"><button class="btn" id="exCancel" type="button">Hủy</button><button class="btn primary" id="exGo" type="button">Xuất PDF ↓</button></span></div>
 </div></div>
+<div class="modal hidden" id="orderModal" style="z-index:1600"><div class="modal-box" style="width:min(900px,100%)">
+<div class="modal-header"><div class="modal-title">🔢 Bấm lần lượt từng tệp theo thứ tự bạn muốn</div></div>
+<div id="orderList" style="padding:12px 16px;overflow:auto;display:flex;flex-direction:column;gap:6px"></div>
+<div class="modal-footer"><span class="muted" id="orderInfo"></span><span style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" id="orderCancel" type="button">Hủy</button><button class="btn" id="orderReset" type="button">Bấm lại</button><button class="btn" id="orderByName" type="button">Theo tên</button><button class="btn primary" id="orderOk" type="button">Thêm tệp</button></span></div>
+</div></div>
 <div class="toast hidden" id="toast"></div>
 
 <script>
@@ -660,6 +670,37 @@ let addPending=0,addQueue=Promise.resolve();
 /* Hàng đợi: các lần thêm tệp được xử lý lần lượt, đúng thứ tự người dùng bấm (tệp nhỏ không "chen" lên trước tệp lớn) */
 function addFiles(files){
   files=[...files];if(!files.length)return Promise.resolve();
+  if(files.length>1){
+    files.sort((a,b)=>a.name.localeCompare(b.name,undefined,{numeric:true,sensitivity:"base"}));
+    return askFileOrder(files).then(ordered=>{if(!ordered)return;return queueFiles(ordered)});
+  }
+  return queueFiles(files);
+}
+/* Hộp chọn tệp của trình duyệt không cho biết thứ tự bấm, nên hiện bảng để bạn BẤM LẦN LƯỢT từng tệp theo thứ tự muốn */
+function askFileOrder(files){
+  return new Promise(resolve=>{
+    const modal=$("orderModal"),list=$("orderList"),picked=[];
+    const render=()=>{
+      list.innerHTML="";
+      files.forEach(f=>{
+        const k=picked.indexOf(f),row=document.createElement("div");
+        row.className="ord-row"+(k>=0?" on":"");
+        row.innerHTML='<span class="ord-n">'+(k>=0?k+1:"")+'</span><span class="ord-name"></span><span class="muted" style="flex:none;white-space:nowrap">'+fmtSize(f.size)+'</span>';
+        row.querySelector(".ord-name").textContent=f.name;
+        row.onclick=()=>{const i=picked.indexOf(f);if(i>=0)picked.splice(i,1);else picked.push(f);render()};
+        list.append(row);
+      });
+      $("orderInfo").textContent="Đã bấm "+picked.length+"/"+files.length+" tệp"+(picked.length<files.length?" · tệp chưa bấm sẽ được thêm cuối cùng theo tên":"");
+    };
+    const done=v=>{modal.classList.add("hidden");$("orderOk").onclick=$("orderCancel").onclick=$("orderReset").onclick=$("orderByName").onclick=null;resolve(v)};
+    $("orderOk").onclick=()=>done([...picked,...files.filter(f=>!picked.includes(f))]);
+    $("orderByName").onclick=()=>done(files);
+    $("orderReset").onclick=()=>{picked.length=0;render()};
+    $("orderCancel").onclick=()=>done(null);
+    render();modal.classList.remove("hidden");
+  });
+}
+function queueFiles(files){
   addPending++;setBusy(true);
   const job=addQueue.then(()=>addFilesNow(files));
   addQueue=job.catch(()=>{}).then(()=>{addPending--;if(addPending===0)setBusy(false)});
