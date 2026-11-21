@@ -10,6 +10,8 @@
 :root{--bg:#f4f6fb;--panel:#fff;--primary:#635bff;--primary2:#5148e5;--text:#202238;--muted:#7b8096;--border:#e6e8f0;--danger:#e5484d;--shadow:0 8px 28px rgba(31,35,70,.07)}
 body{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--text)}
 button,input,select{font:inherit}button{cursor:pointer}.hidden{display:none!important}
+.feature-bar{display:flex;gap:9px;flex-wrap:wrap;margin:-8px 0 16px}.feat-btn.active{background:var(--primary);color:#fff;border-color:var(--primary)}#featurePanels .panel{margin-bottom:16px}
+
 .num-box{display:flex;flex-direction:column;gap:10px;padding:12px;border:1px solid var(--border);border-radius:12px;background:#fafaff}
 .num-part{border:1.5px solid var(--border);border-radius:10px;padding:10px 12px;background:#fff;transition:border-color .15s,background .15s}
 .num-part.active{border-color:var(--primary);background:#f6f5ff}
@@ -57,7 +59,8 @@ button,input,select{font:inherit}button{cursor:pointer}.hidden{display:none!impo
 .page-card.selected .page-check:after{content:"✓";color:white;display:block;text-align:center;font-size:13px;line-height:18px}
 .page-info{padding:9px 2px 3px;font-size:12px;display:flex;justify-content:space-between;gap:5px}
 .page-info span:last-child{color:var(--muted)}.empty-state{text-align:center;padding:45px 15px;color:var(--muted)}.empty-state .big-icon{font-size:42px}
-.progress-area{margin-top:15px}.progress-track{height:8px;background:#ececf4;border-radius:20px;overflow:hidden}
+.progress-area{margin-top:15px}
+#progressArea{position:fixed;top:12px;left:50%;transform:translateX(-50%);width:min(560px,92vw);z-index:1450;background:#fff;border:1px solid var(--border);border-radius:12px;padding:12px 14px;box-shadow:var(--shadow);margin:0}.progress-track{height:8px;background:#ececf4;border-radius:20px;overflow:hidden}
 .progress-fill{width:0;height:100%;background:var(--primary);transition:width .15s}.status-text{font-size:12px;color:var(--muted);margin-top:7px}
 .enhance-panel{border:1px solid #dedcff;background:linear-gradient(135deg,#faf9ff,#f4f2ff)}
 .enhance-panel h2{margin:0 0 8px;font-size:18px}.enhance-options{display:flex;gap:18px;align-items:center;flex-wrap:wrap;margin-top:15px}
@@ -225,20 +228,11 @@ button,input,select{font:inherit}button{cursor:pointer}.hidden{display:none!impo
 <div class="app hidden" id="app">
 <header class="header"><div class="brand"><div class="brand-icon">📄</div><div><h1>PDF Studio Ver 8.1</h1><small>Quản lý, chỉnh sửa và làm đẹp PDF</small></div></div>
 <div class="header-actions"><span class="mem-chip" id="memChip" title="Ước lượng bộ nhớ đang dùng của tab này">RAM …</span><label class="btn mem-save" title="Giới hạn số điểm ảnh khi xử lý mỗi trang (8 triệu) để đỡ tốn RAM; ảnh có thể kém nét hơn một chút với trang rất lớn"><input type="checkbox" id="memSave"> Tiết kiệm RAM</label><button class="btn" id="editorButton" title="Mở trình soạn thảo văn bản kiểu Word">📝 Soạn văn bản</button><button class="btn" id="addFilesButton">＋ Thêm tệp</button><button class="btn primary" id="exportButton">Xuất PDF ↓</button></div></header>
-
-<section class="panel"><div class="dropzone" id="dropzone"><div class="big-icon">📂</div><h3>Kéo thả PDF hoặc hình ảnh vào đây</h3><p>Hỗ trợ PDF, JPG, JPEG, PNG và WEBP</p><p>Hoặc nhấn vào đây để chọn tệp từ máy tính</p></div>
-<input type="file" id="fileInput" accept=".pdf,.jpg,.jpeg,.png,.webp,application/pdf,image/*" multiple="" hidden=""></section>
-
-<section class="panel"><div class="section-title"><h2>Danh sách trang</h2><span class="muted" id="pageCount">0 trang</span></div>
-<div class="toolbar"><button class="btn" id="undoButton" title="Hoàn tác (Ctrl+Z)" disabled="">↶ Hoàn tác</button><button class="btn" id="redoButton" title="Làm lại (Ctrl+Y)" disabled="">↷ Làm lại</button><button class="btn" id="selectAllButton">Chọn tất cả</button><button class="btn primary" id="saveSelectedButton" title="Lưu riêng các trang đang chọn thành 1 file PDF (giữ nguyên thứ tự hiển thị)">💾 Lưu trang đã chọn</button><button class="btn primary" id="printSelectedButton" title="In trực tiếp các trang đang chọn (giữ nguyên xoay, cắt, chỉnh sửa)">🖨 In trang đã chọn</button>
-<span class="sep"></span>
-<button class="btn primary" id="moveToButton" title="Chọn trang rồi chuyển sang tệp/vị trí bất kỳ (kể cả sang tệp khác)">⇄ Chuyển trang đến…</button><button class="btn" id="moveLeftButton" title="Dời các trang đã chọn lên trước 1 vị trí (ở đầu tệp thì chuyển sang cuối tệp trước)">◀ Lùi</button><button class="btn" id="moveRightButton" title="Dời các trang đã chọn ra sau 1 vị trí (ở cuối tệp thì chuyển sang đầu tệp sau)">Tiến ▶</button>
-<span class="sep"></span>
-<button class="btn primary" id="autoCropButton" title="Tự tìm 4 góc tờ giấy rồi mở khung để bạn chỉnh lại">🪄 Tự nhận diện</button><button class="btn primary" id="manualCropButton" title="Kéo 4 góc độc lập, nắn thẳng thành chữ nhật khi xuất">✂ Cắt freeform</button><button class="btn primary" id="rectCropButton" title="Khung hình chữ nhật, kéo góc/cạnh để chỉnh">▭ Cắt chữ nhật</button><button class="btn" id="mergeButton" title="Chọn 2 trang/ảnh trở lên rồi ghép vào 1 trang">▦ Ghép vào 1 trang</button><button class="btn primary" id="cardButton" title="Tự nhận diện thẻ (CCCD, thẻ cư trú, bằng lái…) trên trang quét rồi ghép mặt trước ở trên, mặt sau ở dưới vào 1 trang">🪪 Ghép thẻ</button><button class="btn" id="copyCropButton" title="Sao chép vùng đã cắt vào clipboard, rồi dán (Ctrl+V) lên trang khác">📋 Sao chép vùng cắt</button><button class="btn" id="moveCropButton" title="Sau khi cắt, kéo vùng đã cắt đến vị trí khác trong trang">✥ Di chuyển vùng cắt</button><button class="btn primary" id="freeRotButton" title="Sau khi cắt, xoay ảnh theo góc bất kỳ (kéo thanh trượt hoặc nhập số độ)">🔄 Xoay tự do</button><button class="btn" id="stampButton" title="Chèn ảnh (chữ ký, con dấu...) lên trang đã chọn. Cũng có thể dán bằng Ctrl+V">🖼 Chèn ảnh</button><button class="btn" id="rotateButton">↻ Xoay</button><button class="btn" id="duplicateButton">▣ Nhân đôi</button><button class="btn danger" id="deleteButton">✕ Xóa</button><span class="spacer"></span><button class="btn" id="clearButton">Xóa tất cả</button></div>
-<div class="muted" style="margin:-4px 0 12px">💡 Chuyển trang: <b>kéo thả</b> trang (hoặc nhiều trang đã chọn) vào vị trí bất kỳ — thả lên <b>chồng giấy</b> của tệp khác để đưa vào cuối tệp đó. Hoặc chọn trang rồi bấm <b>⇄ Chuyển trang đến…</b> để chọn tệp và vị trí chính xác.</div>
-<div id="groupBar" class="group-bar hidden"></div><div id="pageGrid" class="page-grid hidden"></div><div id="emptyState" class="empty-state"><div class="big-icon">📑</div><h3>Chưa có tài liệu nào</h3><p>Thêm PDF hoặc hình ảnh để bắt đầu.</p></div></section>
-
-<section class="panel enhance-panel" id="tonePanel" style="border-color:#bfe7cf;background:linear-gradient(135deg,#f4fcf7,#e8f7ee)"><h2>🔆 Tăng độ nét &amp; độ sáng</h2>
+<nav class="feature-bar" id="featureBar" aria-label="Công cụ làm đẹp tài liệu">
+<button class="btn feat-btn" type="button" data-feat="tonePanel">🔆 Độ nét &amp; sáng</button><button class="btn feat-btn" type="button" data-feat="magicPanel">🎨 Magic Color</button><button class="btn feat-btn" type="button" data-feat="wmPanel">💧 Xóa watermark</button><button class="btn feat-btn" type="button" data-feat="hlPanel">🖍 Bỏ vùng bôi màu</button><button class="btn feat-btn" type="button" data-feat="compressPanel">🗜 Giảm dung lượng</button>
+</nav>
+<div id="featurePanels">
+<section class="panel enhance-panel hidden" id="tonePanel" style="border-color:#bfe7cf;background:linear-gradient(135deg,#f4fcf7,#e8f7ee)"><h2>🔆 Tăng độ nét &amp; độ sáng</h2>
 <div class="muted">Kéo thanh trượt để chỉnh độ sáng, tương phản, độ nét, độ rực màu và độ trắng nền giấy. Ảnh xem thử bên dưới thay đổi ngay khi kéo; hài lòng thì bấm xuất PDF. Nhấp đúp vào một thanh trượt để đưa về mức khuyên dùng.</div>
 <div class="enhance-options" style="margin-top:12px"><span class="muted">Mẫu nhanh:</span>
 <button class="btn" type="button" data-tp="default">⭐ Khuyên dùng</button><button class="btn" type="button" data-tp="natural">🌿 Tự nhiên</button><button class="btn" type="button" data-tp="text">🔤 Chữ rõ nét</button><button class="btn" type="button" data-tp="bright">☀ Sáng đẹp</button><button class="btn" type="button" data-tp="strong">💪 Mạnh</button><button class="btn" type="button" data-tp="zero">↺ Về gốc (0)</button></div>
@@ -255,9 +249,8 @@ button,input,select{font:inherit}button{cursor:pointer}.hidden{display:none!impo
 <button class="btn" id="tonePreviewButton" type="button">👁 Tải trang xem thử</button><button class="btn primary" id="toneExportButton" type="button">🔆 Áp dụng và xuất PDF</button>
 <span class="muted" id="toneScopeInfo"></span></div>
 <div class="enhance-note"><b>Gợi ý:</b> chữ mờ → tăng “Độ nét” (100–150%) và “Độ tương phản”; trang ám xám/vàng → tăng “Độ trắng nền giấy”; ảnh tối → tăng “Độ sáng”. Đẩy quá mạnh có thể làm chữ nhòe hoặc mất nét mảnh, hãy xem trước. Xem thử dùng trang đầu tiên đang chọn (hoặc trang 1). Trang được xử lý sẽ chuyển thành ảnh nên chữ có thể không còn chọn/tìm kiếm được.</div>
-<div class="progress-area hidden" id="progressArea"><div class="progress-track"><div class="progress-fill" id="progressFill"></div></div><div class="status-text" id="progressText">Đang chuẩn bị...</div><button class="btn" id="cancelProcessButton" type="button" style="margin-top:8px;padding:6px 12px">✕ Hủy xử lý</button></div>
 <div class="enhance-status" id="enhanceStatus"></div></section>
-<section class="panel enhance-panel" id="magicPanel" style="border-color:#ffd9a8;background:linear-gradient(135deg,#fffaf2,#fff4e3)"><h2>🎨 Magic Color – Làm sạch kiểu CamScanner</h2>
+<section class="panel enhance-panel hidden" id="magicPanel" style="border-color:#ffd9a8;background:linear-gradient(135deg,#fffaf2,#fff4e3)"><h2>🎨 Magic Color – Làm sạch kiểu CamScanner</h2>
 <div class="muted">Khử bóng, làm trắng nền giấy, làm đậm nét chữ đen và giữ rõ dấu đỏ, chữ ký màu. Chỉ áp dụng cho các trang bạn chọn (hoặc tất cả); trang còn lại được giữ nguyên bản gốc.</div>
 <div class="enhance-options"><label for="magicScope">Áp dụng cho:</label><select id="magicScope"><option value="selected" selected="">Chỉ các trang đã chọn</option><option value="all">Tất cả trang</option></select>
 <label for="magicLevel">Mức độ:</label><select id="magicLevel"><option value="light">Nhẹ – Can thiệp ít</option><option value="medium" selected>Vừa – Khuyên dùng</option><option value="strong">Mạnh – Bóng đậm</option></select>
@@ -265,7 +258,7 @@ button,input,select{font:inherit}button{cursor:pointer}.hidden{display:none!impo
 <button class="btn" id="previewMagicButton">👁 Xem thử trước / sau</button><button class="btn primary" id="magicExportButton">🎨 Áp dụng Magic Color và xuất PDF</button>
 <span class="muted" id="magicScopeInfo"></span></div>
 <div class="enhance-status" id="magicStatus"></div></section>
-<section class="panel enhance-panel" id="wmPanel" style="border-color:#b9e4f2;background:linear-gradient(135deg,#f3fbff,#e6f5fc)"><h2>💧 Xóa watermark – Kiểu CamScanner</h2>
+<section class="panel enhance-panel hidden" id="wmPanel" style="border-color:#b9e4f2;background:linear-gradient(135deg,#f3fbff,#e6f5fc)"><h2>💧 Xóa watermark – Kiểu CamScanner</h2>
 <div class="muted">Tự nhận diện watermark mờ/nhạt phủ lên trang (chữ chìm, logo mờ, dấu nền xám hoặc màu nhạt…) rồi đưa về màu giấy, giữ nguyên chữ đen, bảng biểu, chữ ký và dấu đỏ. Có thể chọn trang áp dụng; trang còn lại giữ nguyên bản gốc.</div>
 <div class="enhance-options"><label for="wmScope">Áp dụng cho:</label><select id="wmScope"><option value="selected" selected>Chỉ các trang đã chọn</option><option value="all">Tất cả trang</option></select>
 <label for="wmLevel">Mức độ:</label><select id="wmLevel"><option value="light">Nhẹ – Chỉ watermark rất nhạt</option><option value="medium" selected>Vừa – Khuyên dùng</option><option value="strong">Mạnh – Watermark đậm hơn</option><option value="max">Rất mạnh – Xóa tối đa</option></select>
@@ -278,7 +271,7 @@ button,input,select{font:inherit}button{cursor:pointer}.hidden{display:none!impo
 <span class="muted" id="wmScopeInfo"></span></div>
 <div class="enhance-note"><b>Cách xử lý:</b> ước lượng nền giấy từng vùng, rồi những điểm ảnh sáng hơn nét mực nhưng tối hơn giấy (đặc trưng của watermark mờ) được đẩy về màu giấy; nét chữ đen và viền mềm quanh chữ được bảo vệ. Dấu “Scanned with CamScanner” / logo ở góc trang được tự nhận diện (cụm nhỏ ở mép trên hoặc mép dưới trang có logo xanh) rồi xóa sạch; nếu máy không nhận ra, chọn “Xóa vùng cố định” theo góc và chỉnh kích thước vùng (xem thử trước để canh). Nếu watermark còn sót, tăng “Mức độ”; nếu chữ mảnh/nhạt bị mất, hạ mức độ xuống. Trang được xử lý sẽ chuyển thành ảnh nên chữ có thể không còn chọn/tìm kiếm được. Watermark đậm bằng chữ đen che trực tiếp lên nội dung thì không thể khôi phục.</div>
 <div class="enhance-status" id="wmStatus"></div></section>
-<section class="panel enhance-panel" id="hlPanel" style="border-color:#f3dd7a;background:linear-gradient(135deg,#fffef3,#fff9d9)"><h2>🖍 Bỏ vùng bôi màu – Giữ nguyên chữ</h2>
+<section class="panel enhance-panel hidden" id="hlPanel" style="border-color:#f3dd7a;background:linear-gradient(135deg,#fffef3,#fff9d9)"><h2>🖍 Bỏ vùng bôi màu – Giữ nguyên chữ</h2>
 <div class="muted">Tự nhận diện các vùng bị tô màu (bút dạ quang vàng, xanh lá, hồng, xanh dương…) rồi xóa màu nền đó về màu giấy, chữ bên trong vẫn giữ nguyên nét. Chữ màu, con dấu đỏ, ảnh chụp và nền giấy bình thường không bị đụng tới.</div>
 <div class="enhance-options"><label for="hlScope">Áp dụng cho:</label><select id="hlScope"><option value="selected" selected="">Chỉ các trang đã chọn</option><option value="all">Tất cả trang</option></select>
 <label for="hlHue">Màu cần bỏ:</label><select id="hlHue"><option value="all" selected="">Tất cả màu bôi</option><option value="2">Chỉ vàng</option><option value="3">Chỉ xanh lá</option><option value="4">Chỉ xanh dương / lơ</option><option value="0">Chỉ hồng / đỏ</option><option value="1">Chỉ cam</option><option value="5">Chỉ tím</option></select>
@@ -288,7 +281,7 @@ button,input,select{font:inherit}button{cursor:pointer}.hidden{display:none!impo
 <span class="muted" id="hlScopeInfo"></span></div>
 <div class="enhance-note"><b>Cách xử lý:</b> tìm các mảng màu nhạt, đồng nhất và đặc (có chữ đen bên trong) rồi chia từng điểm ảnh cho màu bôi để trả nền về màu giấy – nét chữ đen và viền chữ mềm được giữ đúng độ đậm. Trang không có vùng bôi màu sẽ được giữ nguyên bản gốc (không bị chuyển thành ảnh). Nếu máy nhận nhầm khối màu khác, hãy chọn đúng màu ở ô “Màu cần bỏ” hoặc hạ độ nhạy xuống.</div>
 <div class="enhance-status" id="hlStatus"></div></section>
-<section class="panel enhance-panel" id="compressPanel"><h2>🗜 Giảm dung lượng PDF</h2>
+<section class="panel enhance-panel hidden" id="compressPanel"><h2>🗜 Giảm dung lượng PDF</h2>
 <div class="muted">Nén từng trang thành ảnh JPEG với độ phân giải và chất lượng bạn chọn để tệp nhỏ hơn nhiều. Giữ nguyên thứ tự, xoay, vùng cắt và các chỉnh sửa đã làm. Chữ sẽ không còn chọn/tìm kiếm được.</div>
 <div class="enhance-options"><label for="compressPreset">Mức nén:</label><select id="compressPreset"><option value="light">Nhẹ – Chất lượng cao (150 DPI)</option><option value="medium" selected="">Vừa – Khuyên dùng (120 DPI)</option><option value="strong">Mạnh – Nhỏ nhất (90 DPI)</option><option value="custom">Tùy chỉnh</option></select>
 <label for="compressDpi">DPI:</label><input type="number" id="compressDpi" min="50" max="300" step="10" value="120" style="width:80px;padding:10px;border:1px solid var(--border);border-radius:9px">
@@ -298,6 +291,21 @@ button,input,select{font:inherit}button{cursor:pointer}.hidden{display:none!impo
 <button class="btn primary" id="compressExportButton">🗜 Nén và xuất PDF</button></div>
 <div class="enhance-note" style="background:#eefaf1;color:#25623a">Mẹo: chọn “Nén tự động đến tối đa … MB” để chương trình tự hạ chất lượng/DPI từng bước cho đến khi tệp đạt dung lượng mong muốn (ví dụ nộp hồ sơ giới hạn 2MB).</div>
 <div class="enhance-status" id="compressStatus"></div></section>
+</div>
+
+
+<section class="panel"><div class="dropzone" id="dropzone"><div class="big-icon">📂</div><h3>Kéo thả PDF hoặc hình ảnh vào đây</h3><p>Hỗ trợ PDF, JPG, JPEG, PNG và WEBP</p><p>Hoặc nhấn vào đây để chọn tệp từ máy tính</p></div>
+<input type="file" id="fileInput" accept=".pdf,.jpg,.jpeg,.png,.webp,application/pdf,image/*" multiple="" hidden=""></section>
+
+<section class="panel"><div class="section-title"><h2>Danh sách trang</h2><span class="muted" id="pageCount">0 trang</span></div>
+<div class="toolbar"><button class="btn" id="undoButton" title="Hoàn tác (Ctrl+Z)" disabled="">↶ Hoàn tác</button><button class="btn" id="redoButton" title="Làm lại (Ctrl+Y)" disabled="">↷ Làm lại</button><button class="btn" id="selectAllButton">Chọn tất cả</button><button class="btn primary" id="saveSelectedButton" title="Lưu riêng các trang đang chọn thành 1 file PDF (giữ nguyên thứ tự hiển thị)">💾 Lưu trang đã chọn</button><button class="btn primary" id="printSelectedButton" title="In trực tiếp các trang đang chọn (giữ nguyên xoay, cắt, chỉnh sửa)">🖨 In trang đã chọn</button>
+<span class="sep"></span>
+<button class="btn primary" id="moveToButton" title="Chọn trang rồi chuyển sang tệp/vị trí bất kỳ (kể cả sang tệp khác)">⇄ Chuyển trang đến…</button><button class="btn" id="moveLeftButton" title="Dời các trang đã chọn lên trước 1 vị trí (ở đầu tệp thì chuyển sang cuối tệp trước)">◀ Lùi</button><button class="btn" id="moveRightButton" title="Dời các trang đã chọn ra sau 1 vị trí (ở cuối tệp thì chuyển sang đầu tệp sau)">Tiến ▶</button>
+<span class="sep"></span>
+<button class="btn primary" id="autoCropButton" title="Tự tìm 4 góc tờ giấy rồi mở khung để bạn chỉnh lại">🪄 Tự nhận diện</button><button class="btn primary" id="manualCropButton" title="Kéo 4 góc độc lập, nắn thẳng thành chữ nhật khi xuất">✂ Cắt freeform</button><button class="btn primary" id="rectCropButton" title="Khung hình chữ nhật, kéo góc/cạnh để chỉnh">▭ Cắt chữ nhật</button><button class="btn" id="mergeButton" title="Chọn 2 trang/ảnh trở lên rồi ghép vào 1 trang">▦ Ghép vào 1 trang</button><button class="btn primary" id="cardButton" title="Tự nhận diện thẻ (CCCD, thẻ cư trú, bằng lái…) trên trang quét rồi ghép mặt trước ở trên, mặt sau ở dưới vào 1 trang">🪪 Ghép thẻ</button><button class="btn" id="copyCropButton" title="Sao chép vùng đã cắt vào clipboard, rồi dán (Ctrl+V) lên trang khác">📋 Sao chép vùng cắt</button><button class="btn" id="moveCropButton" title="Sau khi cắt, kéo vùng đã cắt đến vị trí khác trong trang">✥ Di chuyển vùng cắt</button><button class="btn primary" id="freeRotButton" title="Sau khi cắt, xoay ảnh theo góc bất kỳ (kéo thanh trượt hoặc nhập số độ)">🔄 Xoay tự do</button><button class="btn" id="stampButton" title="Chèn ảnh (chữ ký, con dấu...) lên trang đã chọn. Cũng có thể dán bằng Ctrl+V">🖼 Chèn ảnh</button><button class="btn" id="rotateButton">↻ Xoay</button><button class="btn" id="duplicateButton">▣ Nhân đôi</button><button class="btn danger" id="deleteButton">✕ Xóa</button><span class="spacer"></span><button class="btn" id="clearButton">Xóa tất cả</button></div>
+<div class="muted" style="margin:-4px 0 12px">💡 Chuyển trang: <b>kéo thả</b> trang (hoặc nhiều trang đã chọn) vào vị trí bất kỳ — thả lên <b>chồng giấy</b> của tệp khác để đưa vào cuối tệp đó. Hoặc chọn trang rồi bấm <b>⇄ Chuyển trang đến…</b> để chọn tệp và vị trí chính xác.</div>
+<div id="groupBar" class="group-bar hidden"></div><div id="pageGrid" class="page-grid hidden"></div><div id="emptyState" class="empty-state"><div class="big-icon">📑</div><h3>Chưa có tài liệu nào</h3><p>Thêm PDF hoặc hình ảnh để bắt đầu.</p></div></section>
+
 <div class="footer">PDF Studio · Xử lý tài liệu ngay trên trình duyệt của bạn</div></div>
 
 <div class="modal hidden" id="previewModal"><div class="modal-box">
@@ -576,12 +584,23 @@ button,input,select{font:inherit}button{cursor:pointer}.hidden{display:none!impo
 <div id="orderList" style="padding:12px 16px;overflow:auto;display:flex;flex-direction:column;gap:6px"></div>
 <div class="modal-footer"><span class="muted" id="orderInfo"></span><span style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" id="orderCancel" type="button">Hủy</button><button class="btn" id="orderReset" type="button">Bấm lại</button><button class="btn" id="orderByName" type="button">Theo tên</button><button class="btn primary" id="orderOk" type="button">Thêm tệp</button></span></div>
 </div></div>
+<div class="progress-area hidden" id="progressArea"><div class="progress-track"><div class="progress-fill" id="progressFill"></div></div><div class="status-text" id="progressText">Đang chuẩn bị...</div><button class="btn" id="cancelProcessButton" type="button" style="margin-top:8px;padding:6px 12px">✕ Hủy xử lý</button></div>
 <div class="toast hidden" id="toast"></div>
 
 <script>
 pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
 const {PDFDocument,degrees}=PDFLib;
 const $=id=>document.getElementById(id);
+/* Nhường luồng bằng MessageChannel: setTimeout bị trình duyệt kéo giãn ≥1 giây (rồi 1 phút) ở tab nền, MessageChannel thì không */
+const _yc=new MessageChannel(),_yq=[];_yc.port1.onmessage=()=>{const f=_yq.shift();if(f)f()};
+function yieldTick(){return new Promise(r=>{_yq.push(r);_yc.port2.postMessage(0)})}
+const TITLE0=document.title;
+/* Giữ "khóa Web" khi đang xử lý để trình duyệt ít đóng băng tab nền hơn (không đảm bảo tuyệt đối) */
+let lockWanted=false,lockRel=null;
+function holdLock(on){lockWanted=on;
+  if(on){if(navigator.locks&&!lockRel){try{navigator.locks.request("pdfstudio-busy",()=>{if(!lockWanted)return;return new Promise(res=>{lockRel=res})}).catch(()=>{})}catch(e){}}}
+  else if(lockRel){const r=lockRel;lockRel=null;r()}}
+window.addEventListener("beforeunload",e=>{if(busy){e.preventDefault();e.returnValue=""}});
 let documents=[],pages=[],selectedPages=new Set(),nextDocumentId=1,previewIndex=-1,busy=false,manualCropState=null,openGroups=new Set(),dragPayload=null;
 
 /* ====== HOÀN TÁC / LÀM LẠI ====== */
@@ -596,8 +615,8 @@ function login(){if($("passwordInput").value==="2001"){$("loginScreen").classLis
 $("loginButton").onclick=login;$("passwordInput").onkeydown=e=>{if(e.key==="Enter")login()};
 function showToast(m){const el=$("toast");el.textContent=m;el.classList.remove("hidden");clearTimeout(showToast.timer);showToast.timer=setTimeout(()=>el.classList.add("hidden"),3000)}
 let fxCancel=false;
-function setProgress(p,m){if(fxCancel){fxCancel=false;throw Error("Đã hủy xử lý")}$("progressArea").classList.remove("hidden");$("progressFill").style.width=p+"%";$("progressText").textContent=m}
-function setBusy(v){busy=v;try{memTick()}catch(e){}if(v)fxCancel=false;["addFilesButton","exportButton","toneExportButton","tonePreviewButton","hlExportButton","hlPreviewButton","wmExportButton","wmPreviewButton","compressExportButton","rotateButton","duplicateButton","deleteButton","clearButton","selectAllButton","saveSelectedButton","printSelectedButton","editorButton","manualCropButton","autoCropButton","rectCropButton","mergeButton","cardButton","stampButton","moveCropButton","copyCropButton","moveCropPrev","freeRotButton","freeRotPrev","applyManualCrop","autoDetectCrop","startManualCrop","startRectCrop","moveToButton","moveLeftButton","moveRightButton"].forEach(id=>$(id).disabled=v);updateHistoryButtons()}
+function setProgress(p,m){if(fxCancel){fxCancel=false;throw Error("Đã hủy xử lý")}$("progressArea").classList.remove("hidden");$("progressFill").style.width=p+"%";$("progressText").textContent=m;document.title=Math.round(p)+"% · "+TITLE0}
+function setBusy(v){busy=v;holdLock(v);if(!v)document.title=TITLE0;try{memTick()}catch(e){}if(v)fxCancel=false;["addFilesButton","exportButton","toneExportButton","tonePreviewButton","hlExportButton","hlPreviewButton","wmExportButton","wmPreviewButton","compressExportButton","rotateButton","duplicateButton","deleteButton","clearButton","selectAllButton","saveSelectedButton","printSelectedButton","editorButton","manualCropButton","autoCropButton","rectCropButton","mergeButton","cardButton","stampButton","moveCropButton","copyCropButton","moveCropPrev","freeRotButton","freeRotPrev","applyManualCrop","autoDetectCrop","startManualCrop","startRectCrop","moveToButton","moveLeftButton","moveRightButton"].forEach(id=>$(id).disabled=v);updateHistoryButtons()}
 function getDoc(id){return documents.find(d=>d.id===id)}
 function sourceFor(item){const d=getDoc(item.docId);if(!d)throw Error("Không tìm thấy tài liệu nguồn");return d}
 function updateSaveButton(){updateEnhanceInfo();const b=$("saveSelectedButton"),pb=$("printSelectedButton");if(!b)return;const n=selectedPages.size;b.textContent=n?`💾 Lưu ${n} trang đã chọn`:"💾 Lưu trang đã chọn";if(pb)pb.textContent=n?`🖨 In ${n} trang đã chọn`:"🖨 In trang đã chọn"}
@@ -1513,7 +1532,7 @@ async function renderItemCanvas(item,{dpi,maxSide,maxPx}={}){
   const v=p.getViewport({scale,rotation,viewBox:vb});
   const c=document.createElement("canvas");c.width=Math.max(1,Math.ceil(v.width));c.height=Math.max(1,Math.ceil(v.height));
   const ctx=c.getContext("2d",{willReadFrequently:true});ctx.fillStyle="#fff";ctx.fillRect(0,0,c.width,c.height);
-  await p.render({canvasContext:ctx,viewport:v,background:"rgb(255,255,255)"}).promise;
+  await p.render({canvasContext:ctx,viewport:v,background:"rgb(255,255,255)",intent:"print"}).promise;
   p.cleanup();const out=applyShapeCrop(c,item);out.dpiUsed=scale*72;return out;
 }
 async function canvasToDocument(canvas,name,dpi,q){
@@ -1803,7 +1822,7 @@ async function scanCards(){
       found.forEach(f=>{const cd={id:crypto.randomUUID(),pageId:it.id,pos:idx[n]+1,base:f.canvas,view:f.canvas,dpi:cv.dpiUsed||CARD_DPI,rot:0,fallback:fb,vr:0,face:skinFraction(f.canvas)};cd.view=makeView(cd);cards.push(cd)});
       pageCounts.set(it.id,found.length);
       if(!found.some(f=>f.canvas===cv)){cv.width=cv.height=1} /* giải phóng canvas trang lớn ngay */
-      await new Promise(r=>setTimeout(r,0));
+      await yieldTick();
     }
     cardState={cards,pageCounts,sheet:0};
     if($("cardAutoOrder").checked)autoOrderCards();
@@ -1834,7 +1853,7 @@ async function applyCards(){
       g.forEach(cd=>{last=Math.max(last,pages.findIndex(p=>p.id===cd.pageId));consumed.set(cd.pageId,(consumed.get(cd.pageId)||0)+1)});
       if(last<0)last=pages.length-1;
       item.group=groupKey(pages[last]);pages.splice(last+1,0,item);newIds.push(item.id);
-      await new Promise(r=>setTimeout(r,0));
+      await yieldTick();
     }
     if($("cardDelete").checked){
       const del=new Set();consumed.forEach((n,id)=>{if(n>=(counts.get(id)||0))del.add(id)});
@@ -2329,7 +2348,7 @@ async function appendRasterPage(out,it,i,d){
     const canvas=document.createElement("canvas");canvas.width=Math.max(1,Math.floor(viewport.width*reduce));canvas.height=Math.max(1,Math.floor(viewport.height*reduce));
     const ctx=canvas.getContext("2d");ctx.fillStyle="#fff";ctx.fillRect(0,0,canvas.width,canvas.height);
     const v=srcPage.getViewport({scale:scale*reduce,rotation,viewBox:vbx});
-    await srcPage.render({canvasContext:ctx,viewport:v,background:"rgb(255,255,255)"}).promise;
+    await srcPage.render({canvasContext:ctx,viewport:v,background:"rgb(255,255,255)",intent:"print"}).promise;
     srcPage.cleanup();const shaped=applyShapeCrop(canvas,it),png=await new Promise(resolve=>shaped.toBlob(resolve,"image/jpeg",.92)); /* JPEG thay PNG: nhẹ hơn 5-10 lần với ảnh chụp/scan */
     if(!png)throw Error("Không tạo được trang đã cắt "+(i+1));
     const image=await out.embedJpg(new Uint8Array(await png.arrayBuffer()));
@@ -2471,7 +2490,7 @@ async function computeEraseBoxes(list,cfg){
       try{const b=await detectOldPageNumbers(list[i]);if(b.length){out[i]=b;found++}}catch(e){console.warn(e)}
     }
     setProgress((i+1)/list.length*100,`Đang tìm số trang cũ ${i+1}/${list.length} (đã thấy ${found} trang)`);
-    await new Promise(r=>setTimeout(r,0));
+    await yieldTick();
   }
   return{boxes:out,found};
 }
@@ -2669,7 +2688,7 @@ async function exportNormal(list=pages,fileName="PDF-Studio.pdf",numCfg=null){
     for(let r=0;r<maxRep;r++){
       const nums=[...m.entries()].filter(e=>e[1]>r).map(e=>e[0]).sort((a,b)=>a-b),copied=await out.copyPages(src,nums.map(n=>n-1));
       nums.forEach((n,k)=>{const key=docId+":"+n,arr=pre.get(key)||[];arr.push(copied[k]);pre.set(key,arr)});
-      await new Promise(r2=>setTimeout(r2,0));
+      await yieldTick();
     }
     d.lib=null;
   }
@@ -2677,7 +2696,7 @@ async function exportNormal(list=pages,fileName="PDF-Studio.pdf",numCfg=null){
     const it=list[i];
     await appendNormalPage(out,it,i,pre);
     setProgress((i+1)/list.length*100,`Đang xuất trang ${i+1}/${list.length}${it.perspectiveCrop?(it.cropMode==="rect"?" · cắt chữ nhật":" · nắn freeform"):""}`);
-    await new Promise(r=>setTimeout(r,0));
+    await yieldTick();
   }
   if(numCfg)await applyPageNumbers(out,numCfg);
   const saved=await out.save();documents.forEach(d=>{d.lib=null}); /* nhả bản PDF đã phân tích để trả RAM */
@@ -2820,7 +2839,7 @@ function updateToneInfo(){
   if(!pages.length){el.textContent="";return}
   const sc=$("toneScope").value,n=toneFlags().filter(Boolean).length;
   let t=`Sẽ xử lý ${n}/${pages.length} trang`+(n<pages.length?` · giữ nguyên ${pages.length-n} trang`:"");
-  if(sc!=="all"&&!selectedPages.size)t+=" · hãy chọn trang trong danh sách phía trên";
+  if(sc!=="all"&&!selectedPages.size)t+=" · hãy chọn trang trong danh sách trang bên dưới";
   el.textContent=t;
 }
 function toneLabels(){
@@ -2898,7 +2917,7 @@ function updateMagicInfo(){
   const el=$("magicScopeInfo");if(!el)return;
   if(!pages.length){el.textContent="";return}
   const n=magicFlags().filter(Boolean).length;
-  el.textContent=$("magicScope").value==="all"?`Sẽ áp dụng cho tất cả ${pages.length} trang`:(n?`Sẽ áp dụng cho ${n}/${pages.length} trang đã chọn`:"Hãy chọn trang trong danh sách phía trên");
+  el.textContent=$("magicScope").value==="all"?`Sẽ áp dụng cho tất cả ${pages.length} trang`:(n?`Sẽ áp dụng cho ${n}/${pages.length} trang đã chọn`:"Hãy chọn trang trong danh sách trang bên dưới");
 }
 function updateEnhanceInfo(){
   updateMagicInfo();updateHlInfo();updateWmInfo();updateToneInfo();
@@ -2917,7 +2936,7 @@ async function exportEnhanced(cfg){
     if(!flags[i]){
       await appendNormalPage(out,it,i);
       setProgress((i+1)/pages.length*100,`Giữ nguyên trang ${i+1}/${pages.length}`);
-      await new Promise(r=>setTimeout(r,0));continue;
+      await yieldTick();continue;
     }
     const d=sourceFor(it),p=await d.pdf.getPage(it.pageNum),rotation=((p.rotate||0)+it.rotation)%360;
     const vb=it.perspectiveCrop?undefined:cropViewBox(it,p);
@@ -2926,7 +2945,7 @@ async function exportEnhanced(cfg){
     canvas.width=Math.max(1,Math.floor(v.width*reduce));canvas.height=Math.max(1,Math.floor(v.height*reduce));
     const renderViewport=p.getViewport({scale:scale*reduce,rotation,viewBox:vb}),ctx=canvas.getContext("2d",{willReadFrequently:true});
     ctx.fillStyle="#fff";ctx.fillRect(0,0,canvas.width,canvas.height);
-    await p.render({canvasContext:ctx,viewport:renderViewport,background:"rgb(255,255,255)"}).promise;
+    await p.render({canvasContext:ctx,viewport:renderViewport,background:"rgb(255,255,255)",intent:"print"}).promise;
     const shaped=applyShapeCrop(canvas,it);
     p.cleanup();let keepOriginal=false;
     if(cfg.process){if(await cfg.process(shaped)===false)keepOriginal=!sink}
@@ -2934,14 +2953,14 @@ async function exportEnhanced(cfg){
       canvas.width=canvas.height=1;if(shaped!==canvas)shaped.width=shaped.height=1;
       await appendNormalPage(out,it,i);
       setProgress((i+1)/pages.length*100,`Trang ${i+1}/${pages.length}: không có vùng cần xử lý, giữ nguyên`);
-      await new Promise(r=>setTimeout(r,0));continue;
+      await yieldTick();continue;
     }
     const blob=await new Promise(resolve=>shaped.toBlob(resolve,"image/jpeg",.96));if(!blob)throw Error("Không tạo được ảnh trang "+(i+1));
     await emitJpeg(out,sink,blob,shaped.width/(scale*reduce),shaped.height/(scale*reduce));
     canvas.width=canvas.height=1;if(shaped!==canvas)shaped.width=shaped.height=1;
     done++;
     setProgress((i+1)/pages.length*100,`Đang ${verb} trang ${i+1}/${pages.length} (${done}/${todo} trang áp dụng, ${dpi} DPI${sink?", ghi thẳng ra đĩa":""})...`);
-    await new Promise(r=>setTimeout(r,0));
+    await yieldTick();
   }
   }catch(e){if(sink)await sink.abort();throw e}
   if(sink){await sink.finish();return true}
@@ -3006,7 +3025,7 @@ async function exBuild(list,cfg,dpi,q,label,sink){
     const reduce=Math.min(1,Math.sqrt(pxCap(LOW_END?16e6:24e6)/(v.width*v.height))),c=document.createElement("canvas");
     c.width=Math.max(1,Math.floor(v.width*reduce));c.height=Math.max(1,Math.floor(v.height*reduce));
     const ctx=c.getContext("2d",{willReadFrequently:true});ctx.fillStyle="#fff";ctx.fillRect(0,0,c.width,c.height);
-    await p.render({canvasContext:ctx,viewport:p.getViewport({scale:scale*reduce,rotation,viewBox:vb}),background:"rgb(255,255,255)"}).promise;
+    await p.render({canvasContext:ctx,viewport:p.getViewport({scale:scale*reduce,rotation,viewBox:vb}),background:"rgb(255,255,255)",intent:"print"}).promise;
     p.cleanup();const sh=applyShapeCrop(c,it);
     if(cfg.proc==="magic")await fxProcess(sh,"magic",{sharpen:true,level:cfg.magicLevel});else if(cfg.proc==="wm")await fxProcess(sh,"wm",{level:cfg.magicLevel,keepColor:true,sharpen:true,stamp:"auto"});else if(cfg.proc==="tone")await fxProcess(sh,"tone",cfg.tone);
     if(cfg.gray){const sc=sh.getContext("2d",{willReadFrequently:true}),im=sc.getImageData(0,0,sh.width,sh.height),a=im.data;for(let k=0;k<a.length;k+=4){a[k]=a[k+1]=a[k+2]=.299*a[k]+.587*a[k+1]+.114*a[k+2]}sc.putImageData(im,0,0)}
@@ -3014,7 +3033,7 @@ async function exBuild(list,cfg,dpi,q,label,sink){
     await emitJpeg(out,sink,blob,sh.width/(scale*reduce),sh.height/(scale*reduce));
     c.width=c.height=1;if(sh!==c)sh.width=sh.height=1;
     setProgress((i+1)/list.length*100,`${label} · trang ${i+1}/${list.length} (${Math.round(dpi)} DPI)`);
-    await new Promise(r=>setTimeout(r,0));
+    await yieldTick();
   }
   }catch(e){if(sink)await sink.abort();throw e}
   if(sink){await sink.finish();return null}
@@ -3194,7 +3213,7 @@ function updateWmInfo(){
   const el=$("wmScopeInfo");if(!el)return;
   if(!pages.length){el.textContent="";return}
   const n=wmFlags().filter(Boolean).length;
-  el.textContent=$("wmScope").value==="all"?`Sẽ áp dụng cho tất cả ${pages.length} trang`:(n?`Sẽ áp dụng cho ${n}/${pages.length} trang đã chọn`:"Hãy chọn trang trong danh sách phía trên");
+  el.textContent=$("wmScope").value==="all"?`Sẽ áp dụng cho tất cả ${pages.length} trang`:(n?`Sẽ áp dụng cho ${n}/${pages.length} trang đã chọn`:"Hãy chọn trang trong danh sách trang bên dưới");
 }
 $("wmScope").onchange=updateWmInfo;
 $("wmPreviewButton").onclick=async()=>{
@@ -3362,7 +3381,7 @@ function updateHlInfo(){
   const el=$("hlScopeInfo");if(!el)return;
   if(!pages.length){el.textContent="";return}
   const n=hlFlags().filter(Boolean).length;
-  el.textContent=$("hlScope").value==="all"?`Sẽ quét tất cả ${pages.length} trang`:(n?`Sẽ quét ${n}/${pages.length} trang đã chọn`:"Hãy chọn trang trong danh sách phía trên");
+  el.textContent=$("hlScope").value==="all"?`Sẽ quét tất cả ${pages.length} trang`:(n?`Sẽ quét ${n}/${pages.length} trang đã chọn`:"Hãy chọn trang trong danh sách trang bên dưới");
 }
 async function renderHighlightPreview(){
   if(!pages.length)throw Error("Chưa có trang để xem thử");
@@ -3476,6 +3495,112 @@ async function fxProcess(canvas,kind,opts){
 }
 $("cancelProcessButton").onclick=()=>{if(!busy)return;fxCancel=true;fxAbort();showToast("Đang hủy...")};
 
+/* ====== TỰ ĐỘNG HÓA MỘT CHẠM ====== */
+const AUTO_CACHE=new Map();
+/* Trang scan/ảnh hay PDF số (có chữ thật)? Trang gần như chỉ là một tấm ảnh lớn → scan (kể cả khi có lớp chữ OCR ẩn). */
+async function classifyPage(it){
+  if(it.perspectiveCrop||it.freeRot)return"scan";
+  const key=it.docId+":"+it.pageNum;if(AUTO_CACHE.has(key))return AUTO_CACHE.get(key);
+  const d=sourceFor(it),p=await d.pdf.getPage(it.pageNum);
+  let chars=0,anyImg=false,cover=0;
+  try{const tc=await p.getTextContent();for(const t of tc.items)if(typeof t.str==="string")chars+=t.str.replace(/\s+/g,"").length}catch(e){}
+  try{
+    const ops=await p.getOperatorList(),O=pdfjsLib.OPS,fa=ops.fnArray,aa=ops.argsArray,vw=(p.view[2]-p.view[0])||1,vh=(p.view[3]-p.view[1])||1;
+    const mul=(a,b)=>[a[0]*b[0]+a[2]*b[1],a[1]*b[0]+a[3]*b[1],a[0]*b[2]+a[2]*b[3],a[1]*b[2]+a[3]*b[3],a[0]*b[4]+a[2]*b[5]+a[4],a[1]*b[4]+a[3]*b[5]+a[5]];
+    let m=[1,0,0,1,0,0];const st=[];
+    for(let i=0;i<fa.length;i++){
+      const f=fa[i];
+      if(f===O.save)st.push(m);
+      else if(f===O.restore){if(st.length)m=st.pop()}
+      else if(f===O.transform)m=mul(m,aa[i]);
+      else if(f===O.paintFormXObjectBegin){st.push(m);if(aa[i]&&aa[i][0])m=mul(m,aa[i][0])}
+      else if(f===O.paintFormXObjectEnd){if(st.length)m=st.pop()}
+      else if(f===O.paintImageXObject||f===O.paintInlineImageXObject||f===O.paintImageXObjectRepeat||(O.paintJpegXObject!==undefined&&f===O.paintJpegXObject)){
+        anyImg=true;cover=Math.max(cover,Math.hypot(m[0],m[1])*Math.hypot(m[2],m[3])/(vw*vh));
+      }
+    }
+  }catch(e){}
+  p.cleanup();
+  const kind=cover>=.5?"scan":chars>=20?"digital":anyImg?"scan":"digital";
+  AUTO_CACHE.set(key,kind);return kind;
+}
+function grayOf(c,maxSide){
+  const s=Math.min(1,maxSide/Math.max(c.width,c.height)),w=Math.max(8,Math.round(c.width*s)),h=Math.max(8,Math.round(c.height*s));
+  const t=document.createElement("canvas");t.width=w;t.height=h;const x=t.getContext("2d",{willReadFrequently:true});x.imageSmoothingQuality="high";x.drawImage(c,0,0,w,h);
+  const d=x.getImageData(0,0,w,h).data,L=new Float32Array(w*h);
+  for(let i=0,k=0;i<L.length;i++,k+=4)L[i]=.299*d[k]+.587*d[k+1]+.114*d[k+2];
+  t.width=t.height=1;return{L,w,h};
+}
+/* Góc nghiêng (độ) của các dòng chữ: dương = dòng chữ dốc xuống bên phải. Trả về 0 nếu không đủ tin cậy (không có chữ, ảnh, nhiễu). */
+function skewFromGray(L,w,h){
+  const N=w*h,bl=boxBlur2D(L,w,h,Math.max(6,Math.round(Math.max(w,h)/60)),1);
+  let ink=0;
+  for(let i=0;i<N;i++)if(L[i]<bl[i]*.8&&L[i]<200)ink++;
+  if(ink<N*.004||ink>N*.35)return 0;
+  const step=Math.max(1,Math.floor(ink/90000)),xs=[],ys=[];let k=0;
+  for(let y=0;y<h;y++)for(let x=0;x<w;x++){const i=y*w+x;if(L[i]<bl[i]*.8&&L[i]<200){if(k++%step===0){xs.push(x);ys.push(y)}}}
+  const n=xs.length,off=Math.ceil(w*Math.sin(12*Math.PI/180))+2,nb=h+2*off+4,bins=new Float32Array(nb);
+  const score=a=>{
+    const c=Math.cos(a),s=Math.sin(a);bins.fill(0);
+    for(let i=0;i<n;i++)bins[Math.round(ys[i]*c-xs[i]*s)+off]++;
+    let t=0;for(let j=0;j<nb;j++)t+=bins[j]*bins[j];return t;
+  };
+  const rad=d=>d*Math.PI/180,s0=score(0);
+  let best=0,bs=-1;
+  for(let d=-10;d<=10.001;d+=.5){const v=score(rad(d));if(v>bs){bs=v;best=d}}
+  let b2=best,bs2=bs;
+  for(let d=best-.5;d<=best+.5001;d+=.1){const v=score(rad(d));if(v>bs2){bs2=v;b2=d}}
+  if(Math.abs(b2)>=9.9||bs2<s0*1.015)return 0;
+  return Math.round(b2*10)/10;
+}
+function quadOk(q){
+  const cr=(a,b,c)=>(b.x-a.x)*(c.y-b.y)-(b.y-a.y)*(c.x-b.x),s=[0,1,2,3].map(i=>cr(q[i],q[(i+1)%4],q[(i+2)%4]));
+  if(!(s.every(v=>v>0)||s.every(v=>v<0)))return false;
+  const d=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y),t=d(q[0],q[1]),b=d(q[3],q[2]),l=d(q[0],q[3]),r=d(q[1],q[2]);
+  return Math.min(t,b)/Math.max(t,b)>.55&&Math.min(l,r)/Math.max(l,r)>.55;
+}
+/* Phần nằm ngoài khung giấy có phải trắng tinh không? (trang sạch nền trắng: khung "giấy" chỉ là khối chữ → không được cắt) */
+function outsideWhiteFrac(c,q){
+  const s=Math.min(1,160/Math.max(c.width,c.height)),w=Math.max(8,Math.round(c.width*s)),h=Math.max(8,Math.round(c.height*s));
+  const t=document.createElement("canvas");t.width=w;t.height=h;const x=t.getContext("2d",{willReadFrequently:true});x.drawImage(c,0,0,w,h);
+  const d=x.getImageData(0,0,w,h).data,P=q.map(p=>({x:p.x*w,y:p.y*h}));let out=0,wh=0;
+  for(let j=0;j<h;j++)for(let i=0;i<w;i++){
+    if(pointInPoly({x:i+.5,y:j+.5},P))continue;
+    out++;const k=(j*w+i)*4;if(d[k]>=250&&d[k+1]>=250&&d[k+2]>=250)wh++;
+  }
+  t.width=t.height=1;return out<20?1:wh/out;
+}
+function autoPaperQuad(c){
+  const q=detectPaperQuad(c);if(!q||!quadOk(q))return null;
+  const A=Math.abs(q.reduce((sum,p,i)=>{const n=q[(i+1)%4];return sum+p.x*n.y-n.x*p.y},0))/2;
+  if(A<.2)return null;
+  const cn=[[0,0],[1,0],[1,1],[0,1]];
+  if(q.every((p,i)=>Math.hypot(p.x-cn[i][0],p.y-cn[i][1])<.035))return null; /* đã vừa cả trang */
+  if(outsideWhiteFrac(c,q)>.75)return null;
+  return q;
+}
+/* Một trang: cắt + nắn 4 góc → căn thẳng chữ → khử bóng. Trả về {canvas,info}; canvas gốc `src` có thể bị sửa tại chỗ. */
+async function autoClean(src,o){
+  let c=src;const info={crop:false,angle:0};
+  if(o.crop){
+    const q=autoPaperQuad(c);
+    if(q){const w=warpPerspective(c,q.map(p=>({x:p.x*c.width,y:p.y*c.height})));if(c!==src)c.width=c.height=1;c=w;info.crop=true}
+  }
+  if(o.deskew){
+    const g=grayOf(c,900),a=skewFromGray(g.L,g.w,g.h);
+    if(Math.abs(a)>=.3){const r=rotateCanvasFree(c,-a);if(c!==src)c.width=c.height=1;c=r;info.angle=a}
+  }
+  if(o.magic)await fxProcess(c,"magic",{sharpen:true,level:o.level});
+  c.dpiUsed=src.dpiUsed;
+  return{canvas:c,info};
+}
+async function reencodeJpeg(blob,s,q){
+  const bm=await createImageBitmap(blob),w=Math.max(1,Math.round(bm.width*s)),h=Math.max(1,Math.round(bm.height*s));
+  const c=document.createElement("canvas");c.width=w;c.height=h;const x=c.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,w,h);x.imageSmoothingQuality="high";x.drawImage(bm,0,0,w,h);bm.close();
+  const b=await new Promise(r=>c.toBlob(r,"image/jpeg",q));c.width=c.height=1;
+  if(!b)throw Error("Không nén lại được ảnh");return b;
+}
+
 /* ====== GIẢM DUNG LƯỢNG PDF ====== */
 const COMPRESS_PRESETS={light:{dpi:150,q:80},medium:{dpi:120,q:65},strong:{dpi:90,q:50}};
 $("compressPreset").onchange=()=>{const p=COMPRESS_PRESETS[$("compressPreset").value];if(p){$("compressDpi").value=p.dpi;$("compressQuality").value=p.q}};
@@ -3490,14 +3615,14 @@ async function buildCompressed(dpi,quality,gray,label,sink){
     const reduce=Math.min(1,Math.sqrt(pxCap(LOW_END?14e6:20e6)/(v.width*v.height))),canvas=document.createElement("canvas");
     canvas.width=Math.max(1,Math.floor(v.width*reduce));canvas.height=Math.max(1,Math.floor(v.height*reduce));
     const ctx=canvas.getContext("2d",{willReadFrequently:true});ctx.fillStyle="#fff";ctx.fillRect(0,0,canvas.width,canvas.height);
-    await p.render({canvasContext:ctx,viewport:p.getViewport({scale:scale*reduce,rotation,viewBox:vb}),background:"rgb(255,255,255)"}).promise;
+    await p.render({canvasContext:ctx,viewport:p.getViewport({scale:scale*reduce,rotation,viewBox:vb}),background:"rgb(255,255,255)",intent:"print"}).promise;
     const shaped=applyShapeCrop(canvas,it);
     p.cleanup();if(gray){const sc=shaped.getContext("2d",{willReadFrequently:true}),im=sc.getImageData(0,0,shaped.width,shaped.height),a=im.data;for(let k=0;k<a.length;k+=4){const l=.299*a[k]+.587*a[k+1]+.114*a[k+2];a[k]=a[k+1]=a[k+2]=l}sc.putImageData(im,0,0)}
     const blob=await new Promise(r=>shaped.toBlob(r,"image/jpeg",quality));if(!blob)throw Error("Không tạo được ảnh trang "+(i+1));
     await emitJpeg(out,sink,blob,shaped.width/(scale*reduce),shaped.height/(scale*reduce));
     canvas.width=canvas.height=1;if(shaped!==canvas)shaped.width=shaped.height=1;
     setProgress((i+1)/pages.length*100,`${label} · trang ${i+1}/${pages.length} (${dpi} DPI, ${Math.round(quality*100)}%)`);
-    await new Promise(r=>setTimeout(r,0));
+    await yieldTick();
   }
   }catch(e){if(sink)await sink.abort();throw e}
   if(sink){await sink.finish();return null}
@@ -3583,7 +3708,7 @@ $("printSelectedButton").onclick=async()=>{
         if(!blob)throw Error("Không tạo được ảnh trang "+(idx[k]+1));
         const url=URL.createObjectURL(blob);urls.push(url);sheets[k]={url,land};
         setProgress(++done/n*100,`Đang chuẩn bị in trang ${done}/${n}...`);
-        await new Promise(r=>setTimeout(r,0));
+        await yieldTick();
       }
     };
     await Promise.all(Array.from({length:Math.min(n,LOW_END?1:2)},work));
@@ -4200,6 +4325,16 @@ edLoadDraft();edLoadCfg();edApplyCfg();
 
 $("undoButton").onclick=undo;$("redoButton").onclick=redo;
 renderGrid();updateHistoryButtons();memTick();
+
+/* ====== Thanh công cụ trên đầu trang ====== */
+(function(){
+  const btns=[...document.querySelectorAll("#featureBar .feat-btn")];
+  btns.forEach(b=>b.addEventListener("click",()=>{
+    const id=b.dataset.feat,panel=document.getElementById(id),open=panel.classList.contains("hidden");
+    btns.forEach(x=>{document.getElementById(x.dataset.feat).classList.add("hidden");x.classList.remove("active")});
+    if(open){panel.classList.remove("hidden");b.classList.add("active");panel.scrollIntoView({behavior:"smooth",block:"nearest"})}
+  }));
+})();
 </script>
 
 
